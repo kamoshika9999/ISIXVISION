@@ -542,6 +542,7 @@ public class VisonController{
 		    		if( !dragging ) {
 		    			eventTrigger = false;
 		    		}
+		    		rePaint();
 		    	}
 
 		    	if( manualTrigger || autoTrigger ) {//マニュアルトリガ又はオートトリガが有効であった場合
@@ -743,7 +744,7 @@ public class VisonController{
 	    	}
 
 	    	fpsCnt++;
-	    	if( fpsCnt == 180) {
+	    	if( fpsCnt == 30) {
 	    		fpsEnd = System.currentTimeMillis();
 
 	    		fps = fpsCnt/((fpsEnd - fpsFirst)/1000.0);

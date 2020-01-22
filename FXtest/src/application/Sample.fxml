@@ -301,7 +301,7 @@
          </font>
       </Button>
       <TextArea fx:id="info2" layoutX="690.0" layoutY="11.0" prefHeight="249.0" prefWidth="328.0" text="ISIX VISION 1.1&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;V1.0 Release 2020.01.03&#10;OPENCV 4.2  JAVAFX11.0 JRE13.0 &#10;V1.1 BugFixe&#10;SirialCommunication BugFixe&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
-      <Button fx:id="lockBtn" layoutX="808.0" layoutY="283.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
+      <Button fx:id="lockBtn" layoutX="690.0" layoutY="269.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
          <effect>
             <DropShadow />
          </effect>
@@ -343,6 +343,6 @@
       <TextField fx:id="capH_text" alignment="CENTER_RIGHT" layoutX="823.0" layoutY="365.0" prefHeight="25.0" prefWidth="52.0" text="600" />
       <Label layoutX="773.0" layoutY="344.0" prefHeight="17.0" prefWidth="45.0" text="CAP W" />
       <Label layoutX="773.0" layoutY="368.0" prefHeight="17.0" prefWidth="45.0" text="CAP H" />
-      <Rectangle fx:id="lockShape1" arcHeight="5.0" arcWidth="5.0" fill="#a5abb094" height="89.0" layoutX="3.0" layoutY="307.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="1024.0" />
+      <Rectangle fx:id="lockShape1" arcHeight="5.0" arcWidth="5.0" fill="#a5abb094" height="89.0" layoutX="3.0" layoutY="307.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="1016.0" />
    </children>
 </AnchorPane>
