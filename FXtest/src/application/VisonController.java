@@ -1,0 +1,1672 @@
+package application;
+
+import java.awt.Rectangle;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.URL;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.Videoio;
+
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
+
+public class VisonController{
+
+	//クラス変数
+	Mat srcMat = new Mat();
+	Mat glayMat;
+	private double imgORG_imageViewFitWidth;
+	private double imgORG_imageViewFitHeight;
+    List<Rectangle> rects;
+    Rectangle draggingRect;
+    volatile boolean dragging;
+    preSet pObj;
+    public static VideoCapture capObj = new VideoCapture();
+	public static ScheduledExecutorService timer;
+	public static ScheduledExecutorService timer2;
+
+	//シャッタートリガ用
+	boolean shutterFlg = false;
+	boolean offShutterFlg = false;
+	double ngTriggerTime = 0;
+	double triggerDelly = 0;
+
+	// a flag to change the button behavior
+	private boolean cameraActive = false;
+	// the id of the camera to be used
+	private static int cameraId = 0;
+	private String infoText;
+	Rectangle2D vRect;
+	double viewOrgZoom;//imgORG ImageViewの拡大率
+	int onSetVeri_n;
+	boolean manualTrigger = false;
+	boolean autoTrigger = false;
+	boolean eventTrigger = false;
+	//FPS計測用
+	long fpsFirst = System.currentTimeMillis();//計測開始
+	long fpsEnd;
+	int fpsCnt=0;//カウント用
+	double fps =0;
+	int ngCnt = 0;
+	String password = "7777";
+	double framCnt = 0;
+	VideoCapture source_video;
+	//設定自動ロック用
+	boolean settingModeFlg = false;
+	long lockedTimer = 0;
+	final long lockedTimerThresh = 1000 * 60 *5;
+	//テンプレートマッチング用
+	private boolean matchTempStartFlg = false;
+
+
+	//インフォメーション
+	private String initInfo2;
+
+	@FXML
+    private Spinner<Integer> dellySpinner;
+
+    @FXML
+    private ResourceBundle resources;
+    @FXML
+    private URL location;
+    @FXML
+    private AnchorPane aPane;
+    @FXML
+    private Label info1;
+    @FXML
+    private Button getInfoBtn;
+    @FXML
+    private ImageView imgORG;
+    @FXML
+    private ImageView imgGLAY;
+    @FXML
+    private Slider sliderDetecPara4;
+    @FXML
+    private Slider sliderDetecPara5;
+    @FXML
+    private Slider sliderDetecPara6;
+    @FXML
+    private Slider sliderDetecPara7;
+    @FXML
+    private Slider sliderDetecPara8;
+    @FXML
+    private Slider sliderDetecPara9;
+    @FXML
+    private TextField textFieldDetecPara4;
+    @FXML
+    private TextField textFieldDetecPara5;
+    @FXML
+    private TextField textFieldDetecPara6;
+    @FXML
+    private TextField textFieldDetecPara7;
+    @FXML
+    private TextField textFieldDetecPara8;
+    @FXML
+    private TextField textFieldDetecPara9;
+    @FXML
+    private Button move_up_btn;
+    @FXML
+    private Button move_left_btn;
+    @FXML
+    private Button move_right_btn;
+    @FXML
+    private Button move_down_btn;
+    @FXML
+    private Slider zoomValue_slider;
+    @FXML
+    private Slider move_speed_slider;
+    @FXML
+    private Button testBtn;
+    @FXML
+    private Button okuri1_btn;
+    @FXML
+    private Button okuri2_btn;
+    @FXML
+    private Button okuri3_btn;
+    @FXML
+    private Button okuri4_btn;
+    @FXML
+    private Label okuri1_label;
+    @FXML
+    private Label okuri2_label;
+    @FXML
+    private Label okuri3_label;
+    @FXML
+    private Label okuri4_label;
+    @FXML
+    private Label okuri1_judg;
+    @FXML
+    private Label okuri2_judg;
+    @FXML
+    private Label okuri3_judg;
+    @FXML
+    private Label okuri4_judg;
+    @FXML
+    private Label judg;
+    @FXML
+    private Button preset1;
+    @FXML
+    private Button preset2;
+    @FXML
+    private Button preset3;
+    @FXML
+    private Button preset4;
+    @FXML
+    private Button stopTest;
+    @FXML
+    private Button trigBtn;
+    @FXML
+    private Button saveBtn;
+    @FXML
+    private Button loadBtn;
+    @FXML
+    private Label okuri1_n;
+    @FXML
+    private Label okuri2_n;
+    @FXML
+    private Label okuri3_n;
+    @FXML
+    private Label okuri4_n;
+    @FXML
+    private CheckBox gauusianCheck;
+    @FXML
+    private Slider gauusianSliderX;//sigmaX
+    @FXML
+    private Slider gauusianSliderY;//sigmaY
+    @FXML
+    private Slider gauusianSliderA;//アパーチャサイズ
+    @FXML
+    private CheckBox dilateCheck;
+    @FXML
+    private Slider dilateSliderN;
+    @FXML
+    private CheckBox threshholdCheck;
+    @FXML
+    private Slider threshholdSlider;
+    @FXML
+    private Label threshholdLabel;
+    @FXML
+    private Button setVeriBtn1;
+    @FXML
+    private Button setVeriBtn2;
+    @FXML
+    private Button setVeriBtn3;
+    @FXML
+    private Button setVeriBtn4;
+    @FXML
+    private CheckBox threshhold_Inverse;
+    @FXML
+    private Button aTriggerBtn;
+    @FXML
+    private Button triggerBtn;
+    @FXML
+    private Button outTriggerBtn;
+    @FXML
+    private ImageView imgGLAY1;
+    @FXML
+    private ImageView imgGLAY2;
+    @FXML
+    private ImageView imgGLAY3;
+    @FXML
+    private Label fpsLabel;
+    @FXML
+    private Circle triggerCCircle;
+    @FXML
+    private Button clearBtn;
+    @FXML
+    private Button ngImageBtn;
+    @FXML
+    private Label ngCounterLabel;
+    @FXML
+    private CheckBox imgSaveFlg;
+    @FXML
+    private Button demoMode;
+	private boolean demoFlg;
+    @FXML
+    private TextArea info2;
+    @FXML
+    private Button lockBtn;
+    @FXML
+    private javafx.scene.shape.Rectangle lockShape1;
+    @FXML
+    private javafx.scene.shape.Rectangle lockShape2;
+    @FXML
+    private javafx.scene.shape.Rectangle lockShape3;
+    @FXML
+    private javafx.scene.shape.Rectangle lockShape4;
+    @FXML
+    private javafx.scene.shape.Rectangle lockShape5;
+    @FXML
+    private ImageView imgNG;
+    @FXML
+    private CheckBox outTrigDisableChk;
+    @FXML
+    private CheckBox settingMode;
+    @FXML
+    private Spinner<Integer> portNoSpin;
+    @FXML
+    private Label zoomLabel;
+    @FXML
+    private Spinner<Integer> camIDspinner;
+    @FXML
+    private TextField capW_text;
+    @FXML
+    private TextField capH_text;
+
+
+
+
+    @FXML
+    void onDragDone(MouseEvent event) {
+    	Platform.runLater(() ->textFieldDetecPara4.setText(String.valueOf(String.format("%.1f",sliderDetecPara4.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara5.setText(String.valueOf(String.format("%.1f",sliderDetecPara5.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara6.setText(String.valueOf(String.format("%.1f",sliderDetecPara6.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara7.setText(String.valueOf(String.format("%.1f",sliderDetecPara7.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara8.setText(String.valueOf(String.format("%.1f",sliderDetecPara8.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara9.setText(String.valueOf(String.format("%.1f",sliderDetecPara9.getValue()))));
+    	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
+    	eventTrigger = true;
+    }
+
+    @FXML
+    void onInfoBtnAction(ActionEvent event) {
+		double wset = capObj.get(Videoio.CAP_PROP_FRAME_WIDTH);
+		double hset = capObj.get(Videoio.CAP_PROP_FRAME_HEIGHT);
+		Platform.runLater( () ->info2.appendText("\n"+ "カメラ解像度 WIDTH="+ wset+
+				"\n カメラ解像度 HEIGHT= " +hset +"\n"));
+    }
+    @FXML
+    void onMoveBtn(ActionEvent event) {
+    	vRect = this.imgORG.getViewport();
+    	int speed =  (int)(move_speed_slider.getValue())*20;
+    	Object eventObject = event.getSource();
+
+    	double xMin,yMin,xMax,yMax,width,height,imgWidth,imgHeight;
+    	xMin = vRect.getMinX();
+    	yMin = vRect.getMinY();
+    	xMax = vRect.getMaxX();
+    	yMax = vRect.getMaxY();
+    	width = vRect.getWidth();
+    	height = vRect.getHeight();
+    	imgWidth = imgORG.getImage().getWidth();
+    	imgHeight = imgORG.getImage().getHeight();
+
+    	if( eventObject == move_up_btn) {
+    		if( yMin - speed >= 0 ) {
+    			yMin -= speed;
+    		}else {
+    			yMin = 0;
+    		}
+    	}else if( eventObject == move_down_btn) {
+    		if( yMax + speed <= imgHeight ) {
+    			yMin += speed;
+    		}else {
+    			yMin = imgHeight - height;
+    		}
+    	}else if( eventObject == move_left_btn) {
+    		if( xMin - speed  >= 0 ) {
+    			xMin -= speed;
+    		}else {
+    			xMin = 0;
+    		}
+    	}else if( eventObject == move_right_btn) {
+    		if( xMax + speed  <= imgWidth ) {
+    			xMin += speed;
+    		}else {
+    			xMin = imgWidth - width;
+    		}
+    	}
+    	vRect = new Rectangle2D( xMin,yMin,width,height);
+    	Platform.runLater(() ->imgORG.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY2.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY3.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY.setViewport(vRect));
+
+    	eventTrigger = true;
+    }
+
+    @FXML
+    void onZoomSlider(MouseEvent event) {
+    	vRect = this.imgORG.getViewport();
+    	double zoom = zoomValue_slider.getValue();
+    	double zoomedWidth,zoomedHeight;
+
+    	zoomedWidth = imgORG_imageViewFitWidth / zoom;
+    	zoomedHeight = imgORG_imageViewFitHeight / zoom;
+    	vRect = new Rectangle2D( vRect.getMinX(),vRect.getMinY(),
+    				zoomedWidth,zoomedHeight);
+    	Platform.runLater(() ->imgORG.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY2.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY3.setViewport(vRect));
+    	Platform.runLater(() ->zoomLabel.setText(String.format("%.1f",zoom)));
+    	eventTrigger = true;
+    }
+    @FXML
+    void onWheel(ScrollEvent e) {
+    	viewOrgZoom = zoomValue_slider.getValue();
+    	Rectangle2D rect = imgORG.getViewport();
+    	double zoomStep = 0.05;
+    	double zoomOrg = viewOrgZoom;
+    	double imgWidth = imgORG.getImage().getWidth();//imgORGに格納されているイメージの幅
+    	double imgHeight = imgORG.getImage().getHeight();
+
+    	if( e.getDeltaY() < 0) {
+    		if(zoomValue_slider.getMin() < viewOrgZoom - zoomStep ) {
+    			if( imgORG.getFitWidth() < imgWidth * (viewOrgZoom - zoomStep)) {
+    				viewOrgZoom -= zoomStep;
+    			}
+    		}else {
+    			viewOrgZoom = zoomValue_slider.getMin();
+    		}
+    	}else {
+    		if(zoomValue_slider.getMax() > viewOrgZoom + zoomStep) {
+    			viewOrgZoom +=zoomStep;
+   			}else {
+   				viewOrgZoom = zoomValue_slider.getMax();
+   			}
+    	}
+    	Platform.runLater(() ->zoomValue_slider.setValue( viewOrgZoom));
+
+    	double moveX = (rect.getWidth() / zoomOrg - rect.getWidth() / viewOrgZoom)/2;
+    	double moveY = (rect.getHeight() / zoomOrg - rect.getHeight() / viewOrgZoom)/2;
+    	double minX,minY;
+    	if( rect.getMinX() + moveX < 0 ) {
+    		minX = 0;
+    	}else if( rect.getMaxX()+moveX > imgWidth) {
+    		minX = imgWidth - rect.getWidth();
+    	}else{
+    		minX = rect.getMinX() + moveX;
+    	}
+
+    	if( rect.getMinY() + moveY < 0) {
+    		minY = 0;
+    	}else if( rect.getMaxY()+moveY > imgHeight) {
+    		minY = imgHeight - rect.getHeight();
+    	}else{
+    		minY = rect.getMinY() + moveY;
+    	}
+    	vRect = new Rectangle2D( minX,minY,
+    			imgORG_imageViewFitWidth/viewOrgZoom,
+    			imgORG_imageViewFitHeight/viewOrgZoom);
+    	Platform.runLater(() ->imgORG.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY2.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY3.setViewport(vRect));
+    	Platform.runLater(() ->zoomLabel.setText(String.format("%.1f",viewOrgZoom)));
+
+    }
+    /*
+    private void reZoomView() {
+    	vRect = this.imgORG.getViewport();
+    	double zoom = zoomValue_slider.getValue();
+    	double zoomedWidth,zoomedHeight;
+
+    	zoomedWidth = imgORG_imageViewFitWidth / zoom;
+    	zoomedHeight = imgORG_imageViewFitHeight / zoom;
+    	vRect = new Rectangle2D( vRect.getMinX(),vRect.getMinY(),
+    				zoomedWidth,zoomedHeight);
+    	Platform.runLater(() ->imgORG.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY2.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY3.setViewport(vRect));
+    }
+    */
+
+    @FXML
+    void onDemo(ActionEvent event) {
+		if (this.capObj != null ) {
+			Platform.runLater( () ->this.capObj.release());
+		}
+    	demoFlg = true;
+    	srcMat = new Mat();
+    }
+
+    @FXML
+    void onTest(ActionEvent event) {
+    	demoFlg = false;
+		// カメラがアクティブ状態の時は停止する
+		if (this.cameraActive) {
+			this.cameraActive = false;
+			this.stopAcquisition();
+			// 処理終了
+			return;
+		}
+
+		// カメラ
+		this.cameraId = this.camIDspinner.getValue();
+		this.capObj.open(this.cameraId);
+		int capwidth = Integer.valueOf(capW_text.getText()).intValue();
+		int capHeight =Integer.valueOf(capH_text.getText()).intValue();
+		boolean wset = capObj.set(Videoio.CAP_PROP_FRAME_WIDTH, capwidth);
+		boolean hset = capObj.set(Videoio.CAP_PROP_FRAME_HEIGHT, capHeight);
+		capObj.set(Videoio.CAP_PROP_BUFFERSIZE,3);
+		//boolean wset = capture.set(Videoio.CAP_PROP_FRAME_WIDTH, 640);
+		//boolean hset = capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, 480);
+		Platform.runLater( () ->info2.appendText("カメラ解像度 WIDTH=" +
+								capwidth +"(" + wset + ") HEIGHT=" + capHeight + "("+hset+")\n"));
+		Platform.runLater( () ->info2.appendText("MAXフレームレート"+String.valueOf(capObj.get(Videoio.CAP_PROP_FPS))+"\n"));
+		Platform.runLater( () ->info2.appendText("バッファサイズ " +
+						String.valueOf(capObj.get(Videoio.CAP_PROP_BUFFERSIZE))+"\n"));
+
+		// カメラが開いていない時
+		if (this.capObj.isOpened() == false) {
+			// エラーログを出力して処理を終了する
+			Platform.runLater( () ->info2.appendText("カメラが接続されていません。\nデモモードで起動します。\n"));
+			demoFlg = true;
+
+		}else {
+			// カメラが正常に開いている時
+			this.cameraActive = true;
+		}
+		source_video = new VideoCapture("./test.mp4" );//デモモード用動画
+		double video_width = source_video.get( Videoio.CAP_PROP_FRAME_WIDTH ); // 横幅を取得
+		double video_height = source_video.get( Videoio.CAP_PROP_FRAME_HEIGHT ); // 縦幅を取得
+		double video_frame_count = source_video.get( Videoio.CAP_PROP_FRAME_COUNT ); // フレーム数を取得
+		double video_fps = source_video.get( Videoio.CAP_PROP_FPS ); // フレームレートを取得
+		if(demoFlg) {
+			 Platform.runLater( () ->info2.appendText("demo動画の横幅 : " + video_width+"\n" ));
+			 Platform.runLater( () ->info2.appendText("demo動画の縦幅 : " + video_height+"\n" ));
+			 Platform.runLater( () ->info2.appendText("demo動画のフレーム数 : " + video_frame_count +"\n"));
+			 Platform.runLater( () ->info2.appendText("demo動画のフレームカウント : " + video_fps+"\n" ));
+		}
+
+		//GPIOボードオープン
+		Gpio.open(this.portNoSpin.getValue().toString());
+		Gpio.OkSignalON();//判定NG以外 IO:1はON
+
+		 // メインクラス
+		Runnable frameGrabber = new Runnable() {
+			@Override
+			public void run() {
+				//設定自動ロック用
+				if( settingModeFlg ) {
+					if( System.currentTimeMillis() - lockedTimer > lockedTimerThresh) {
+						onSettingModeBtn(null);
+					}
+				}
+
+		    	if( !manualTrigger && !autoTrigger) {
+		    		Platform.runLater( () ->triggerCCircle.setFill(Color.LIGHTSLATEGRAY));
+		    	}
+		    	if( eventTrigger) {
+		    		if( !dragging ) {
+		    			eventTrigger = false;
+		    		}
+		    	}
+
+		    	if( manualTrigger || autoTrigger ) {//マニュアルトリガ又はオートトリガが有効であった場合
+		    		manualTrigger = false;
+			    	if( demoFlg ) {
+			    		try {
+			    			framCnt++;
+			    			if(framCnt>=video_frame_count) {
+			    				source_video.set(Videoio.CAP_PROP_POS_FRAMES,0);
+			    				Platform.runLater( () ->info2.appendText(("demo動画ループ再生\n")));
+			    				framCnt=0;
+			    			}
+			    			source_video.read(srcMat);
+			    			if( srcMat == null) {
+			    				Platform.runLater( () ->info2.appendText(( "demo動画が再生できません\n")));
+			    			}else {
+			    				rePaint();
+			    			}
+
+			    		}catch(Exception e) {
+			    			Platform.runLater( () ->info2.appendText(e.toString()+"\n"));
+			    			return;
+			    		}
+					}else {
+						srcMat = grabFrame();
+				    	if( srcMat.width() !=0 ) {
+				    		rePaint();
+				    	}
+					}
+		    	}else if(shutterFlg && !demoFlg) {
+					srcMat = grabFrame();
+			    	if( srcMat.width() !=0 ) {
+			    		rePaint();
+			    	}
+			    	shutterFlg = false;
+				}
+
+		    	if( eventTrigger ) {
+		    		rePaint();
+		    	}
+			}
+		};
+		this.timer = Executors.newSingleThreadScheduledExecutor();
+		this.timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
+
+		if( Gpio.openFlg ) {
+			//トリガクラス
+			Runnable triggerLoop = new Runnable() {
+				String rt;
+				@Override
+				public void run() {
+					//オールクリア信号受信
+					rt = Gpio.clearSignal();
+					if( rt.matches("1") ) {
+						Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
+						onAllClear(null);
+					}
+
+					//シャッタートリガ信号受信
+					rt = Gpio.shutterSignal();
+					Platform.runLater( () ->info1.setText("GPIO=" + rt));
+					if( rt.matches("1")) {
+						if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
+							//シャッター
+							try {
+								Thread.sleep( dellySpinner.getValue() );
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+
+							shutterFlg = true;
+							offShutterFlg = true;
+						}
+					}else{
+							offShutterFlg = false;
+					}
+					/*
+					//Debug-----
+					System.out.println(offShutterFlg);
+					if( offShutterFlg) {
+						offShutterFlg = false;
+					}
+					System.out.println(offShutterFlg);
+					*/
+
+				}
+			};
+			this.timer2 = Executors.newSingleThreadScheduledExecutor();
+			this.timer2.scheduleAtFixedRate(triggerLoop, 0, 10, TimeUnit.MILLISECONDS);
+		}
+
+		if( !Gpio.openFlg ) {
+			Platform.runLater( () ->info2.appendText("\n---------------\n- GPIO異常 -\n----------------\n"));
+		}
+    	Platform.runLater( () ->info2.appendText("検査を開始しました\n"));
+
+    }
+	/**
+	 * 開いているビデオストリームからフレームを取得する
+	 * @return {@link Mat}
+	 */
+	private Mat grabFrame() {
+		Mat frame = new Mat();
+		if (this.capObj.isOpened()) {
+			try {
+				this.capObj.read(frame);
+				if (frame.empty() == false) {
+					//Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2GRAY);
+				}
+
+			} catch(Exception e) {
+				Platform.runLater( () ->info2.appendText("Exception during the image elaboration: " + e +"\n"));
+			}
+		}
+		return frame;
+	}
+
+    @FXML
+    void onTestStop(ActionEvent event) throws Exception {
+    	this.cameraActive = false;
+		VisonController.timer.shutdown();
+		VisonController.timer.awaitTermination(33, TimeUnit.MICROSECONDS);
+		if( timer2 != null ) {
+			VisonController.timer2.shutdown();
+			VisonController.timer2.awaitTermination(10, TimeUnit.MICROSECONDS);
+			Gpio.ngSignalON();
+			Gpio.close();
+		}
+    	stopAcquisition();
+    	Platform.runLater( () ->info2.appendText("検査を停止しました\n"));
+    }
+	 void stopAcquisition() {
+		if (this.timer != null && this.timer.isShutdown() == false) {
+			try {
+				this.timer.shutdown();
+				this.timer.awaitTermination(33, TimeUnit.MICROSECONDS);
+			} catch(Exception e) {
+				// log any exception
+				Platform.runLater( () ->info2.appendText("Exception in stopping the frame capture, trying to release the camera now... " + e +"\n"));
+			}
+		}
+		// @FIXME-[カメラを解放するだけで良い？]
+		if (this.capObj != null ) {
+			this.capObj.release();
+		}
+	}
+		/**
+		 * Update the {@link ImageView} in the JavaFX main thread
+		 *
+		 * @param view
+		 *            the {@link ImageView} to update
+		 * @param image
+		 *            the {@link Image} to show
+		 */
+		private void updateImageView(ImageView view, Image image) {
+			Utils.onFXThread(view.imageProperty(), image);
+		}
+
+		/**
+		 * On application close, stop the acquisition from the camera
+		 */
+		protected void setClosed() {
+			this.stopAcquisition();
+		}
+
+    @FXML
+    void mouseDragged(MouseEvent e) { //imgORG上でドラッグ
+    	double zoom = this.zoomValue_slider.getValue();
+        int x = (int)(draggingRect.getX());
+        int y = (int)(draggingRect.getY());
+        draggingRect.setSize((int)(imgORG.getViewport().getMinX() + e.getX()/(zoom)) - x,
+        				(int)(imgORG.getViewport().getMinY() + e.getY()/(zoom) - y));
+        eventTrigger = true;
+    }
+
+    @FXML
+    void mousePressed(MouseEvent e) { //imgORG上でマウスプレス
+    	double zoom = this.zoomValue_slider.getValue();
+        draggingRect.setBounds((int)(imgORG.getViewport().getMinX() + e.getX()/(zoom)),
+        					(int)(imgORG.getViewport().getMinY() + e.getY()/(zoom)), 0, 0);
+        dragging = true;
+
+        eventTrigger = true;
+    }
+
+    @FXML
+    void mouseReleased(MouseEvent e) { //imgORG マウスボタン離す
+    	dragging = false;
+    	eventTrigger = true;
+    }
+
+
+    private void rePaint() {
+    	try {
+	    	if( this.triggerCCircle.getFill() != Color.YELLOW) {
+	    		Platform.runLater( () ->this.triggerCCircle.setFill(Color.YELLOW));
+	    	}else {
+	    		Platform.runLater( () ->this.triggerCCircle.setFill(Color.GREEN));
+	    	}
+
+	    	fpsCnt++;
+	    	if( fpsCnt == 180) {
+	    		fpsEnd = System.currentTimeMillis();
+
+	    		fps = fpsCnt/((fpsEnd - fpsFirst)/1000.0);
+	    		Platform.runLater( () ->fpsLabel.setText(String.format("FPS=%.1f", fps)));
+
+	    		fpsFirst = System.currentTimeMillis();
+	    		fpsCnt=0;
+	    	}
+
+
+	    	parameter para = pObj.para[pObj.select];
+	    	Mat orgMat = srcMat.clone();//srcMatは不変にしておく
+	    	glayMat = new Mat();
+	    	Imgproc.cvtColor(orgMat, glayMat, Imgproc.COLOR_BGR2GRAY);
+	    	Mat tmp0Mat = glayMat.clone();
+			if( settingMode.isSelected()) {
+		    	Mat tmp1Mat = glayMat.clone();
+		    	Mat tmp2Mat = glayMat.clone();
+		    	Mat tmp3Mat = glayMat.clone();
+		    	Mat fillterAftterMat = glayMat.clone();
+		    	int selFlg = 0;
+		    	//ガウシアン→２値化→膨張の順番
+		    	if( gauusianCheck.isSelected() ) {
+		    		double sigmaX = gauusianSliderX.getValue();
+		    		double sigmaY = gauusianSliderY.getValue();
+		    		int tmpValue =(int)gauusianSliderA.getValue();
+		    		if( tmpValue % 2 == 0 ) {
+		    			tmpValue++;
+		    		}
+		    		Size sz = new Size(tmpValue,tmpValue);
+		    		Imgproc.GaussianBlur(tmp1Mat, tmp1Mat, sz, sigmaX,sigmaY);
+		    		selFlg+=1;
+		    	}
+		    	if( threshholdCheck.isSelected()) {
+		    		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+		    		Imgproc.threshold(tmp1Mat, tmp2Mat, this.threshholdSlider.getValue(),255,type);
+		    		selFlg+=2;
+		    	}
+		    	if( dilateCheck.isSelected() ) {
+		    		int n = (int)dilateSliderN.getValue();
+
+		    		if(threshholdCheck.isSelected()) {
+			    		Imgproc.dilate(tmp2Mat, tmp3Mat, new Mat(),new Point(-1,-1),n);
+			    	}else {
+			    		Imgproc.dilate(tmp1Mat, tmp3Mat, new Mat(),new Point(-1,-1),n);
+			    	}
+		    		selFlg+=4;
+		    	}
+		    	switch(selFlg) {
+		    	case 0://全てなし
+		    		Imgproc.Canny(tmp1Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    		break;
+		    	case 1://ガウシアンのみ
+					Imgproc.Canny(tmp1Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
+			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    		break;
+		    	case 2://２値化のみ
+					Imgproc.Canny(tmp2Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
+			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    		break;
+		    	case 3://ガウシアンと２値化あり
+					Imgproc.Canny(tmp2Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
+			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
+			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    		break;
+		    	case 4://膨張のみ
+					Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    		break;
+		    	case 5://ガウシアンと膨張あり
+					Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
+			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    		break;
+		    	case 6://ガウシアン無し　他あり
+		    		Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
+			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    		break;
+		    	case 7://全てあり
+					Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
+			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
+			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    		break;
+		    	}
+			}
+
+	        if (dragging) {
+	            Imgproc.rectangle(orgMat,
+	            		new Point(draggingRect.x,draggingRect.y),
+	            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
+	            		new Scalar(0,255,0),3);
+	        }else{
+	        	if(draggingRect.getWidth() >0 && draggingRect.getHeight() > 0){
+		        	Mat roi = glayMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height));
+		        	if( this.gauusianCheck.isSelected() ) {
+		        		double sigmaX = gauusianSliderX.getValue();
+		        		double sigmaY = gauusianSliderY.getValue();
+		        		int tmpValue =(int)gauusianSliderA.getValue();
+		        		if( tmpValue % 2 == 0 ) {
+		        			tmpValue++;
+		        		}
+		        		Size sz = new Size(tmpValue,tmpValue);
+		        		Imgproc.GaussianBlur(roi, roi, sz, sigmaX,sigmaY);
+		        	}
+		        	if( threshholdCheck.isSelected()) {
+		        		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+		        		Imgproc.threshold(roi, roi, this.threshholdSlider.getValue(),255,type);
+		        	}
+		        	if( dilateCheck.isSelected()) {
+		        		Imgproc.dilate(roi, roi, new Mat(),new Point(-1,-1),(int)dilateSliderN.getValue());
+		        	}
+		            Mat circles = new Mat();
+					Imgproc.HoughCircles(roi, circles, Imgproc.CV_HOUGH_GRADIENT,
+							sliderDetecPara4.getValue(),
+							sliderDetecPara5.getValue(),
+							sliderDetecPara6.getValue(),
+							sliderDetecPara7.getValue(),
+							(int)sliderDetecPara8.getValue(),
+							(int)sliderDetecPara9.getValue());
+					if( circles.cols() > 0) {
+						this.fncDrwCircles(circles,
+								orgMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height)),
+								true);
+						Imgproc.putText(orgMat, String.valueOf(circles.cols()),
+								new Point(draggingRect.x-25,draggingRect.y-6),
+								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,0,255),2);
+					}
+		            Imgproc.rectangle(orgMat,
+		            		new Point(draggingRect.x,draggingRect.y),
+		            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
+		            		new Scalar(0,255,0),4);
+	        	}
+	        }
+
+	    	int hanteCnt=0;
+	    	String fileString ="";
+	    	boolean ngFlg;
+			Scalar color;
+	        for (int i=0;i<4;i++) {
+				ngFlg = false;
+	        	if( para.setFlg[i] ) {
+		        	Rectangle r = para.rects[i];
+		        	Mat roi = tmp0Mat.submat(new Rect(r.x,r.y,r.width,r.height));
+		        	if( para.gauusianCheck[i] ) {
+		        		double sigmaX = para.gauusianSliderX[i];
+		        		double sigmaY = para.gauusianSliderY[i];
+		        		int tmpValue =(int) para.gauusianSliderA[i];
+		        		if( tmpValue % 2 == 0 ) {
+		        			tmpValue++;
+		        		}
+		        		Size sz = new Size(tmpValue,tmpValue);
+		        		Imgproc.GaussianBlur(roi, roi, sz, sigmaX,sigmaY);
+		        	}
+		        	if( para.threshholdCheck[i]) {
+		        		int type = para.threshhold_Invers[i]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+		        		Imgproc.threshold(roi, roi, para.threshhold[i],255,type);
+		        	}
+		        	if( para.dilateCheck[i]) {
+		        		Imgproc.dilate(roi, roi, new Mat(),new Point(-1,-1),para.dilateSliderN[i]);
+		        	}
+
+					/*# ハフ変換で円検出する。
+					第1引数(gray)：8bit、1チャンネルのグレースケール画像。
+				 	第2引数(circles)：検出した円のベクトル(x,y,r)→ x, yは円の中心座標でrは半径
+					第3引数(Imgproc.CV_HOUGH_GRADIENT)：２値化の手法
+					第4引数(sliderDetecPara4)：画像分解能に対する投票分解能の比率の逆数
+					第5引数(sliderDetecPara5)：円の中心同士の最小距離
+					第6引数(sliderDetecPara6)：２値化のパラメータ1
+					第7引数(sliderDetecPara7)：２値化のパラメータ2
+					第8引数(sliderDetecPara8)：円の半径の最小値
+					第9引数(sliderDetecPara9)：円の半径の最大値 */
+		            Mat circles = new Mat();
+					Imgproc.HoughCircles(roi, circles, Imgproc.CV_HOUGH_GRADIENT,
+							para.circlePara4[i],
+							para.circlePara5[i],
+							para.circlePara6[i],
+							para.circlePara7[i],
+							(int)para.circlePara8[i],
+							(int)para.circlePara9[i]);
+
+
+					if( circles.cols() > 0 && !settingMode.isSelected()) {
+						fncDrwCircles(circles, orgMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
+						Imgproc.putText(orgMat, String.valueOf(circles.cols()),
+								new Point(r.x-25,r.y-6),
+								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),3);
+					}
+
+					//判定
+		            switch(i) {
+		            	case 0:
+		            		Platform.runLater( () ->okuri1_n.setText( String.format("%d個", circles.cols()) + infoText));
+		            		if( circles.cols() == para.cntHoleTh[i] ) {
+		            			Platform.runLater( () ->okuri1_judg.setText("OK"));
+		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.GREEN));
+		            			hanteCnt++;
+		            		}else {
+		            			Platform.runLater( () ->okuri1_judg.setText("NG"));
+		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.RED));
+		            			fileString += "1_okuri_";
+		            			ngFlg = true;
+		            		}
+		            		break;
+		            	case 1:
+		            		Platform.runLater( () ->okuri2_n.setText(String.format("%d個", circles.cols()) + infoText));
+		            		if( circles.cols() == para.cntHoleTh[i] ) {
+		            			Platform.runLater( () ->okuri2_judg.setText("OK"));
+		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.GREEN));
+		            			hanteCnt++;
+		            		}else {
+		            			Platform.runLater( () ->okuri2_judg.setText("NG"));
+		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.RED));
+		            			fileString += "1_poke_";
+		            			ngFlg = true;
+		            		}
+		            		break;
+		            	case 2:
+		            		Platform.runLater( () ->okuri3_n.setText( String.format("%d個", circles.cols()) + infoText));
+		            		if( circles.cols() == para.cntHoleTh[i] ) {
+		            			Platform.runLater( () ->okuri3_judg.setText("OK"));
+		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.GREEN));
+		            			hanteCnt++;
+		            		}else {
+		            			Platform.runLater( () ->okuri3_judg.setText("NG"));
+		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.RED));
+		            			fileString += "2_okuri_";
+		            			ngFlg = true;			            		}
+		            		break;
+		            	case 3:
+		            		Platform.runLater( () ->okuri4_n.setText( String.format("%d個", circles.cols()) + infoText));
+		            		if( circles.cols() == para.cntHoleTh[i] ) {
+		            			Platform.runLater( () ->okuri4_judg.setText("OK"));
+		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.GREEN));
+		            			hanteCnt++;
+		            		}else {
+		            			Platform.runLater( () ->okuri4_judg.setText("NG"));
+		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.RED));
+		            			fileString += "2_poke_";
+		            			ngFlg = true;
+		            		}
+		            		break;
+		            	}
+
+					if( ngFlg ) {
+						color = new Scalar(0,0,255);
+					}else {
+						color = new Scalar(255,0,0);
+					}
+					if( !settingMode.isSelected()) {
+			            Imgproc.rectangle(orgMat,new Point(r.x, r.y),
+			            		new Point(r.x+r.width, r.y+r.height),
+			            		color,4);
+					}
+		        }else {
+		        	hanteCnt++;
+		        }
+
+	        }
+	        if(hanteCnt==4) {
+	        	Platform.runLater( () ->judg.setText("OK"));
+	        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
+	        }else {
+	        	Platform.runLater( () ->judg.setText("NG"));
+	        	Platform.runLater( () ->judg.setTextFill(Color.RED));
+	        	//画像保存
+	        	if( imgSaveFlg.isSelected() && ngCnt < 999 && !outTrigDisableChk.isSelected() && !settingModeFlg) {
+	        		saveImg( orgMat,fileString);
+	        	}else if( fileString != ""){
+	        		final String infoText = fileString +"\n";
+	        		Platform.runLater( () ->info2.appendText(infoText));
+	        	}
+	        	if( ngCnt < 999) ngCnt++;
+
+	        	//出力トリガが無効で無い場合
+	        	if( !outTrigDisableChk.isSelected() ){
+	        		if( Gpio.openFlg) Gpio.ngSignalON();
+	        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
+
+	        	}
+
+	        	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
+	        	//Mat ngMat = orgMat.clone();
+	        	updateImageView(imgNG, Utils.mat2Image(orgMat));
+	        }
+	        updateImageView(imgORG, Utils.mat2Image(orgMat));
+    	}catch(Exception e) {
+    		Platform.runLater(() ->info2.appendText("検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n"));
+    	}
+    }
+
+    public void saveImg(Mat imgMat,String fileString) {
+    	File folder = new File("./ng_image");
+    	if( !folder.exists()) {
+    		if( !folder.mkdir() ) {
+    			Platform.runLater( () ->info2.appendText("ng_imageフォルダの作成に失敗"+"\n"));
+    			Platform.runLater( () ->this.info1.setText("ng_imageフォルダの作成に失敗"));
+    			return;
+    		}
+    	}
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SS");
+        String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
+        try {
+        	Platform.runLater( () ->Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat));
+        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"NG画像保存"+"\n"));
+        }catch(Exception e) {
+        	Platform.runLater( () ->info2.appendText(e.toString()+"\n"));
+        }
+        Platform.runLater( () ->info2.appendText("NG画像ファイルを保存\n" + fileName +".jpeg\n"));
+
+    }
+    /**
+     *
+     * @param circles
+     * @param img
+     */
+    private String fncDrwCircles(Mat circles ,Mat img,boolean infoFlg) {
+  	  double[] data,data2;
+  	  double rho;
+  	  Point pt = new Point();
+  	  infoText = "";
+  	  double radiusMax,radiusMin,radiusAve,distAve;
+  	  radiusMax = 0;
+  	  radiusMin = 9999;
+  	  radiusAve = 0;
+  	  distAve = 0;
+
+  	  //ソーティング　Ｘ昇順
+  	  for (int i = 0; i < circles.cols(); i++){
+  	  	  for (int j = 1+i; j < circles.cols(); j++){
+			data = circles.get(0, i);
+			data2 = circles.get(0, j);
+			if( data[0] > data2[0] ) {
+				circles.put(0, i,data2);
+				circles.put(0, j,data);
+			}
+  	  	  }
+  	  }
+  	  //最大、最小、平均、距離平均計算
+  	  for( int i= 0; i < circles.cols(); i++) {
+  		  double r = circles.get(0, i)[2];
+  		  radiusAve += r;
+  		  if( i+1 < circles.cols() ) {
+  			  distAve += circles.get(0, i+1)[0] - circles.get(0, i)[0];
+  		  }
+  		  if( radiusMax < r ) radiusMax = r;
+  		  if( radiusMin > r ) radiusMin = r;
+  	  }
+  	  distAve += circles.get(0, circles.cols()-1)[0] - circles.get(0, circles.cols()-2)[0];
+  	  distAve /= circles.cols();
+  	  radiusAve =radiusAve/ circles.cols();
+  	  infoText += String.format("MAX=%.1f ,MIN=%.1f ,AVE=%.1f ,DistAve=%.1f ",
+  			  radiusMax,radiusMin,radiusAve,distAve);
+
+  	  for (int i = 0; i < circles.cols(); i++){
+  	    data = circles.get(0, i);
+  	    pt.x = data[0];
+  	    pt.y = data[1];
+  	    rho = data[2];
+  	    Imgproc.circle(img, pt, (int) rho, new Scalar(0,255,0),5);
+  	    Imgproc.arrowedLine(img, new Point(pt.x-50,pt.y-50),
+  	    		new Point(pt.x-6,pt.y-6),new Scalar(0,255,0), 5);
+  	  }
+
+  	  if(infoFlg) {
+  		 Platform.runLater(
+                 () ->info1.setText(infoText));
+  	  }
+
+  	  return infoText;
+  	}
+
+    @FXML
+    void onSetValue(ActionEvent e) {
+    	parameter para = pObj.para[pObj.select];
+    	Object eObject = e.getSource();
+
+    	if(eObject == okuri1_btn) {
+			if( para.setFlg[0] ) {
+    			para.setFlg[0] = false;
+			}else {
+    			setPara(0);
+    		}
+    	}else if(eObject == okuri2_btn) {
+    		if(para.setFlg[1] ){
+    			para.setFlg[1] = false;
+    		}else {
+    			setPara(1);
+    		}
+    	}else if(eObject == okuri3_btn) {
+    		if(para.setFlg[2]){
+    			para.setFlg[2] = false;
+    		}else {
+    			setPara(2);
+    		}
+    	}else if(eObject == okuri4_btn) {
+    		if(para.setFlg[3]){
+    			para.setFlg[3] = false;
+    		}else {
+    			setPara(3);
+    		}
+    	}
+    	setBtnPara();
+
+    	eventTrigger = true;
+
+    }
+
+    private void setPara(int i) {
+    	parameter para = pObj.para[pObj.select];
+    	para.circlePara4[i] = sliderDetecPara4.getValue();
+    	para.circlePara5[i] = sliderDetecPara5.getValue();
+    	para.circlePara6[i] = sliderDetecPara6.getValue();
+    	para.circlePara7[i] = sliderDetecPara7.getValue();
+    	para.circlePara8[i] = sliderDetecPara8.getValue();
+    	para.circlePara9[i] = sliderDetecPara9.getValue();
+    	para.rects[i] = (Rectangle)draggingRect.clone();
+    	para.setFlg[i] = true;
+    	para.gauusianCheck[i] = gauusianCheck.isSelected();
+    	para.gauusianSliderX[i] = gauusianSliderX.getValue();
+    	para.gauusianSliderY[i] = gauusianSliderY.getValue();
+    	para.gauusianSliderA[i] = gauusianSliderA.getValue();
+    	para.dilateCheck[i] = dilateCheck.isSelected();
+    	para.dilateSliderN[i] = (int)dilateSliderN.getValue();
+    	//para.zoom = this.zoomValue_slider.getValue();
+    	para.threshholdCheck[i] = threshholdCheck.isSelected();
+    	para.threshhold[i] = threshholdSlider.getValue();
+    	para.threshhold_Invers[i] = threshhold_Inverse.isSelected();
+    	settingMode.setSelected(false);//セッティングモードから抜ける
+    	draggingRect = new Rectangle(0,0,1,1);
+    }
+    private void setBtnPara() {
+    	parameter para = pObj.para[pObj.select];
+		if( !para.setFlg[0] ) {
+			Platform.runLater(() ->okuri1_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
+			Platform.runLater(() ->okuri1_btn.setTextFill( Color.BLACK));
+			Platform.runLater(() ->okuri1_label.setText("未設定"));
+			Platform.runLater(() ->okuri1_n.setText("-"));
+		}else {
+			Platform.runLater(() ->okuri1_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
+			Platform.runLater(() ->okuri1_btn.setTextFill( Color.WHITE));
+			Platform.runLater(() ->okuri1_label.setText("設定済"));
+		}
+		if(!para.setFlg[1] ){
+			Platform.runLater(() ->okuri2_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
+			Platform.runLater(() ->okuri2_btn.setTextFill( Color.BLACK));
+			Platform.runLater(() ->okuri2_label.setText("未設定"));
+			Platform.runLater(() ->okuri2_n.setText("-"));
+		}else {
+			Platform.runLater(() ->okuri2_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
+			Platform.runLater(() ->okuri2_btn.setTextFill( Color.WHITE));
+			Platform.runLater(() ->okuri2_label.setText("設定済"));
+		}
+		if(!para.setFlg[2]){
+			Platform.runLater(() ->okuri3_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
+			Platform.runLater(() ->okuri3_btn.setTextFill( Color.BLACK));
+			Platform.runLater(() ->okuri3_label.setText("未設定"));
+			Platform.runLater(() ->okuri3_n.setText("-"));
+		}else {
+			Platform.runLater(() ->okuri3_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
+			Platform.runLater(() ->okuri3_btn.setTextFill( Color.WHITE));
+			Platform.runLater(() ->okuri3_label.setText("設定済"));
+		}
+		if(!para.setFlg[3]){
+			Platform.runLater(() ->okuri4_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
+			Platform.runLater(() ->okuri4_btn.setTextFill( Color.BLACK));
+			Platform.runLater(() ->okuri4_label.setText("未設定"));
+			Platform.runLater(() ->okuri4_n.setText("-"));
+		}else {
+			Platform.runLater(() ->okuri4_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
+			Platform.runLater(() ->okuri4_btn.setTextFill( Color.WHITE));
+			Platform.runLater(() ->okuri4_label.setText("設定済"));
+
+		}
+		para.rects[4] = this.draggingRect;
+		para.viewRect[0] = imgORG.getViewport().getMinX();
+		para.viewRect[1] = imgORG.getViewport().getMinY();
+		para.viewRect[2] = imgORG.getViewport().getWidth();
+		para.viewRect[3] = imgORG.getViewport().getHeight();
+		para.circlePara4[4] = sliderDetecPara4.getValue();
+		para.circlePara5[4] = sliderDetecPara5.getValue();
+		para.circlePara6[4] = sliderDetecPara6.getValue();
+		para.circlePara7[4] = sliderDetecPara7.getValue();
+		para.circlePara8[4] = sliderDetecPara8.getValue();
+		para.circlePara9[4] = sliderDetecPara9.getValue();
+		para.gauusianCheck[4] = gauusianCheck.isSelected();
+		para.gauusianSliderX[4] = gauusianSliderX.getValue();
+		para.gauusianSliderY[4] = gauusianSliderY.getValue();
+		para.gauusianSliderA[4] = gauusianSliderA.getValue();
+		para.dilateCheck[4] = dilateCheck.isSelected();
+		para.dilateSliderN[4] = (int)dilateSliderN.getValue();
+		para.zoom = zoomValue_slider.getValue();
+		para.threshholdCheck[4] = threshholdCheck.isSelected();
+		para.threshhold[4] = threshholdSlider.getValue();
+		para.threshhold_Invers[4] = threshhold_Inverse.isSelected();
+    	setSlidbar();
+    }
+    private void setSlidbar() {
+    	parameter para = pObj.para[pObj.select];
+		Platform.runLater(() ->sliderDetecPara4.setValue(para.circlePara4[4]));
+		Platform.runLater(() ->sliderDetecPara5.setValue(para.circlePara5[4]));
+		Platform.runLater(() ->sliderDetecPara6.setValue(para.circlePara6[4]));
+		Platform.runLater(() ->sliderDetecPara7.setValue(para.circlePara7[4]));
+		Platform.runLater(() ->sliderDetecPara8.setValue(para.circlePara8[4]));
+		Platform.runLater(() ->sliderDetecPara9.setValue(para.circlePara9[4]));
+		Platform.runLater(() ->gauusianCheck.setSelected(para.gauusianCheck[4]));
+		Platform.runLater(() ->gauusianSliderX.setValue(para.gauusianSliderX[4]));
+		Platform.runLater(() ->gauusianSliderY.setValue(para.gauusianSliderY[4]));
+		Platform.runLater(() ->gauusianSliderA.setValue(para.gauusianSliderA[4]));
+		Platform.runLater(() ->dilateCheck.setSelected(para.dilateCheck[4]));
+		Platform.runLater(() ->dilateSliderN.setValue(para.dilateSliderN[4]));
+		Platform.runLater(() ->zoomValue_slider.setValue(para.zoom));
+		Platform.runLater(() ->zoomLabel.setText(String.format("%.1f",para.zoom)));
+		Platform.runLater(() ->threshholdCheck.setSelected(para.threshholdCheck[4]));
+		Platform.runLater(() ->threshholdSlider.setValue(para.threshhold[4]));
+    	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
+    	Platform.runLater(() ->threshhold_Inverse.setSelected(para.threshhold_Invers[4]));
+    	Platform.runLater(() ->textFieldDetecPara4.setText(String.valueOf(String.format("%.1f",sliderDetecPara4.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara5.setText(String.valueOf(String.format("%.1f",sliderDetecPara5.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara6.setText(String.valueOf(String.format("%.1f",sliderDetecPara6.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara7.setText(String.valueOf(String.format("%.1f",sliderDetecPara7.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara8.setText(String.valueOf(String.format("%.1f",sliderDetecPara8.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara9.setText(String.valueOf(String.format("%.1f",sliderDetecPara9.getValue()))));
+    	//Platform.runLater(() ->matchTmempTHreshSlider.setValue(para.matchThreshValue[4]));
+    	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
+    	//Platform.runLater(() ->
+    }
+
+    @FXML
+    void onSetVeri(ActionEvent e) {
+    	parameter para = pObj.para[pObj.select];
+    	Object obj = e.getSource();
+    	onSetVeri_n=0;
+    	if( obj == setVeriBtn1 && para.setFlg[0]) {
+    		onSetVeri_n=0;
+    	}else if( obj == setVeriBtn2 && para.setFlg[1]) {
+    		onSetVeri_n=1;
+	    }else if( obj == setVeriBtn3 && para.setFlg[2]) {
+			onSetVeri_n=2;
+		}else if( obj == setVeriBtn4 && para.setFlg[3]) {
+			onSetVeri_n=3;
+		}else {
+			return;
+		}
+
+		Platform.runLater(() ->sliderDetecPara4.setValue(para.circlePara4[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara5.setValue(para.circlePara5[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara6.setValue(para.circlePara6[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara7.setValue(para.circlePara7[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara8.setValue(para.circlePara8[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara9.setValue(para.circlePara9[onSetVeri_n]));
+		Platform.runLater(() ->gauusianCheck.setSelected(para.gauusianCheck[onSetVeri_n]));
+		Platform.runLater(() ->gauusianSliderX.setValue(para.gauusianSliderX[onSetVeri_n]));
+		Platform.runLater(() ->gauusianSliderY.setValue(para.gauusianSliderY[onSetVeri_n]));
+		Platform.runLater(() ->gauusianSliderA.setValue(para.gauusianSliderA[onSetVeri_n]));
+		Platform.runLater(() ->dilateCheck.setSelected(para.dilateCheck[onSetVeri_n]));
+		Platform.runLater(() ->dilateSliderN.setValue(para.dilateSliderN[onSetVeri_n]));
+		Platform.runLater(() ->threshholdCheck.setSelected(para.threshholdCheck[onSetVeri_n]));
+		Platform.runLater(() ->threshholdSlider.setValue(para.threshhold[onSetVeri_n]));
+    	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
+    	Platform.runLater(() ->threshhold_Inverse.setSelected(para.threshhold_Invers[onSetVeri_n]));
+    	eventTrigger = true;
+    }
+
+    @FXML
+    void onTrigger(ActionEvent e) {
+    	Object obj = e.getSource();
+    	if( obj == triggerBtn ) {
+	    	Platform.runLater( () ->info2.appendText("ManualTrigger"+"\n"));
+	    	manualTrigger = true;
+    	}else if( obj == aTriggerBtn) {
+	    	if( autoTrigger) {
+	    		autoTrigger = false;
+	    	}else {
+	    		Platform.runLater( () ->info2.appendText("AutoTrigger"+"\n"));
+		    	autoTrigger = true;
+	    	}
+    	}
+
+    }
+    @FXML
+    void onKeypressed(KeyEvent e) {
+    	Platform.runLater( () ->info2.appendText("KeyPressTrigger"+"\n"));
+    	manualTrigger = true;
+    }
+    /**
+     * シリアライズ
+     * @throws IOException
+     */
+    public void saveAllPara() throws IOException{
+		FileOutputStream fo = new FileOutputStream("./conf4.txt");
+		ObjectOutputStream objOut = new ObjectOutputStream(fo);
+
+    	parameter para = pObj.para[pObj.select];
+		para.rects[4] = this.draggingRect;
+		para.viewRect[0] = imgORG.getViewport().getMinX();
+		para.viewRect[1] = imgORG.getViewport().getMinY();
+		para.viewRect[2] = imgORG.getViewport().getWidth();
+		para.viewRect[3] = imgORG.getViewport().getHeight();
+		para.circlePara4[4] = sliderDetecPara4.getValue();
+		para.circlePara5[4] = sliderDetecPara5.getValue();
+		para.circlePara6[4] = sliderDetecPara6.getValue();
+		para.circlePara7[4] = sliderDetecPara7.getValue();
+		para.circlePara8[4] = sliderDetecPara8.getValue();
+		para.circlePara9[4] = sliderDetecPara9.getValue();
+		para.gauusianCheck[4] = gauusianCheck.isSelected();
+		para.gauusianSliderX[4] = gauusianSliderX.getValue();
+		para.gauusianSliderY[4] = gauusianSliderY.getValue();
+		para.gauusianSliderA[4] = gauusianSliderA.getValue();
+		para.dilateCheck[4] = dilateCheck.isSelected();
+		para.dilateSliderN[4] = (int)dilateSliderN.getValue();
+		para.zoom = zoomValue_slider.getValue();
+		para.threshholdCheck[4] = threshholdCheck.isSelected();
+		para.threshhold[4] = threshholdSlider.getValue();
+		para.threshhold_Invers[4] = threshhold_Inverse.isSelected();
+		pObj.portNo = portNoSpin.getValue().intValue();
+		pObj.delly = dellySpinner.getValue().intValue();
+		//pObj.matchCnt = matchTmempCountSpinner.getValue().intValue();
+		//pObj.matchThreshValue = this.matchTmempTHreshSlider.getValue();
+
+		objOut.writeObject(pObj);
+		objOut.flush();
+		objOut.close();
+
+		Platform.runLater( () ->info2.appendText("設定が保存されました。\n"));
+    }
+
+    /**
+     * デシリアライズ
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public void loadAllPara() throws IOException, ClassNotFoundException{
+    	FileInputStream fi = new FileInputStream("./conf4.txt");
+    	ObjectInputStream objIn = new ObjectInputStream(fi);
+
+    	pObj = (preSet)objIn.readObject();
+    	objIn.close();
+
+    	parameter para = pObj.para[pObj.select];
+    	draggingRect = (Rectangle)para.rects[4].clone();
+
+    	imgORG.setViewport(new Rectangle2D(
+    			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
+    	imgGLAY.setViewport(new Rectangle2D(
+    			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
+    	imgGLAY1.setViewport(new Rectangle2D(
+    			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
+    	imgGLAY2.setViewport(new Rectangle2D(
+    			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
+    	imgGLAY3.setViewport(new Rectangle2D(
+    			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
+    	zoomValue_slider.setValue(para.zoom);
+    	setBtnPara();
+
+    	portNoSpin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 9,pObj.portNo,1));
+    	dellySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 900,pObj.delly,5));
+    	//matchTmempCountSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 20,pObj.matchCnt,6));
+		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
+
+    }
+
+    @FXML
+    void onPreset(ActionEvent e) {//プリセット選択
+    	Object obj = e.getSource();
+
+    	Platform.runLater(() ->preset1.setTextFill( Color.BLACK ));
+    	Platform.runLater(() ->preset2.setTextFill( Color.BLACK ));
+    	Platform.runLater(() ->preset3.setTextFill( Color.BLACK ));
+    	Platform.runLater(() ->preset4.setTextFill( Color.BLACK ));
+
+    	if(obj == preset1) {
+    		pObj.select = 0;
+    		Platform.runLater(() ->preset1.setTextFill( Color.BLUE ));
+    	}else if(obj == preset2){
+    		pObj.select = 1;
+    		Platform.runLater(() ->preset2.setTextFill( Color.BLUE ));
+    	}else if(obj == preset3){
+    		pObj.select = 2;
+    		Platform.runLater(() ->preset3.setTextFill( Color.BLUE ));
+    	}else if(obj == preset4){
+    		pObj.select = 3;
+    		Platform.runLater(() ->preset4.setTextFill( Color.BLUE ));
+    	}
+    	draggingRect = (Rectangle)pObj.para[pObj.select].rects[4].clone();
+
+    	setBtnPara();
+    }
+    @FXML
+    void onCheckBtn(ActionEvent event) {
+    	eventTrigger = true;
+    }
+    @FXML
+    void onNgImageBtn(ActionEvent event) {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("NgImageViewer.fxml"));
+		AnchorPane root = null;
+		try {
+			root = (AnchorPane) loader.load();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+		Stage stage = new Stage();
+		stage.setScene(scene);
+		stage.setResizable(false);
+		stage.showAndWait();
+    	}
+    @FXML
+    void onAllClear(ActionEvent event) {
+    	ngCnt = 0;
+    	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
+    	Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094;"));
+
+    	File dir = new File("./ng_image/");
+    	FileClass.fileClass(dir);
+
+    	Platform.runLater(() ->this.imgNG.setImage(null));
+
+    	Platform.runLater(() ->info2.clear());
+    	Platform.runLater(() ->info2.setText(initInfo2));
+    	Platform.runLater(() ->info2.appendText("NG画像ファイルを全て削除しました。\n"));
+
+    }
+
+    @FXML
+    void onSettingModeBtn(ActionEvent event) {
+    	if( settingModeFlg ) {
+    		Platform.runLater(() ->lockShape1.setDisable(false));
+    		Platform.runLater(() ->lockShape2.setDisable(false));
+    		Platform.runLater(() ->lockShape3.setDisable(false));
+    		Platform.runLater(() ->lockShape4.setDisable(false));
+    		Platform.runLater(() ->lockShape5.setDisable(false));
+    		Platform.runLater(() ->lockShape1.setFill(Color.web("#a5abb094",0.8)));
+    		Platform.runLater(() ->lockShape2.setFill(Color.web("#a5abb094",0.8)));
+    		Platform.runLater(() ->lockShape3.setFill(Color.web("#a5abb094",0.8)));
+    		Platform.runLater(() ->lockShape4.setFill(Color.web("#a5abb094",0.8)));
+    		Platform.runLater(() ->lockShape5.setFill(Color.web("#a5abb094",0.8)));
+
+        	settingModeFlg = false;
+        	Platform.runLater(() ->settingMode.setSelected(false));
+        	Platform.runLater(() ->info1.setText(""));
+        	draggingRect = new Rectangle(1,1,1,1);
+    	}else {
+    		Platform.runLater(() ->lockShape1.setDisable(true));
+    		Platform.runLater(() ->lockShape2.setDisable(true));
+    		Platform.runLater(() ->lockShape3.setDisable(true));
+    		Platform.runLater(() ->lockShape4.setDisable(true));
+    		Platform.runLater(() ->lockShape5.setDisable(true));
+    		Platform.runLater(() ->lockShape1.setFill(Color.web("#a5abb094",0.0)));
+    		Platform.runLater(() ->lockShape2.setFill(Color.web("#a5abb094",0.0)));
+    		Platform.runLater(() ->lockShape3.setFill(Color.web("#a5abb094",0.0)));
+    		Platform.runLater(() ->lockShape4.setFill(Color.web("#a5abb094",0.0)));
+    		Platform.runLater(() ->lockShape5.setFill(Color.web("#a5abb094",0.0)));
+        	settingModeFlg = true;
+        	lockedTimer = System.currentTimeMillis();
+        	Platform.runLater(() ->settingMode.setSelected(true));
+
+    	}
+
+
+    }
+
+    @FXML
+    void onOutTrigDisableChk(ActionEvent event) {
+    	if( this.outTrigDisableChk.isSelected())
+    		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094;"));
+    }
+    @FXML
+    void onEventTrigger(ActionEvent event) {
+    	eventTrigger = true;
+    }
+
+
+
+    @FXML
+    void initialize() {
+        assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert getInfoBtn != null : "fx:id=\"getInfoBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert imgORG != null : "fx:id=\"imgORG\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert imgGLAY != null : "fx:id=\"imgGLAY\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert sliderDetecPara4 != null : "fx:id=\"sliderDetecPara4\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert sliderDetecPara5 != null : "fx:id=\"sliderDetecPara5\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert sliderDetecPara6 != null : "fx:id=\"sliderDetecPara6\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert sliderDetecPara7 != null : "fx:id=\"sliderDetecPara7\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert sliderDetecPara8 != null : "fx:id=\"sliderDetecPara8\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert sliderDetecPara9 != null : "fx:id=\"sliderDetecPara9\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert textFieldDetecPara4 != null : "fx:id=\"textFieldDetecPara4\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert textFieldDetecPara5 != null : "fx:id=\"textFieldDetecPara5\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert textFieldDetecPara6 != null : "fx:id=\"textFieldDetecPara6\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert textFieldDetecPara7 != null : "fx:id=\"textFieldDetecPara7\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert textFieldDetecPara8 != null : "fx:id=\"textFieldDetecPara8\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert textFieldDetecPara9 != null : "fx:id=\"textFieldDetecPara9\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert move_up_btn != null : "fx:id=\"move_up_btn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert move_left_btn != null : "fx:id=\"move_left_btn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert move_right_btn != null : "fx:id=\"move_right_btn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert move_down_btn != null : "fx:id=\"move_down_btn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert zoomValue_slider != null : "fx:id=\"zoomValue_slider\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert move_speed_slider != null : "fx:id=\"move_speed_slider\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert testBtn != null : "fx:id=\"testBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri1_btn != null : "fx:id=\"okuri1_btn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri2_btn != null : "fx:id=\"okuri2_btn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri3_btn != null : "fx:id=\"okuri3_btn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri4_btn != null : "fx:id=\"okuri4_btn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri1_label != null : "fx:id=\"okuri1_label\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri2_label != null : "fx:id=\"okuri2_label\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri3_label != null : "fx:id=\"okuri3_label\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri4_label != null : "fx:id=\"okuri4_label\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri1_judg != null : "fx:id=\"okuri1_judg\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri2_judg != null : "fx:id=\"okuri2_judg\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri3_judg != null : "fx:id=\"okuri3_judg\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri4_judg != null : "fx:id=\"okuri4_judg\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert judg != null : "fx:id=\"judg\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert preset1 != null : "fx:id=\"preset1\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert preset2 != null : "fx:id=\"preset2\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert preset3 != null : "fx:id=\"preset3\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert preset4 != null : "fx:id=\"preset4\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert stopTest != null : "fx:id=\"stopTest\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert trigBtn != null : "fx:id=\"trigBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert saveBtn != null : "fx:id=\"saveBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert loadBtn != null : "fx:id=\"loadBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri1_n != null : "fx:id=\"okuri1_n\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri2_n != null : "fx:id=\"okuri2_n\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri3_n != null : "fx:id=\"okuri3_n\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert okuri4_n != null : "fx:id=\"okuri4_n\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert gauusianCheck != null : "fx:id=\"gauusianCheck\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert dilateCheck != null : "fx:id=\"dilateCheck\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert gauusianSliderX != null : "fx:id=\"gauusianSliderX\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert dilateSliderN != null : "fx:id=\"dilateSliderN\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert gauusianSliderY != null : "fx:id=\"gauusianSliderY\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert gauusianSliderA != null : "fx:id=\"gauusianSliderA\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert threshholdCheck != null : "fx:id=\"threshholdCheck\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert threshholdSlider != null : "fx:id=\"threshholdSlider\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert threshholdLabel != null : "fx:id=\"threshholdLabel\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert setVeriBtn1 != null : "fx:id=\"setVeriBtn1\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert setVeriBtn2 != null : "fx:id=\"setVeriBtn2\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert setVeriBtn3 != null : "fx:id=\"setVeriBtn3\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert setVeriBtn4 != null : "fx:id=\"setVeriBtn4\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert threshhold_Inverse != null : "fx:id=\"threshhold_Inverse\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert triggerBtn != null : "fx:id=\"triggerBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert outTriggerBtn != null : "fx:id=\"outTriggerBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert aTriggerBtn != null : "fx:id=\"autoTriggerBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert imgGLAY1 != null : "fx:id=\"imgGLAY1\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert imgGLAY2 != null : "fx:id=\"imgGLAY2\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert imgGLAY3 != null : "fx:id=\"imgGLAY3\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert fpsLabel != null : "fx:id=\"fpsLabel\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert triggerCCircle != null : "fx:id=\"triggerCCircle\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert clearBtn != null : "fx:id=\"clearBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert ngImageBtn != null : "fx:id=\"ngImageBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert ngCounterLabel != null : "fx:id=\"ngCounterLabel\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert imgSaveFlg != null : "fx:id=\"imgSaveFlg\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert demoMode != null : "fx:id=\"demoMode\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert info2 != null : "fx:id=\"info2\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert lockBtn != null : "fx:id=\"lockBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert lockShape1 != null : "fx:id=\"lockShape1\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert lockShape4 != null : "fx:id=\"lockShape4\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert lockShape2 != null : "fx:id=\"lockShape2\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert lockShape3 != null : "fx:id=\"lockShape3\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert lockShape5 != null : "fx:id=\"lockShape5\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert imgNG != null : "fx:id=\"imgNG\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert outTrigDisableChk != null : "fx:id=\"outTrigDisableChk\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert settingMode != null : "fx:id=\"settingMode\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert portNoSpin != null : "fx:id=\"portNoSpin\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert zoomLabel != null : "fx:id=\"zoomLabel\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert dellySpinner != null : "fx:id=\"dellySpinner\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert camIDspinner != null : "fx:id=\"camIDspinner\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert capW_text != null : "fx:id=\"capW_text\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert capH_text != null : "fx:id=\"capH_text\" was not injected: check your FXML file 'Sample.fxml'.";
+
+        //クラス変数の初期化
+        imgORG_imageViewFitWidth = imgORG.getFitWidth();
+        imgORG_imageViewFitHeight = imgORG.getFitHeight();
+        this.rects = Collections.synchronizedList(new ArrayList<>());
+        this.draggingRect = new Rectangle(0, 0,1,1);
+        this.dragging = false;
+		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094"));
+
+		//イニシャルinfo2の内容保存
+		initInfo2 = this.info2.getText();
+
+        try {
+			loadAllPara();
+		} catch (ClassNotFoundException | IOException e) {
+			Platform.runLater( () ->info2.appendText( e +"\n"));
+			pObj = new preSet();
+		}
+
+
+        this.onTest(null);
+        try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			Platform.runLater( () ->info2.appendText( e +"\n"));
+		}
+
+        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+        updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+    	Platform.runLater(() ->info1.setText(""));
+
+        manualTrigger = true;
+
+    }
+}

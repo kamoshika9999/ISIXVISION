@@ -1,0 +1,22 @@
+package application;
+
+import java.io.Serializable;
+
+public class preSet implements Serializable{
+	parameter[] para;
+	int select;
+	int portNo;
+	int delly;
+
+
+	public preSet() {
+		portNo = 4;
+		delly = 50;
+
+		para = new parameter[4];
+		for(int i=0;i<4;i++) {
+			para[i] = new parameter();
+			select = 1;
+		}
+	}
+}
