@@ -4,8 +4,8 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/JAVAFX"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/isix/jssc-2.9.1.jar"/>
-	<classpathentry kind="lib" path="C:/isix/opencv/build/java/opencv-420.jar"/>
-	<classpathentry kind="lib" path="C:/isix/slf4j-simple-1.7.9.jar"/>
+	<classpathentry kind="lib" path="opencv-420.jar"/>
+	<classpathentry kind="lib" path="jssc-2.9.1.jar"/>
+	<classpathentry kind="lib" path="slf4j-simple-1.7.9.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
