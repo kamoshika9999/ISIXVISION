@@ -297,6 +297,12 @@ public class VisonController{
     private TextField capW_text;
     @FXML
     private TextField capH_text;
+    @FXML
+    private Circle GPIO_STATUS_PIN0;
+    @FXML
+    private Circle GPIO_STATUS_PIN1;
+    @FXML
+    private Circle GPIO_STATUS_PIN3;
 
 
 
@@ -589,9 +595,15 @@ public class VisonController{
 		this.timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
 
 		if( Gpio.openFlg ) {
+			if( Gpio.OkSignalON() ) {
+				Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
+			}else {
+				Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.RED));
+			}
 			//トリガクラス
 			Runnable triggerLoop = new Runnable() {
 				String rt;
+
 				@Override
 				public void run() {
 					//オールクリア信号受信
@@ -599,6 +611,10 @@ public class VisonController{
 					if( rt.matches("1") ) {
 						Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
 						onAllClear(null);
+			    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
+
+					}else {
+			    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.LIGHTGRAY));
 					}
 
 					//シャッタートリガ信号受信
@@ -615,9 +631,11 @@ public class VisonController{
 
 							shutterFlg = true;
 							offShutterFlg = true;
+				    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
 						}
 					}else{
 							offShutterFlg = false;
+				    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
 					}
 					/*
 					//Debug-----
@@ -1043,6 +1061,7 @@ public class VisonController{
 	        	//出力トリガが無効で無い場合
 	        	if( !outTrigDisableChk.isSelected() ){
 	        		if( Gpio.openFlg) Gpio.ngSignalON();
+		    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
 	        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
 
 	        	}
@@ -1488,6 +1507,8 @@ public class VisonController{
     	Platform.runLater(() ->info2.clear());
     	Platform.runLater(() ->info2.setText(initInfo2));
     	Platform.runLater(() ->info2.appendText("NG画像ファイルを全て削除しました。\n"));
+		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
+		Gpio.OkSignalON();
 
     }
 
@@ -1634,6 +1655,9 @@ public class VisonController{
         assert camIDspinner != null : "fx:id=\"camIDspinner\" was not injected: check your FXML file 'Sample.fxml'.";
         assert capW_text != null : "fx:id=\"capW_text\" was not injected: check your FXML file 'Sample.fxml'.";
         assert capH_text != null : "fx:id=\"capH_text\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert GPIO_STATUS_PIN0 != null : "fx:id=\"GPIO_STATUS_PIN0\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert GPIO_STATUS_PIN1 != null : "fx:id=\"GPIO_STATUS_PIN1\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert GPIO_STATUS_PIN3 != null : "fx:id=\"GPIO_STATUS_PIN3\" was not injected: check your FXML file 'Sample.fxml'.";
 
         //クラス変数の初期化
         imgORG_imageViewFitWidth = imgORG.getFitWidth();
