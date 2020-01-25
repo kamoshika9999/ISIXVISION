@@ -294,7 +294,7 @@
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <CheckBox fx:id="imgSaveFlg" layoutX="612.0" layoutY="558.0" mnemonicParsing="false" selected="true" text="SAVE" />
+      <CheckBox fx:id="imgSaveFlg" layoutX="612.0" layoutY="558.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
       <Button fx:id="demoMode" layoutX="251.0" layoutY="36.0" mnemonicParsing="false" onAction="#onDemo" prefHeight="25.0" prefWidth="75.0" text="DemoMode">
          <font>
             <Font size="10.0" />
@@ -347,5 +347,14 @@
       <Circle fx:id="GPIO_STATUS_PIN0" fill="DODGERBLUE" layoutX="1007.0" layoutY="269.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
       <Circle fx:id="GPIO_STATUS_PIN1" fill="DODGERBLUE" layoutX="1007.0" layoutY="283.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
       <Circle fx:id="GPIO_STATUS_PIN3" fill="DODGERBLUE" layoutX="1007.0" layoutY="297.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+      <CheckBox fx:id="imgSaveFlg_all" layoutX="613.0" layoutY="612.0" mnemonicParsing="false" text="OK SAVE" />
+      <Button fx:id="OKImageBtn" layoutX="542.0" layoutY="592.0" mnemonicParsing="false" onAction="#onOKImageBtn" prefHeight="39.0" prefWidth="63.0" text="OK Image Viewer" wrapText="true">
+         <effect>
+            <DropShadow color="#3000f0" />
+         </effect>
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>

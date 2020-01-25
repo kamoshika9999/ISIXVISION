@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="600.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ngImageController">
+<AnchorPane prefHeight="600.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.OKimageController">
    <children>
       <ImageView fx:id="ngImage" fitHeight="480.0" fitWidth="640.0" layoutX="30.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
       <Button fx:id="nextBtn" layoutX="672.0" layoutY="155.0" mnemonicParsing="false" onAction="#onNext" prefHeight="242.0" prefWidth="27.0" text="&gt;">
@@ -32,7 +32,7 @@
             <Font size="18.0" />
          </font>
       </Label>
-      <Label layoutX="-3.0" layoutY="-22.0" prefHeight="78.0" prefWidth="94.0" text="NG" textFill="RED">
+      <Label layoutX="-1.0" layoutY="-20.0" text="OK" textFill="#0aee0a">
          <font>
             <Font name="System Bold" size="64.0" />
          </font>

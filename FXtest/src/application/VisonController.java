@@ -58,6 +58,12 @@ import javafx.stage.Stage;
 public class VisonController{
 
 	//クラス変数
+
+	final int saveMax_all = 255;
+	final int saveMax_ng = 200;
+	int ngCnt = 0;
+	int allSaveCnt = 0;
+
 	Mat srcMat = new Mat();
 	Mat glayMat;
 	private double imgORG_imageViewFitWidth;
@@ -92,7 +98,6 @@ public class VisonController{
 	long fpsEnd;
 	int fpsCnt=0;//カウント用
 	double fps =0;
-	int ngCnt = 0;
 	String password = "7777";
 	double framCnt = 0;
 	VideoCapture source_video;
@@ -272,54 +277,72 @@ public class VisonController{
     @FXML
     private Button lockBtn;
     @FXML
-    private javafx.scene.shape.Rectangle lockShape1;
+    private javafx.scene.shape.Rectangle lockShape1; //設定ロック用カーテン
     @FXML
-    private javafx.scene.shape.Rectangle lockShape2;
+    private javafx.scene.shape.Rectangle lockShape2; //設定ロック用カーテン
     @FXML
-    private javafx.scene.shape.Rectangle lockShape3;
+    private javafx.scene.shape.Rectangle lockShape3; //設定ロック用カーテン
     @FXML
-    private javafx.scene.shape.Rectangle lockShape4;
+    private javafx.scene.shape.Rectangle lockShape4; //設定ロック用カーテン
     @FXML
-    private javafx.scene.shape.Rectangle lockShape5;
+    private javafx.scene.shape.Rectangle lockShape5; //設定ロック用カーテン
     @FXML
-    private ImageView imgNG;
+    private ImageView imgNG; //最新のＮＧ画像のイメージビュー
     @FXML
-    private CheckBox outTrigDisableChk;
+    private CheckBox outTrigDisableChk;//True:NGが発生してもGPIOの状態を変えない
     @FXML
-    private CheckBox settingMode;
+    private CheckBox settingMode;//True:設定モード中
     @FXML
-    private Spinner<Integer> portNoSpin;
+    private Spinner<Integer> portNoSpin;//GPIOボード用シリアルポート番号選択
     @FXML
-    private Label zoomLabel;
+    private Label zoomLabel;//メインビューの表示倍率のラベル
     @FXML
-    private Spinner<Integer> camIDspinner;
+    private Spinner<Integer> camIDspinner;//使用するカメラのＩＤ
     @FXML
-    private TextField capW_text;
+    private TextField capW_text;//カメラの解像度の横幅
     @FXML
-    private TextField capH_text;
+    private TextField capH_text;//カメラの解像度の縦幅
     @FXML
-    private Circle GPIO_STATUS_PIN0;
+    private Circle GPIO_STATUS_PIN0;//シャッタートリガ信号の状態
     @FXML
-    private Circle GPIO_STATUS_PIN1;
+    private Circle GPIO_STATUS_PIN1;//ＮＧ出力トリガの状態
     @FXML
-    private Circle GPIO_STATUS_PIN3;
+    private Circle GPIO_STATUS_PIN3;//オールクリア信号の状態
+    @FXML
+    private CheckBox imgSaveFlg_all;//規定枚数画像保存 規定数超えた画像は自動削除
+    @FXML
+    private Button OKImageBtn;
 
 
-
-
     @FXML
+    /**
+     * スライダーの値を対応するテキストフィールドに入力する
+     * @param event
+     */
     void onDragDone(MouseEvent event) {
-    	Platform.runLater(() ->textFieldDetecPara4.setText(String.valueOf(String.format("%.1f",sliderDetecPara4.getValue()))));
-    	Platform.runLater(() ->textFieldDetecPara5.setText(String.valueOf(String.format("%.1f",sliderDetecPara5.getValue()))));
-    	Platform.runLater(() ->textFieldDetecPara6.setText(String.valueOf(String.format("%.1f",sliderDetecPara6.getValue()))));
-    	Platform.runLater(() ->textFieldDetecPara7.setText(String.valueOf(String.format("%.1f",sliderDetecPara7.getValue()))));
-    	Platform.runLater(() ->textFieldDetecPara8.setText(String.valueOf(String.format("%.1f",sliderDetecPara8.getValue()))));
-    	Platform.runLater(() ->textFieldDetecPara9.setText(String.valueOf(String.format("%.1f",sliderDetecPara9.getValue()))));
-    	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
-    	eventTrigger = true;
+    	Platform.runLater(() ->textFieldDetecPara4.setText(
+    			String.valueOf(String.format("%.1f",sliderDetecPara4.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara5.setText(
+    			String.valueOf(String.format("%.1f",sliderDetecPara5.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara6.setText(
+    			String.valueOf(String.format("%.1f",sliderDetecPara6.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara7.setText(
+    			String.valueOf(String.format("%.1f",sliderDetecPara7.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara8.setText(
+    			String.valueOf(String.format("%.1f",sliderDetecPara8.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara9.setText(
+    			String.valueOf(String.format("%.1f",sliderDetecPara9.getValue()))));
+    	Platform.runLater(() ->threshholdLabel.setText(
+    			String.format("%.1f",threshholdSlider.getValue())));
+
+    	eventTrigger = true;//onTest():ru()からrePaint()を呼び出す為にイベントトリガフラグをセット
     }
 
     @FXML
+    /**
+     * 現在のカメラの情報をテキストエリアに表示する
+     * @param event
+     */
     void onInfoBtnAction(ActionEvent event) {
 		double wset = capObj.get(Videoio.CAP_PROP_FRAME_WIDTH);
 		double hset = capObj.get(Videoio.CAP_PROP_FRAME_HEIGHT);
@@ -327,11 +350,14 @@ public class VisonController{
 				"\n カメラ解像度 HEIGHT= " +hset +"\n"));
     }
     @FXML
+    /**
+     * メインビュー内に格納されているイメージの移動
+     * @param event
+     */
     void onMoveBtn(ActionEvent event) {
-    	vRect = this.imgORG.getViewport();
-    	int speed =  (int)(move_speed_slider.getValue())*20;
-    	Object eventObject = event.getSource();
-
+    	int speed =  (int)(move_speed_slider.getValue())*20;//移動するピクセル数の設定
+    	Object eventObject = event.getSource();//どの移動ボタンが押されたか判断する為のオブジェクト取得
+    	vRect = this.imgORG.getViewport();//メインビューのサイズを取得
     	double xMin,yMin,xMax,yMax,width,height,imgWidth,imgHeight;
     	xMin = vRect.getMinX();
     	yMin = vRect.getMinY();
@@ -339,28 +365,29 @@ public class VisonController{
     	yMax = vRect.getMaxY();
     	width = vRect.getWidth();
     	height = vRect.getHeight();
-    	imgWidth = imgORG.getImage().getWidth();
+    	imgWidth = imgORG.getImage().getWidth();//メインビューに格納されているイメージのサイズ取得
     	imgHeight = imgORG.getImage().getHeight();
 
-    	if( eventObject == move_up_btn) {
+
+    	if( eventObject == move_up_btn) {//上移動
     		if( yMin - speed >= 0 ) {
     			yMin -= speed;
     		}else {
-    			yMin = 0;
+    			yMin = 0;//移動制限
     		}
-    	}else if( eventObject == move_down_btn) {
+    	}else if( eventObject == move_down_btn) {//下移動
     		if( yMax + speed <= imgHeight ) {
     			yMin += speed;
     		}else {
     			yMin = imgHeight - height;
     		}
-    	}else if( eventObject == move_left_btn) {
+    	}else if( eventObject == move_left_btn) {//左移動
     		if( xMin - speed  >= 0 ) {
     			xMin -= speed;
     		}else {
     			xMin = 0;
     		}
-    	}else if( eventObject == move_right_btn) {
+    	}else if( eventObject == move_right_btn) {//右移動
     		if( xMax + speed  <= imgWidth ) {
     			xMin += speed;
     		}else {
@@ -1043,14 +1070,19 @@ public class VisonController{
 		        }
 
 	        }
+
 	        if(hanteCnt==4) {
 	        	Platform.runLater( () ->judg.setText("OK"));
 	        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
+	        	//画像保存
+	        	if( this.imgSaveFlg_all.isSelected() ) {
+	        		saveImgOK( orgMat );
+	        	}
 	        }else {
 	        	Platform.runLater( () ->judg.setText("NG"));
 	        	Platform.runLater( () ->judg.setTextFill(Color.RED));
 	        	//画像保存
-	        	if( imgSaveFlg.isSelected() && ngCnt < 999 && !outTrigDisableChk.isSelected() && !settingModeFlg) {
+	        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !outTrigDisableChk.isSelected() && !settingModeFlg) {
 	        		saveImg( orgMat,fileString);
 	        	}else if( fileString != ""){
 	        		final String infoText = fileString +"\n";
@@ -1076,6 +1108,11 @@ public class VisonController{
     	}
     }
 
+    /**
+     * NG画像保存
+     * @param imgMat
+     * @param fileString
+     */
     public void saveImg(Mat imgMat,String fileString) {
     	File folder = new File("./ng_image");
     	if( !folder.exists()) {
@@ -1097,6 +1134,34 @@ public class VisonController{
         Platform.runLater( () ->info2.appendText("NG画像ファイルを保存\n" + fileName +".jpeg\n"));
 
     }
+    /**
+     * OK画像保存
+     * @param imgMat
+     */
+    public void saveImgOK(Mat imgMat) {
+    	File folder = new File("./ok_image");
+    	if( !folder.exists()) {
+    		if( !folder.mkdir() ) {
+    			Platform.runLater( () ->info2.appendText("ng_imageフォルダの作成に失敗"+"\n"));
+    			return;
+    		}
+    	}
+        allSaveCnt++;
+        try {
+        	Platform.runLater( () ->Imgcodecs.imwrite(folder+"/" + allSaveCnt + ".jpeg", imgMat));
+        }catch(Exception e) {
+        	Platform.runLater( () ->info2.appendText(e.toString()+"\n"));
+        }
+
+        if( allSaveCnt > saveMax_all+1 ) {
+        	File f = new File(folder+"/"+(allSaveCnt-saveMax_all)+".jpeg");
+        	Platform.runLater( () ->{if( !f.delete() ) {
+        		System.out.println(f.toString()+"削除失敗");
+        		}
+        	});
+        }
+    }
+
     /**
      *
      * @param circles
@@ -1494,19 +1559,35 @@ public class VisonController{
 		stage.showAndWait();
     	}
     @FXML
+    void onOKImageBtn(ActionEvent event) {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("OKimageViewer.fxml"));
+		AnchorPane root = null;
+		try {
+			root = (AnchorPane) loader.load();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+		Stage stage = new Stage();
+		stage.setScene(scene);
+		stage.setResizable(false);
+		stage.showAndWait();
+    }
+	@FXML
     void onAllClear(ActionEvent event) {
     	ngCnt = 0;
+    	allSaveCnt = 0;
     	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
     	Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094;"));
 
-    	File dir = new File("./ng_image/");
-    	FileClass.fileClass(dir);
+    	Platform.runLater( () ->FileClass.fileClass(new File("./ng_image/")) );
+    	Platform.runLater( () ->FileClass.fileClass(new File("./ok_image/")) );
 
     	Platform.runLater(() ->this.imgNG.setImage(null));
 
     	Platform.runLater(() ->info2.clear());
     	Platform.runLater(() ->info2.setText(initInfo2));
-    	Platform.runLater(() ->info2.appendText("NG画像ファイルを全て削除しました。\n"));
+    	Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
 		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
 		Gpio.OkSignalON();
 
@@ -1658,6 +1739,8 @@ public class VisonController{
         assert GPIO_STATUS_PIN0 != null : "fx:id=\"GPIO_STATUS_PIN0\" was not injected: check your FXML file 'Sample.fxml'.";
         assert GPIO_STATUS_PIN1 != null : "fx:id=\"GPIO_STATUS_PIN1\" was not injected: check your FXML file 'Sample.fxml'.";
         assert GPIO_STATUS_PIN3 != null : "fx:id=\"GPIO_STATUS_PIN3\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert imgSaveFlg_all != null : "fx:id=\"imgSaveFlg_all\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert OKImageBtn != null : "fx:id=\"OKImageBtn\" was not injected: check your FXML file 'Sample.fxml'.";
 
         //クラス変数の初期化
         imgORG_imageViewFitWidth = imgORG.getFitWidth();
@@ -1691,7 +1774,13 @@ public class VisonController{
         updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	Platform.runLater(() ->info1.setText(""));
 
+    	try {
+	    	int fileCnt = FileClass.getFiles(new File("./ok_image")).length;
+	    		allSaveCnt = fileCnt;
+		}catch( java.lang.NullPointerException e) {
+    		Platform.runLater(() ->info1.setText("ok_imageフォルダがありません"));
+    	}
         manualTrigger = true;
-
+        onAllClear(null);
     }
 }
