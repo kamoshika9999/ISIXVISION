@@ -37,5 +37,6 @@
             <Font name="System Bold" size="64.0" />
          </font>
       </Label>
+      <Button fx:id="useImgSettingBtn" layoutX="364.0" layoutY="550.0" mnemonicParsing="false" onAction="#onUseImageSetting" prefHeight="25.0" prefWidth="200.0" text="この画像を使用して設定" />
    </children>
 </AnchorPane>

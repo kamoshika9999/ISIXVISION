@@ -36,6 +36,10 @@ public class OKimageController {
     @FXML
     private Label info1;
     @FXML
+    private Button useImgSettingBtn;
+	private Mat img;
+
+    @FXML
     void onClose(ActionEvent event) {
 		Scene scene = ((Node) event.getSource()).getScene();
 		Window window = scene.getWindow();
@@ -57,11 +61,23 @@ public class OKimageController {
     void onPrev(ActionEvent event) {
     	if( files_pointer > 0 ) {
     		files_pointer--;
-	        Mat img = Imgcodecs.imread( files[files_pointer].getPath());
+	        img = Imgcodecs.imread( files[files_pointer].getPath());
 	        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
 	        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
 
     	}
+    }
+    
+    @FXML
+    void onUseImageSetting(ActionEvent event) {
+        if( files.length > 0 ) {
+	    	VisonController.saveImgUseFlg = true;//現在表示中のイメージを使用して設定
+	    	VisonController.srcMat = img;//Matを渡す
+        }
+		Scene scene = ((Node) event.getSource()).getScene();
+		Window window = scene.getWindow();
+		window.hide();
+
     }
 
     @FXML
@@ -71,6 +87,8 @@ public class OKimageController {
         assert prevBtn != null : "fx:id=\"prevBtn\" was not injected: check your FXML file 'OKImageViewer.fxml'.";
         assert closeBtn != null : "fx:id=\"closeBtn\" was not injected: check your FXML file 'OKImageViewer.fxml'.";
         assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'OKImageViewer.fxml'.";
+        assert useImgSettingBtn != null : "fx:id=\"useImgSettingBtn\" was not injected: check your FXML file 'OKImageViewer.fxml'.";
+
         //NGイメージの保存先 ./ng_image
         files = FileClass.getFiles(new File("./ok_image"));
         if( files.length == 0 ) {
@@ -78,7 +96,7 @@ public class OKimageController {
         }
 
         files_pointer = files.length-1;
-        Mat img = Imgcodecs.imread( files[files_pointer].getPath());
+        img = Imgcodecs.imread( files[files_pointer].getPath());
         Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
         Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
     }

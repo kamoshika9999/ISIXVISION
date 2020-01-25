@@ -21,6 +21,7 @@ public class ngImageController {
 	//クラス変数
 	File[] files;
 	int files_pointer = 0;
+	Mat img;
     @FXML
     private ResourceBundle resources;
     @FXML
@@ -35,6 +36,8 @@ public class ngImageController {
     private Button closeBtn;
     @FXML
     private Label info1;
+    @FXML
+    private Button useImgSettingBtn;
 
     @FXML
     void onClose(ActionEvent event) {
@@ -47,10 +50,9 @@ public class ngImageController {
     void onNext(ActionEvent event) {
     	if( files_pointer < files.length-1) {
     		files_pointer++;
-	        Mat img = Imgcodecs.imread( files[files_pointer].getPath());
+	        img = Imgcodecs.imread( files[files_pointer].getPath());
 	        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
 	        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
-
     	}
     }
 
@@ -58,14 +60,21 @@ public class ngImageController {
     void onPrev(ActionEvent event) {
     	if( files_pointer > 0 ) {
     		files_pointer--;
-	        Mat img = Imgcodecs.imread( files[files_pointer].getPath());
+	        img = Imgcodecs.imread( files[files_pointer].getPath());
 	        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
 	        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
-
     	}
-
     }
-
+    @FXML
+    void onUseImageSetting(ActionEvent event) {
+        if( files.length == 0 ) {
+	    	VisonController.saveImgUseFlg = true;//現在表示中のイメージを使用して設定
+	    	VisonController.srcMat = img;//Matを渡す
+        }
+		Scene scene = ((Node) event.getSource()).getScene();
+		Window window = scene.getWindow();
+		window.hide();
+    }
     @FXML
     void initialize() {
         assert ngImage != null : "fx:id=\"ngImage\" was not injected: check your FXML file 'NgImageViewer.fxml'.";
@@ -73,6 +82,7 @@ public class ngImageController {
         assert prevBtn != null : "fx:id=\"prevBtn\" was not injected: check your FXML file 'NgImageViewer.fxml'.";
         assert closeBtn != null : "fx:id=\"closeBtn\" was not injected: check your FXML file 'NgImageViewer.fxml'.";
         assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'NgImageViewer.fxml'.";
+        assert useImgSettingBtn != null : "fx:id=\"useImgSettingBtn\" was not injected: check your FXML file 'NgImageViewer.fxml'.";
 
         //NGイメージの保存先 ./ng_image
         files = FileClass.getFiles(new File("./ng_image"));
@@ -81,7 +91,7 @@ public class ngImageController {
         }
 
         files_pointer = files.length-1;
-        Mat img = Imgcodecs.imread( files[files_pointer].getPath());
+        img = Imgcodecs.imread( files[files_pointer].getPath());
         Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
         Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
     }

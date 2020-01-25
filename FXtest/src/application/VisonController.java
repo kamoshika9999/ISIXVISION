@@ -64,8 +64,8 @@ public class VisonController{
 	int ngCnt = 0;
 	int allSaveCnt = 0;
 
-	Mat srcMat = new Mat();
-	Mat glayMat;
+	public static Mat srcMat = new Mat();//保存画像を使用した設定に使用する為publicにしておく
+	private Mat glayMat;
 	private double imgORG_imageViewFitWidth;
 	private double imgORG_imageViewFitHeight;
     List<Rectangle> rects;
@@ -107,7 +107,9 @@ public class VisonController{
 	final long lockedTimerThresh = 1000 * 60 *5;
 	//テンプレートマッチング用
 	private boolean matchTempStartFlg = false;
-
+	//保存画像を使用した設定に使うフラグ
+	//保存画像使用中はＰＬＣシャッタートリガ強制無効
+	public static boolean saveImgUseFlg;
 
 	//インフォメーション
 	private String initInfo2;
@@ -578,7 +580,7 @@ public class VisonController{
 		    		rePaint();
 		    	}
 
-		    	if( manualTrigger || autoTrigger ) {//マニュアルトリガ又はオートトリガが有効であった場合
+				if( (manualTrigger || autoTrigger) && !saveImgUseFlg) {//マニュアルトリガ又はオートトリガが有効であった場合
 		    		manualTrigger = false;
 			    	if( demoFlg ) {
 			    		try {
@@ -605,7 +607,7 @@ public class VisonController{
 				    		rePaint();
 				    	}
 					}
-		    	}else if(shutterFlg && !demoFlg) {
+		    	}else if(shutterFlg && !demoFlg && !saveImgUseFlg) {
 					srcMat = grabFrame();
 			    	if( srcMat.width() !=0 ) {
 			    		rePaint();
@@ -1070,37 +1072,40 @@ public class VisonController{
 		        }
 
 	        }
-
-	        if(hanteCnt==4) {
-	        	Platform.runLater( () ->judg.setText("OK"));
-	        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
-	        	//画像保存
-	        	if( this.imgSaveFlg_all.isSelected() ) {
-	        		saveImgOK( orgMat );
-	        	}
-	        }else {
-	        	Platform.runLater( () ->judg.setText("NG"));
-	        	Platform.runLater( () ->judg.setTextFill(Color.RED));
-	        	//画像保存
-	        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !outTrigDisableChk.isSelected() && !settingModeFlg) {
-	        		saveImg( orgMat,fileString);
-	        	}else if( fileString != ""){
-	        		final String infoText = fileString +"\n";
-	        		Platform.runLater( () ->info2.appendText(infoText));
-	        	}
-	        	if( ngCnt < 999) ngCnt++;
-
-	        	//出力トリガが無効で無い場合
-	        	if( !outTrigDisableChk.isSelected() ){
-	        		if( Gpio.openFlg) Gpio.ngSignalON();
-		    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
-	        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
-
-	        	}
-
-	        	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
-	        	//Mat ngMat = orgMat.clone();
-	        	updateImageView(imgNG, Utils.mat2Image(orgMat));
+	        if( !saveImgUseFlg) {
+		        if(hanteCnt==4) {
+		        	Platform.runLater( () ->judg.setText("OK"));
+		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
+		        	//画像保存
+		        	if( this.imgSaveFlg_all.isSelected() ) {
+		        		saveImgOK( srcMat );
+		        	}
+		        }else {
+		        	Platform.runLater( () ->judg.setText("NG"));
+		        	Platform.runLater( () ->judg.setTextFill(Color.RED));
+		        	//画像保存
+		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng && 
+		        			!outTrigDisableChk.isSelected() 
+		        			&& !settingModeFlg) {
+		        		saveImg( orgMat,fileString);
+		        		saveImg( srcMat,"src_"+fileString);
+		        	}else if( fileString != ""){
+		        		final String infoText = fileString +"\n";
+		        		Platform.runLater( () ->info2.appendText(infoText));
+		        	}
+		        	if( ngCnt < 999) ngCnt++;
+	
+		        	//出力トリガが無効で無い場合
+		        	if( !outTrigDisableChk.isSelected() ){
+		        		if( Gpio.openFlg) Gpio.ngSignalON();
+			    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
+		        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
+	
+		        	}
+	
+		        	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
+		        	updateImageView(imgNG, Utils.mat2Image(orgMat));
+		        }
 	        }
 	        updateImageView(imgORG, Utils.mat2Image(orgMat));
     	}catch(Exception e) {
@@ -1557,7 +1562,11 @@ public class VisonController{
 		stage.setScene(scene);
 		stage.setResizable(false);
 		stage.showAndWait();
-    	}
+		if( saveImgUseFlg && !this.settingModeFlg) {
+			onSettingModeBtn(null);
+		}
+		eventTrigger = true;
+   	}
     @FXML
     void onOKImageBtn(ActionEvent event) {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("OKimageViewer.fxml"));
@@ -1572,6 +1581,10 @@ public class VisonController{
 		stage.setScene(scene);
 		stage.setResizable(false);
 		stage.showAndWait();
+		if( saveImgUseFlg && !this.settingModeFlg) {
+			onSettingModeBtn(null);
+		}
+		eventTrigger = true;
     }
 	@FXML
     void onAllClear(ActionEvent event) {
@@ -1611,6 +1624,7 @@ public class VisonController{
         	Platform.runLater(() ->settingMode.setSelected(false));
         	Platform.runLater(() ->info1.setText(""));
         	draggingRect = new Rectangle(1,1,1,1);
+        	saveImgUseFlg = false;
     	}else {
     		Platform.runLater(() ->lockShape1.setDisable(true));
     		Platform.runLater(() ->lockShape2.setDisable(true));
@@ -1630,7 +1644,6 @@ public class VisonController{
 
 
     }
-
     @FXML
     void onOutTrigDisableChk(ActionEvent event) {
     	if( this.outTrigDisableChk.isSelected())
