@@ -35,6 +35,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -314,6 +315,8 @@ public class VisonController{
     private CheckBox imgSaveFlg_all;//規定枚数画像保存 規定数超えた画像は自動削除
     @FXML
     private Button OKImageBtn;
+    @FXML
+    private Accordion accordion_1;
 
 
     @FXML
@@ -808,6 +811,7 @@ public class VisonController{
 
 	    	parameter para = pObj.para[pObj.select];
 	    	Mat	orgMat = srcMat.clone();//srcMatは不変にしておく
+	    	Mat saveSrcMat = srcMat.clone();
 	    	glayMat = new Mat();
 	    	Imgproc.cvtColor(orgMat, glayMat, Imgproc.COLOR_BGR2GRAY);
 	    	Mat tmp0Mat = glayMat.clone();
@@ -1082,7 +1086,7 @@ public class VisonController{
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
 		        	//画像保存
 		        	if( this.imgSaveFlg_all.isSelected() ) {
-		        		saveImgOK( srcMat );
+		        		saveImgOK( saveSrcMat );
 		        	}
 		        }else {
 		        	Platform.runLater( () ->judg.setText("NG"));
@@ -1091,7 +1095,7 @@ public class VisonController{
 		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng &&
 		        			!outTrigDisableChk.isSelected()
 		        			&& !settingModeFlg) {
-		        		saveImg( srcMat,"src_"+fileString);
+		        		saveImg( saveSrcMat,"src_"+fileString);
 		        		saveImg( orgMat,fileString);
 		        	}else if( fileString != ""){
 		        		final String infoText = fileString +"\n";
@@ -1617,6 +1621,7 @@ public class VisonController{
     @FXML
     void onSettingModeBtn(ActionEvent event) {
     	if( settingModeFlg ) {
+    		/*
     		Platform.runLater(() ->lockShape1.setDisable(false));
     		Platform.runLater(() ->lockShape2.setDisable(false));
     		Platform.runLater(() ->lockShape3.setDisable(false));
@@ -1627,13 +1632,16 @@ public class VisonController{
     		Platform.runLater(() ->lockShape3.setFill(Color.web("#a5abb094",0.8)));
     		Platform.runLater(() ->lockShape4.setFill(Color.web("#a5abb094",0.8)));
     		Platform.runLater(() ->lockShape5.setFill(Color.web("#a5abb094",0.8)));
-
+    		*/
+    		Platform.runLater(() ->this.accordion_1.setDisable(true));
         	settingModeFlg = false;
         	Platform.runLater(() ->settingMode.setSelected(false));
         	Platform.runLater(() ->info1.setText(""));
         	draggingRect = new Rectangle(1,1,1,1);
         	saveImgUseFlg = false;
+        	updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	}else {
+    		/*
     		Platform.runLater(() ->lockShape1.setDisable(true));
     		Platform.runLater(() ->lockShape2.setDisable(true));
     		Platform.runLater(() ->lockShape3.setDisable(true));
@@ -1644,6 +1652,8 @@ public class VisonController{
     		Platform.runLater(() ->lockShape3.setFill(Color.web("#a5abb094",0.0)));
     		Platform.runLater(() ->lockShape4.setFill(Color.web("#a5abb094",0.0)));
     		Platform.runLater(() ->lockShape5.setFill(Color.web("#a5abb094",0.0)));
+    		*/
+    		Platform.runLater(() ->this.accordion_1.setDisable(false));
         	settingModeFlg = true;
         	lockedTimer = System.currentTimeMillis();
         	Platform.runLater(() ->settingMode.setSelected(true));
@@ -1762,6 +1772,7 @@ public class VisonController{
         assert GPIO_STATUS_PIN3 != null : "fx:id=\"GPIO_STATUS_PIN3\" was not injected: check your FXML file 'Sample.fxml'.";
         assert imgSaveFlg_all != null : "fx:id=\"imgSaveFlg_all\" was not injected: check your FXML file 'Sample.fxml'.";
         assert OKImageBtn != null : "fx:id=\"OKImageBtn\" was not injected: check your FXML file 'Sample.fxml'.";
+        assert accordion_1 != null : "fx:id=\"accordion_1\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         imgORG_imageViewFitWidth = imgORG.getFitWidth();
