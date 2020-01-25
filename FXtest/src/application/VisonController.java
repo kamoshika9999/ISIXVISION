@@ -564,7 +564,7 @@ public class VisonController{
 			@Override
 			public void run() {
 				//設定自動ロック用
-				if( settingModeFlg ) {
+				if( settingModeFlg && !saveImgUseFlg) {
 					if( System.currentTimeMillis() - lockedTimer > lockedTimerThresh) {
 						onSettingModeBtn(null);
 					}
@@ -803,7 +803,7 @@ public class VisonController{
 
 
 	    	parameter para = pObj.para[pObj.select];
-	    	Mat orgMat = srcMat.clone();//srcMatは不変にしておく
+	    	Mat	orgMat = srcMat.clone();//srcMatは不変にしておく
 	    	glayMat = new Mat();
 	    	Imgproc.cvtColor(orgMat, glayMat, Imgproc.COLOR_BGR2GRAY);
 	    	Mat tmp0Mat = glayMat.clone();
@@ -1084,25 +1084,29 @@ public class VisonController{
 		        	Platform.runLater( () ->judg.setText("NG"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.RED));
 		        	//画像保存
-		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng && 
-		        			!outTrigDisableChk.isSelected() 
+		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng &&
+		        			!outTrigDisableChk.isSelected()
 		        			&& !settingModeFlg) {
-		        		saveImg( orgMat,fileString);
 		        		saveImg( srcMat,"src_"+fileString);
+		        		saveImg( orgMat,fileString);
 		        	}else if( fileString != ""){
 		        		final String infoText = fileString +"\n";
 		        		Platform.runLater( () ->info2.appendText(infoText));
 		        	}
 		        	if( ngCnt < 999) ngCnt++;
-	
+
 		        	//出力トリガが無効で無い場合
 		        	if( !outTrigDisableChk.isSelected() ){
-		        		if( Gpio.openFlg) Gpio.ngSignalON();
-			    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
 		        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
-	
+		        		if( Gpio.openFlg) {
+		        			if( Gpio.ngSignalON() ) {
+					    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
+		        			}else {
+					    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.RED));
+		        			}
+		        		}
 		        	}
-	
+
 		        	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
 		        	updateImageView(imgNG, Utils.mat2Image(orgMat));
 		        }
