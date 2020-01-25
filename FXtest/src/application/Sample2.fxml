@@ -32,6 +32,9 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
+                        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="39.0" layoutX="14.0" layoutY="110.0" stroke="BLACK" strokeType="INSIDE" width="511.0" />
+                        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="43.0" layoutX="15.0" layoutY="151.0" stroke="BLACK" strokeType="INSIDE" width="224.0" />
+                        <Slider fx:id="gauusianSliderX" layoutX="93.0" layoutY="112.0" majorTickUnit="10.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" value="10.0" />
                         <Slider fx:id="sliderDetecPara4" blockIncrement="1.0" layoutX="69.0" layoutY="8.0" majorTickUnit="1.0" max="10.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="37.0" prefWidth="196.0" showTickLabels="true" showTickMarks="true" value="3.0" />
                         <TextField fx:id="textFieldDetecPara4" alignment="CENTER_RIGHT" layoutX="265.0" layoutY="2.0" prefHeight="25.0" prefWidth="46.0" />
                         <Label alignment="CENTER" layoutX="12.0" layoutY="2.0" prefHeight="25.0" prefWidth="57.0" text="投票分解能">
@@ -74,12 +77,8 @@
                         </Label>
                         <Slider fx:id="sliderDetecPara9" layoutX="374.0" layoutY="72.0" majorTickUnit="10.0" max="250.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="37.0" prefWidth="196.0" showTickLabels="true" showTickMarks="true" value="25.0" />
                         <TextField fx:id="textFieldDetecPara9" alignment="CENTER_RIGHT" layoutX="577.0" layoutY="66.0" prefHeight="25.0" prefWidth="46.0" />
-                        <CheckBox fx:id="gauusianCheck" layoutX="18.0" layoutY="113.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Gauusian" />
-                        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="43.0" layoutX="15.0" layoutY="151.0" stroke="BLACK" strokeType="INSIDE" width="224.0" />
                         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="43.0" layoutX="242.0" layoutY="151.0" stroke="BLACK" strokeType="INSIDE" width="283.0" />
-                        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="39.0" layoutX="14.0" layoutY="110.0" stroke="BLACK" strokeType="INSIDE" width="511.0" />
                         <CheckBox fx:id="dilateCheck" layoutX="21.0" layoutY="154.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Dilate" />
-                        <Slider fx:id="gauusianSliderX" layoutX="93.0" layoutY="112.0" majorTickUnit="10.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" value="10.0" />
                         <Slider fx:id="dilateSliderN" layoutX="94.0" layoutY="156.0" majorTickUnit="1.0" max="5.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0" />
                         <Slider fx:id="gauusianSliderY" layoutX="237.0" layoutY="113.0" majorTickUnit="10.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" value="10.0" />
                         <Slider fx:id="gauusianSliderA" layoutX="379.0" layoutY="113.0" majorTickUnit="10.0" max="30.0" min="1.0" minorTickCount="9" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="5.0" />
@@ -163,6 +162,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
+                        <CheckBox fx:id="gauusianCheck" layoutX="18.0" layoutY="113.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Gauusian" />
                      </children>
                   </AnchorPane>
             </content>

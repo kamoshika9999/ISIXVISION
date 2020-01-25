@@ -603,7 +603,7 @@ public class VisonController{
 			    			}
 
 			    		}catch(Exception e) {
-			    			Platform.runLater( () ->info2.appendText(e.toString()+"\n"));
+			    			Platform.runLater( () ->info2.appendText("demo動画エラー"+e.toString()+"\n"));
 			    			return;
 			    		}
 					}else {
@@ -790,6 +790,7 @@ public class VisonController{
 
 
     private void rePaint() {
+    	if( srcMat.width() < 1) return;
     	try {
 	    	if( this.triggerCCircle.getFill() != Color.YELLOW) {
 	    		Platform.runLater( () ->this.triggerCCircle.setFill(Color.YELLOW));
@@ -1095,7 +1096,7 @@ public class VisonController{
 		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng &&
 		        			!outTrigDisableChk.isSelected()
 		        			&& !settingModeFlg) {
-		        		saveImg( saveSrcMat,"src_"+fileString);
+		        		saveImg( saveSrcMat,fileString);
 		        		saveImg( orgMat,fileString);
 		        	}else if( fileString != ""){
 		        		final String infoText = fileString +"\n";
@@ -1121,7 +1122,7 @@ public class VisonController{
 	        }
 	        updateImageView(imgORG, Utils.mat2Image(orgMat));
     	}catch(Exception e) {
-    		Platform.runLater(() ->info2.appendText("検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n"));
+    		Platform.runLater(() ->info2.appendText(e+"\n:検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n"));
     	}
     }
 
@@ -1140,13 +1141,13 @@ public class VisonController{
     		}
     	}
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SS");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSS");
         String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
         try {
         	Platform.runLater( () ->Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat));
         	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"NG画像保存"+"\n"));
         }catch(Exception e) {
-        	Platform.runLater( () ->info2.appendText(e.toString()+"\n"));
+        	Platform.runLater( () ->info2.appendText("NG画像の保存に失敗"+e.toString()+"\n"));
         }
         Platform.runLater( () ->info2.appendText("NG画像ファイルを保存\n" + fileName +".jpeg\n"));
 
@@ -1167,7 +1168,7 @@ public class VisonController{
         try {
         	Platform.runLater( () ->Imgcodecs.imwrite(folder+"/" + allSaveCnt + ".jpeg", imgMat));
         }catch(Exception e) {
-        	Platform.runLater( () ->info2.appendText(e.toString()+"\n"));
+        	Platform.runLater( () ->info2.appendText("OK画像の保存に失敗"+e.toString()+"\n"));
         }
 
         if( allSaveCnt > saveMax_all+1 ) {
@@ -1485,8 +1486,6 @@ public class VisonController{
 		para.threshhold_Invers[4] = threshhold_Inverse.isSelected();
 		pObj.portNo = portNoSpin.getValue().intValue();
 		pObj.delly = dellySpinner.getValue().intValue();
-		//pObj.matchCnt = matchTmempCountSpinner.getValue().intValue();
-		//pObj.matchThreshValue = this.matchTmempTHreshSlider.getValue();
 
 		objOut.writeObject(pObj);
 		objOut.flush();
@@ -1525,7 +1524,6 @@ public class VisonController{
 
     	portNoSpin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 9,pObj.portNo,1));
     	dellySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 900,pObj.delly,5));
-    	//matchTmempCountSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 20,pObj.matchCnt,6));
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
     }
