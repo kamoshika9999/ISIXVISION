@@ -450,6 +450,7 @@ public class VisonController{
     	}
     	Platform.runLater(() ->zoomValue_slider.setValue( viewOrgZoom));
 
+
     	double moveX = (rect.getWidth() / zoomOrg - rect.getWidth() / viewOrgZoom)/2;
     	double moveY = (rect.getHeight() / zoomOrg - rect.getHeight() / viewOrgZoom)/2;
     	double minX,minY;
@@ -468,6 +469,7 @@ public class VisonController{
     	}else{
     		minY = rect.getMinY() + moveY;
     	}
+
     	vRect = new Rectangle2D( minX,minY,
     			imgORG_imageViewFitWidth/viewOrgZoom,
     			imgORG_imageViewFitHeight/viewOrgZoom);
@@ -609,8 +611,10 @@ public class VisonController{
 					}
 		    	}else if(shutterFlg && !demoFlg && !saveImgUseFlg) {
 					srcMat = grabFrame();
-			    	if( srcMat.width() !=0 ) {
+			    	if( srcMat.width() > 0 ) {
 			    		rePaint();
+			    	}else {
+			    		Platform.runLater( () ->info2.appendText(("カメラから画像の取得に失敗\n")));
 			    	}
 			    	shutterFlg = false;
 				}
