@@ -711,7 +711,7 @@ public class VisonController{
 								offShutterFlg = false;
 					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
 						}
-					}catch(Exception e) {
+					}catch(NullPointerException e) {
 						System.out.println(e.toString());
 					}
 					/*

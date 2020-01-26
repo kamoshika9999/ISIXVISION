@@ -147,7 +147,6 @@ public class Gpio {
 			e.printStackTrace();
 			return "shutterSignal Read error";
 		}
-
 		return rt;//読み込みに成功したら'1'又は'0'を返す
 
 	}
