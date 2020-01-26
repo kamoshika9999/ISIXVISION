@@ -225,6 +225,7 @@
                         <Button fx:id="getInfoBtn" layoutX="97.0" layoutY="100.0" mnemonicParsing="false" onAction="#onInfoBtnAction" prefHeight="25.0" prefWidth="85.0" text="CameraInfo" />
                         <Button fx:id="testBtn" layoutX="14.0" layoutY="163.0" mnemonicParsing="false" onAction="#onTest" prefHeight="25.0" prefWidth="77.0" text="検査開始" />
                         <Button fx:id="stopTest" layoutX="99.0" layoutY="163.0" mnemonicParsing="false" onAction="#onTestStop" prefHeight="25.0" prefWidth="85.0" text="停止" />
+                        <Button fx:id="GPIO_allRead" layoutX="196.0" layoutY="104.0" mnemonicParsing="false" onAction="#onGPIOAllRead" prefHeight="25.0" prefWidth="90.0" text="GPIO AllRead" />
                      </children>
                   </AnchorPane>
             </content>

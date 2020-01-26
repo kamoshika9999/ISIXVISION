@@ -320,6 +320,8 @@ public class VisonController{
     private Accordion accordion_1;
     @FXML
     private CheckBox throughImageChk;
+    @FXML
+    private Button GPIO_allRead;
 
 
     @FXML
@@ -1151,12 +1153,6 @@ public class VisonController{
 		        	updateImageView(imgNG, Utils.mat2Image(orgMat));
 		        }
 	        }
-	        if( debugFlg ) {
-				Imgproc.putText(orgMat, "CAMERA Through",
-						new Point(5,50),
-						Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),3);
-	        }
-
 	        updateImageView(imgORG, Utils.mat2Image(orgMat));
     	}catch(Exception e) {
     		Platform.runLater(() ->info2.appendText(e+"\n:検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n"));
@@ -1714,6 +1710,11 @@ public class VisonController{
     	eventTrigger = true;
     }
 
+    @FXML
+    void onGPIOAllRead(ActionEvent event) {
+    	String rt = Gpio.readAll();
+    	Platform.runLater(() ->this.info2.appendText("GPIO Read ALL::" + rt));
+    }
 
 
     @FXML
@@ -1815,6 +1816,7 @@ public class VisonController{
         assert imgSaveFlg_all != null : "fx:id=\"imgSaveFlg_all\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert OKImageBtn != null : "fx:id=\"OKImageBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert accordion_1 != null : "fx:id=\"accordion_1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert throughImageChk != null : "fx:id=\"throughImageChk\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert throughImageChk != null : "fx:id=\"throughImageChk\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化

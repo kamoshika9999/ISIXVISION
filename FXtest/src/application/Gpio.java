@@ -11,7 +11,7 @@ import jssc.SerialPort;  /* Calls the respective serial port */
 public class Gpio {
 	static SerialPort port;			//ポートオブジェクト保持用
 	static boolean openFlg;			//ポートオープン成功失敗フラグ
-	static final int sleepTime = 100; //バッファパージ前のスレッドスリープタイム(mSec)
+	static final int sleepTime = 50; //バッファパージ前のスレッドスリープタイム(mSec)
 	static int debugSleepTime = 50;
 
 	/**
@@ -201,7 +201,8 @@ public class Gpio {
 		//------------------
 		if( !openFlg ) {
 			return false;
-		}		try {
+		}
+		try {
 	        port.writeString("\r");
 	        port.writeString("gpio clear 3\r");//IO 3クリア 出力ゼロ
 	        System.out.println("Info: <gpio clear 3> Command sent...");
@@ -216,6 +217,30 @@ public class Gpio {
         return true;
 	}
 
+	/**
+	 * 全ポート読み出し
+	 * @return
+	 */
+	public static String readAll(){
+		if( !openFlg ) {
+			return "PortNotOpen";
+		}
+		String rt = "error";
+		try {
+	        port.writeString("\r");
+	        port.writeString("gpio readall\r");
 
+	        rt = port.readString();
+
+	        Thread.sleep(sleepTime*10);
+	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return "All Read error";
+		}
+
+		return rt;//読み込みに成功したら'1'又は'0'を返す
+
+	}
 
 }
