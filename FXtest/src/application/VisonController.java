@@ -318,6 +318,8 @@ public class VisonController{
     private Button OKImageBtn;
     @FXML
     private Accordion accordion_1;
+    @FXML
+    private CheckBox throughImageChk;
 
 
     @FXML
@@ -567,6 +569,7 @@ public class VisonController{
 
 		 // メインクラス
 		Runnable frameGrabber = new Runnable() {
+			Mat realMat;
 			@Override
 			public void run() {
 				//設定自動ロック用
@@ -576,56 +579,69 @@ public class VisonController{
 					}
 				}
 
-		    	if( !manualTrigger && !autoTrigger) {
-		    		Platform.runLater( () ->triggerCCircle.setFill(Color.LIGHTSLATEGRAY));
-		    	}
-		    	if( eventTrigger) {
-		    		if( !dragging ) {
-		    			eventTrigger = false;
-		    		}
-		    		rePaint();
-		    	}
-
-				if( (manualTrigger || autoTrigger) && !saveImgUseFlg) {//マニュアルトリガ又はオートトリガが有効であった場合
-		    		manualTrigger = false;
-			    	if( demoFlg ) {
-			    		try {
-			    			framCnt++;
-			    			if(framCnt>=video_frame_count) {
-			    				source_video.set(Videoio.CAP_PROP_POS_FRAMES,0);
-			    				Platform.runLater( () ->info2.appendText(("demo動画ループ再生\n")));
-			    				framCnt=0;
-			    			}
-			    			source_video.read(srcMat);
-			    			if( srcMat == null) {
-			    				Platform.runLater( () ->info2.appendText(( "demo動画が再生できません\n")));
-			    			}else {
-			    				rePaint();
-			    			}
-
-			    		}catch(Exception e) {
-			    			Platform.runLater( () ->info2.appendText("demo動画エラー"+e.toString()+"\n"));
-			    			return;
-			    		}
+				if( throughImageChk.isSelected() && !demoFlg ) {
+					realMat = grabFrame();
+					if( realMat.width() > 0 ) {
+						Imgproc.putText(realMat, "CAMERA Through",
+								new Point(5,50),
+								Imgproc.FONT_HERSHEY_SIMPLEX,2.0,new Scalar(0,255,0),3);
+						updateImageView(imgORG, Utils.mat2Image(realMat));
 					}else {
-						srcMat = grabFrame();
-				    	if( srcMat.width() !=0 ) {
-				    		rePaint();
-				    	}
+						Platform.runLater( () ->info2.appendText("スルー画像の取得に失敗\n"));
 					}
-		    	}else if(shutterFlg && !demoFlg && !saveImgUseFlg) {
-					srcMat = grabFrame();
-			    	if( srcMat.width() > 0 ) {
-			    		rePaint();
-			    	}else {
-			    		Platform.runLater( () ->info2.appendText(("カメラから画像の取得に失敗\n")));
-			    	}
-			    	shutterFlg = false;
-				}
 
-		    	if( eventTrigger ) {
-		    		rePaint();
-		    	}
+				}else {
+			    	if( !manualTrigger && !autoTrigger) {
+			    		Platform.runLater( () ->triggerCCircle.setFill(Color.LIGHTSLATEGRAY));
+			    	}
+			    	if( eventTrigger) {
+			    		if( !dragging ) {
+			    			eventTrigger = false;
+			    		}
+			    		rePaint();
+			    	}
+
+					if( (manualTrigger || autoTrigger) && !saveImgUseFlg) {//マニュアルトリガ又はオートトリガが有効であった場合
+			    		manualTrigger = false;
+				    	if( demoFlg ) {
+				    		try {
+				    			framCnt++;
+				    			if(framCnt>=video_frame_count) {
+				    				source_video.set(Videoio.CAP_PROP_POS_FRAMES,0);
+				    				Platform.runLater( () ->info2.appendText(("demo動画ループ再生\n")));
+				    				framCnt=0;
+				    			}
+				    			source_video.read(srcMat);
+				    			if( srcMat == null) {
+				    				Platform.runLater( () ->info2.appendText(( "demo動画が再生できません\n")));
+				    			}else {
+				    				rePaint();
+				    			}
+
+				    		}catch(Exception e) {
+				    			Platform.runLater( () ->info2.appendText("demo動画エラー"+e.toString()+"\n"));
+				    			return;
+				    		}
+						}else {
+							srcMat = grabFrame();
+					    	if( srcMat.width() !=0 ) {
+					    		rePaint();
+					    	}
+						}
+			    	}else if(shutterFlg && !demoFlg && !saveImgUseFlg) {
+						srcMat = grabFrame();
+				    	if( srcMat.width() > 0 ) {
+				    		rePaint();
+				    	}else {
+				    		Platform.runLater( () ->info2.appendText(("カメラから画像の取得に失敗\n")));
+				    	}
+				    	shutterFlg = false;
+					}
+
+			    	if( eventTrigger ) {
+			    		rePaint();
+			    	}
+				}
 			}
 		};
 		timer = Executors.newSingleThreadScheduledExecutor();
@@ -1135,6 +1151,12 @@ public class VisonController{
 		        	updateImageView(imgNG, Utils.mat2Image(orgMat));
 		        }
 	        }
+	        if( debugFlg ) {
+				Imgproc.putText(orgMat, "CAMERA Through",
+						new Point(5,50),
+						Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),3);
+	        }
+
 	        updateImageView(imgORG, Utils.mat2Image(orgMat));
     	}catch(Exception e) {
     		Platform.runLater(() ->info2.appendText(e+"\n:検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n"));
@@ -1793,6 +1815,7 @@ public class VisonController{
         assert imgSaveFlg_all != null : "fx:id=\"imgSaveFlg_all\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert OKImageBtn != null : "fx:id=\"OKImageBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert accordion_1 != null : "fx:id=\"accordion_1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert throughImageChk != null : "fx:id=\"throughImageChk\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         imgORG_imageViewFitWidth = imgORG.getFitWidth();

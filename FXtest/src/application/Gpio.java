@@ -99,7 +99,7 @@ public class Gpio {
 		String rt;
 		try {
 	        port.writeString("\r");
-	        port.writeString("gpio read 3\r");
+	        port.writeString("gpio read 1\r");
 
 	        rt = port.readString();
 
@@ -162,7 +162,7 @@ public class Gpio {
 		//デバッグコード----
 		if( VisonController.debugFlg ) {
 			Thread.sleep(debugSleepTime);
-	        System.out.println("Info: <gpio set 1> Command sent...");
+	        System.out.println("Info: <gpio set 3> Command sent...");
 	        return true;
 		}
 		//------------------
@@ -171,8 +171,8 @@ public class Gpio {
 		}
         try {
 			port.writeString("\r");
-	        port.writeString("gpio set 1\r");
-	        System.out.println("Info: <gpio set 1> Command sent...");
+	        port.writeString("gpio set 3\r");
+	        System.out.println("Info: <gpio set 3> Command sent...");
 
 	        Thread.sleep(sleepTime );
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
@@ -195,7 +195,7 @@ public class Gpio {
 		//デバッグコード----
 		if( VisonController.debugFlg ) {
 			Thread.sleep(debugSleepTime);
-	        System.out.println("Debug:::Info: <gpio clear 1> Command sent...");
+	        System.out.println("Debug:::Info: <gpio clear 3> Command sent...");
 			return true;
 		}
 		//------------------
@@ -203,8 +203,8 @@ public class Gpio {
 			return false;
 		}		try {
 	        port.writeString("\r");
-	        port.writeString("gpio clear 1\r");//IO 1クリア 出力ゼロ
-	        System.out.println("Info: <gpio clear 1> Command sent...");
+	        port.writeString("gpio clear 3\r");//IO 3クリア 出力ゼロ
+	        System.out.println("Info: <gpio clear 3> Command sent...");
 
 	        Thread.sleep(sleepTime );
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
