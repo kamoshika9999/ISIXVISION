@@ -322,6 +322,14 @@ public class VisonController{
     private CheckBox throughImageChk;
     @FXML
     private Button GPIO_allRead;
+    @FXML
+    private Button shotImgBtn;
+    @FXML
+    private Button shotImgBtn_chess;
+    @FXML
+    private Button cameraCalib;
+    @FXML
+    private Button calibDataDel;
 
 
     @FXML
@@ -1212,6 +1220,57 @@ public class VisonController{
         	});
         }
     }
+    /**
+     * 撮影画像保存
+     * @param imgMat
+     * @param fileString
+     */
+    public void SaveshotImg(Mat imgMat,String fileString) {
+    	File folder = new File("./shot_image");
+    	if( !folder.exists()) {
+    		if( !folder.mkdir() ) {
+    			Platform.runLater( () ->info2.appendText("shot_imageフォルダの作成に失敗"+"\n"));
+    			Platform.runLater( () ->this.info1.setText("shot_imageフォルダの作成に失敗"));
+    			return;
+    		}
+    	}
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSS");
+        String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
+        try {
+        	Platform.runLater( () ->Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat));
+        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"shot画像保存"+"\n"));
+        }catch(Exception e) {
+        	Platform.runLater( () ->info2.appendText("shot画像の保存に失敗"+e.toString()+"\n"));
+        }
+        Platform.runLater( () ->info2.appendText("shot画像ファイルを保存\n" + fileName +".jpeg\n"));
+
+    }
+    /**
+     * チェスボード画像保存
+     * @param imgMat
+     * @param fileString
+     */
+    public void SavechessImg(Mat imgMat,String fileString) {
+    	File folder = new File("./chess_image");
+    	if( !folder.exists()) {
+    		if( !folder.mkdir() ) {
+    			Platform.runLater( () ->info2.appendText("chess_imageフォルダの作成に失敗"+"\n"));
+    			return;
+    		}
+    	}
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSS");
+        String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
+        try {
+        	Platform.runLater( () ->Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat));
+        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"チェスボード画像保存"+"\n"));
+        }catch(Exception e) {
+        	Platform.runLater( () ->info2.appendText("チェスボード画像の保存に失敗"+e.toString()+"\n"));
+        }
+        Platform.runLater( () ->info2.appendText("チェスボード画像ファイルを保存\n" + fileName +".jpeg\n"));
+
+    }
 
     /**
      *
@@ -1716,7 +1775,30 @@ public class VisonController{
     	Platform.runLater(() ->this.info2.appendText("GPIO Read ALL::" + rt));
     }
 
+    @FXML
+    /**
+     * 撮影ボタンによる撮影 ./shot_imageに入り当ソフトからは消せない
+     * @param event
+     */
+    void onShotImg(ActionEvent event) {
+    	SaveshotImg(srcMat, "shot");
+    }
 
+    @FXML
+    void onShotImg_chess(ActionEvent event) {
+    	SavechessImg(srcMat, "chessbord");
+    }
+    @FXML
+    void onCalbdataDel(ActionEvent event) {
+    	Platform.runLater(() ->info2.appendText("キャリブレーションデーター削除：未実装\n"));
+
+    }
+
+    @FXML
+    void onCameraCalib(ActionEvent event) {
+    	Platform.runLater(() ->info2.appendText("キャリブレーション実行：未実装\n"));
+
+    }
     @FXML
     void initialize() {
         assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'Sample2.fxml'.";
@@ -1818,6 +1900,10 @@ public class VisonController{
         assert accordion_1 != null : "fx:id=\"accordion_1\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert throughImageChk != null : "fx:id=\"throughImageChk\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert throughImageChk != null : "fx:id=\"throughImageChk\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert shotImgBtn != null : "fx:id=\"shotImgBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert shotImgBtn_chess != null : "fx:id=\"shotImgBtn_chess\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert cameraCalib != null : "fx:id=\"cameraCalib\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert calibDataDel != null : "fx:id=\"calibDataDel\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         imgORG_imageViewFitWidth = imgORG.getFitWidth();

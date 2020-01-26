@@ -20,6 +20,11 @@
 
 <AnchorPane fx:id="aPane" accessibleRole="TEXT_FIELD" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeypressed" pickOnBounds="false" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.VisonController">
    <children>
+      <CheckBox fx:id="throughImageChk" layoutX="958.0" layoutY="324.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="191.0" text="スルー画像表示">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </CheckBox>
       <ImageView fx:id="imgNG" fitHeight="293.0" fitWidth="430.0" layoutX="769.0" layoutY="402.0" pickOnBounds="true" preserveRatio="true" smooth="false">
          <effect>
             <DropShadow color="#da0606" />
@@ -226,6 +231,9 @@
                         <Button fx:id="testBtn" layoutX="14.0" layoutY="163.0" mnemonicParsing="false" onAction="#onTest" prefHeight="25.0" prefWidth="77.0" text="検査開始" />
                         <Button fx:id="stopTest" layoutX="99.0" layoutY="163.0" mnemonicParsing="false" onAction="#onTestStop" prefHeight="25.0" prefWidth="85.0" text="停止" />
                         <Button fx:id="GPIO_allRead" layoutX="196.0" layoutY="104.0" mnemonicParsing="false" onAction="#onGPIOAllRead" prefHeight="25.0" prefWidth="90.0" text="GPIO AllRead" />
+                        <Button fx:id="shotImgBtn_chess" layoutX="294.0" layoutY="104.0" mnemonicParsing="false" onAction="#onShotImg_chess" prefHeight="25.0" prefWidth="108.0" text="チェスボード撮影" />
+                        <Button fx:id="cameraCalib" layoutX="410.0" layoutY="104.0" mnemonicParsing="false" onAction="#onCameraCalib" prefHeight="25.0" prefWidth="160.0" text="カメラキャリブレーション実行" />
+                        <Button fx:id="calibDataDel" layoutX="410.0" layoutY="135.0" mnemonicParsing="false" onAction="#onCalbdataDel" prefHeight="25.0" prefWidth="160.0" text="キャリブレーションデータ削除" />
                      </children>
                   </AnchorPane>
             </content>
@@ -400,10 +408,6 @@
       <Circle fx:id="GPIO_STATUS_PIN0" fill="#c8c8c8" layoutX="860.0" layoutY="342.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
       <Circle fx:id="GPIO_STATUS_PIN3" fill="#c8c8c8" layoutX="860.0" layoutY="370.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
       <Circle fx:id="GPIO_STATUS_PIN1" fill="#c8c8c8" layoutX="860.0" layoutY="356.0" radius="5.0" stroke="#393636" strokeType="INSIDE" />
-      <CheckBox fx:id="throughImageChk" layoutX="964.0" layoutY="336.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="191.0" text="スルー画像表示">
-         <font>
-            <Font size="18.0" />
-         </font>
-      </CheckBox>
+      <Button fx:id="shotImgBtn" layoutX="1097.0" layoutY="358.0" mnemonicParsing="false" onAction="#onShotImg" prefHeight="25.0" prefWidth="90.0" text="ショット撮影" />
    </children>
 </AnchorPane>
