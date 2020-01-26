@@ -49,8 +49,18 @@ public class Main extends Application {
 						System.err.println("Exception in stopping the frame capture, trying to release the camera now... " + e);
 					}
 				}
-		        if( Gpio.ngSignalON() ) System.out.println("NG信号 ON");
-		        if( Gpio.close() ) System.out.println("GPIOシリアルポート　クローズ");
+		        try {
+					if( Gpio.ngSignalON() ) System.out.println("NG信号 ON");
+				} catch (InterruptedException e) {
+					System.out.println("if( Gpio.ngSignalON() ) System.out.println(\"NG信号 ON\");::エラー ");
+					//e.printStackTrace();
+				}
+		        try {
+					if( Gpio.close() ) System.out.println("GPIOシリアルポート　クローズ");
+				} catch (InterruptedException e) {
+					System.out.println("if( Gpio.close() ) System.out.println(\"GPIOシリアルポート　クローズ\");::エラー");
+					//e.printStackTrace();
+				}
 		        System.out.println("システムは正常にシャットダウンされました");
 		    }
 		});

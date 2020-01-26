@@ -59,6 +59,7 @@ import javafx.stage.Stage;
 public class VisonController{
 
 	//クラス変数
+	public static boolean debugFlg = false;
 
 	final int saveMax_all = 255;
 	final int saveMax_ng = 200;
@@ -504,15 +505,15 @@ public class VisonController{
 
     @FXML
     void onDemo(ActionEvent event) {
-		if (this.capObj != null ) {
-			Platform.runLater( () ->this.capObj.release());
+		if (capObj != null ) {
+			Platform.runLater( () ->capObj.release());
 		}
     	demoFlg = true;
     	srcMat = new Mat();
     }
 
     @FXML
-    void onTest(ActionEvent event) {
+    void onTest(ActionEvent event) throws InterruptedException {
     	demoFlg = false;
 		// カメラがアクティブ状態の時は停止する
 		if (this.cameraActive) {
@@ -523,8 +524,8 @@ public class VisonController{
 		}
 
 		// カメラ
-		this.cameraId = this.camIDspinner.getValue();
-		this.capObj.open(this.cameraId);
+		cameraId = pObj.cameraID;
+		capObj.open(cameraId);
 		int capwidth = Integer.valueOf(capW_text.getText()).intValue();
 		int capHeight =Integer.valueOf(capH_text.getText()).intValue();
 		boolean wset = capObj.set(Videoio.CAP_PROP_FRAME_WIDTH, capwidth);
@@ -539,7 +540,7 @@ public class VisonController{
 						String.valueOf(capObj.get(Videoio.CAP_PROP_BUFFERSIZE))+"\n"));
 
 		// カメラが開いていない時
-		if (this.capObj.isOpened() == false) {
+		if (capObj.isOpened() == false) {
 			// エラーログを出力して処理を終了する
 			Platform.runLater( () ->info2.appendText("カメラが接続されていません。\nデモモードで起動します。\n"));
 			demoFlg = true;
@@ -561,7 +562,7 @@ public class VisonController{
 		}
 
 		//GPIOボードオープン
-		Gpio.open(this.portNoSpin.getValue().toString());
+		Gpio.open(portNoSpin.getValue().toString());
 		Gpio.OkSignalON();//判定NG以外 IO:1はON
 
 		 // メインクラス
@@ -627,8 +628,8 @@ public class VisonController{
 		    	}
 			}
 		};
-		this.timer = Executors.newSingleThreadScheduledExecutor();
-		this.timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
+		timer = Executors.newSingleThreadScheduledExecutor();
+		timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
 
 		if( Gpio.openFlg ) {
 			if( Gpio.OkSignalON() ) {
@@ -638,40 +639,54 @@ public class VisonController{
 			}
 			//トリガクラス
 			Runnable triggerLoop = new Runnable() {
-				String rt;
+				String rt = "-1";//nullを避ける為-1をいれておく
+				long debugCnt = 0;
 
 				@Override
 				public void run() {
-					//オールクリア信号受信
-					rt = Gpio.clearSignal();
-					if( rt.matches("1") ) {
-						Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
-						onAllClear(null);
-			    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
-
-					}else {
-			    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.LIGHTGRAY));
-					}
-
-					//シャッタートリガ信号受信
-					rt = Gpio.shutterSignal();
-					Platform.runLater( () ->info1.setText("GPIO=" + rt));
-					if( rt.matches("1")) {
-						if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
-							//シャッター
-							try {
-								Thread.sleep( dellySpinner.getValue() );
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-
-							shutterFlg = true;
-							offShutterFlg = true;
-				    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
+					try {
+						if( debugFlg ) {
+							System.out.println("GPIO READ/WRITE" + debugCnt);
+							debugCnt++;
 						}
-					}else{
-							offShutterFlg = false;
-				    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
+						//オールクリア信号受信
+						try {
+							rt = Gpio.clearSignal();
+						} catch (InterruptedException e1) {
+							System.out.println("rt = Gpio.clearSignal();:::エラー");
+							e1.printStackTrace();
+						}
+						if( rt.matches("1") ) {
+							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
+							onAllClear(null);
+				    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
+
+						}else {
+				    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.LIGHTGRAY));
+						}
+
+						rt = Gpio.shutterSignal();
+						Platform.runLater( () ->info1.setText("GPIO=" + rt));
+
+						if( rt.matches("1")) {
+							if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
+								//シャッター
+								try {
+									Thread.sleep( dellySpinner.getValue() );
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+
+								shutterFlg = true;
+								offShutterFlg = true;
+					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
+							}
+						}else{
+								offShutterFlg = false;
+					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
+						}
+					}catch(Exception e) {
+						System.out.println(e.toString());
 					}
 					/*
 					//Debug-----
@@ -684,8 +699,8 @@ public class VisonController{
 
 				}
 			};
-			this.timer2 = Executors.newSingleThreadScheduledExecutor();
-			this.timer2.scheduleAtFixedRate(triggerLoop, 0, 10, TimeUnit.MILLISECONDS);
+			timer2 = Executors.newSingleThreadScheduledExecutor();
+			timer2.scheduleAtFixedRate(triggerLoop, 0, 10, TimeUnit.MILLISECONDS);
 		}
 
 		if( !Gpio.openFlg ) {
@@ -700,9 +715,9 @@ public class VisonController{
 	 */
 	private Mat grabFrame() {
 		Mat frame = new Mat();
-		if (this.capObj.isOpened()) {
+		if (capObj.isOpened()) {
 			try {
-				this.capObj.read(frame);
+				capObj.read(frame);
 				if (frame.empty() == false) {
 					//Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2GRAY);
 				}
@@ -729,18 +744,18 @@ public class VisonController{
     	Platform.runLater( () ->info2.appendText("検査を停止しました\n"));
     }
 	 void stopAcquisition() {
-		if (this.timer != null && this.timer.isShutdown() == false) {
+		if (timer != null && timer.isShutdown() == false) {
 			try {
-				this.timer.shutdown();
-				this.timer.awaitTermination(33, TimeUnit.MICROSECONDS);
+				timer.shutdown();
+				timer.awaitTermination(33, TimeUnit.MICROSECONDS);
 			} catch(Exception e) {
 				// log any exception
 				Platform.runLater( () ->info2.appendText("Exception in stopping the frame capture, trying to release the camera now... " + e +"\n"));
 			}
 		}
 		// @FIXME-[カメラを解放するだけで良い？]
-		if (this.capObj != null ) {
-			this.capObj.release();
+		if (capObj != null ) {
+			capObj.release();
 		}
 	}
 		/**
@@ -1486,6 +1501,7 @@ public class VisonController{
 		para.threshhold_Invers[4] = threshhold_Inverse.isSelected();
 		pObj.portNo = portNoSpin.getValue().intValue();
 		pObj.delly = dellySpinner.getValue().intValue();
+		pObj.cameraID = camIDspinner.getValue().intValue();
 
 		objOut.writeObject(pObj);
 		objOut.flush();
@@ -1524,6 +1540,7 @@ public class VisonController{
 
     	portNoSpin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 9,pObj.portNo,1));
     	dellySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 900,pObj.delly,5));
+    	camIDspinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 9,pObj.cameraID,1));
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
     }
@@ -1612,7 +1629,12 @@ public class VisonController{
     	Platform.runLater(() ->info2.setText(initInfo2));
     	Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
 		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
-		Gpio.OkSignalON();
+		try {
+			Gpio.OkSignalON();
+		} catch (InterruptedException e) {
+			System.out.println("void onAllClear(ActionEvent event) { Gpio.OkSignalON();::エラー");
+			e.printStackTrace();
+		}
 
     }
 
@@ -1791,12 +1813,6 @@ public class VisonController{
 		}
 
 
-        this.onTest(null);
-        try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			Platform.runLater( () ->info2.appendText( e +"\n"));
-		}
 
         updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
         updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
@@ -1812,5 +1828,14 @@ public class VisonController{
     	}
         manualTrigger = true;
         onAllClear(null);
+
+        try {
+			onTest(null);
+		} catch (InterruptedException e) {
+			System.out.println(" void initialize() {onTest(null);::エラー");
+			e.printStackTrace();
+		}
+
+
     }
 }
