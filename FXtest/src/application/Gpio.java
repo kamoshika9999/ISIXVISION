@@ -102,7 +102,20 @@ public class Gpio {
 	        port.writeString("gpio read 1\r");
 
 	        rt = port.readString();
-
+	        //返り値のフォーマット\n\r>\n\r>gpio read 0\n\r1\n\r>
+	        if( rt != null)  {
+		        String tmpStr[] = rt.split("\n\r");
+		        String tmprt ="0";
+		        for( int i=0;i<tmpStr.length;i++ ) {
+		        	if( tmpStr[i].matches(".*read.*") ) {
+		        		tmprt = tmpStr[i+1];
+		        		break;
+		        	}
+		        }
+		        rt=tmprt;
+	        }else {
+	        	rt ="0";
+	        }
 	        Thread.sleep(sleepTime );
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 		}catch(Exception e) {
@@ -138,9 +151,21 @@ public class Gpio {
 		try {
 	        port.writeString("\r");
 	        port.writeString("gpio read 0\r");
-
+	        //返り値のフォーマット\n\r>\n\r>gpio read 0\n\r1\n\r>
 	        rt = port.readString();
-
+	        if( rt != null ) {
+	        	String tmpStr[] = rt.split("\n\r");
+	        	String tmprt = "0";
+		        for( int i=0;i< tmpStr.length;i++ ) {
+		        	if( tmpStr[i].matches(".*read.*") ) {
+		        		tmprt = tmpStr[i+1];
+		        		break;
+		        	}
+		        }
+		        rt = tmprt;
+	        }else {
+	        	rt="0";
+	        }
 	        Thread.sleep(sleepTime );
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 		}catch(Exception e) {
@@ -230,6 +255,7 @@ public class Gpio {
 	        port.writeString("gpio readall\r");
 
 	        rt = port.readString();
+
 
 	        Thread.sleep(sleepTime*10);
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);

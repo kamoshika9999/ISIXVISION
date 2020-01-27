@@ -576,6 +576,10 @@ public class VisonController{
 		//GPIOボードオープン
 		Gpio.open(portNoSpin.getValue().toString());
 		Gpio.OkSignalON();//判定NG以外 IO:1はON
+		
+		//デバッグコード
+
+			//Gpio.readAll();
 
 		 // メインクラス
 		Runnable frameGrabber = new Runnable() {
@@ -696,7 +700,7 @@ public class VisonController{
 						//シャッター信号受信
 						readIO ="shutterSignal";
 						rt = Gpio.shutterSignal();
-						Platform.runLater( () ->info1.setText("GPIO=" + rt));
+						Platform.runLater( () ->info1.setText("GPIO 0 = " + rt));
 
 						if( rt.matches("1")) {
 							if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
