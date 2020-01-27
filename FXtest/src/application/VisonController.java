@@ -672,9 +672,13 @@ public class VisonController{
 				String rt = "-1";//nullを避ける為-1をいれておく
 				long debugCnt = 0;
 				String readIO ="";
+				long loopcnt = 0;
 
 				@Override
 				public void run() {
+					if( loopcnt > 10000 ) loopcnt = 0;
+					loopcnt++;
+					
 					try {
 						readIO ="nothing";
 						if( debugFlg ) {
@@ -700,7 +704,7 @@ public class VisonController{
 						//シャッター信号受信
 						readIO ="shutterSignal";
 						rt = Gpio.shutterSignal();
-						Platform.runLater( () ->info1.setText("GPIO 0 = " + rt));
+						Platform.runLater( () ->info1.setText(loopcnt +  " GPIO 0(SHUTTER TRIGGER) = " + rt));
 
 						if( rt.matches("1")) {
 							if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
@@ -722,15 +726,6 @@ public class VisonController{
 					}catch(NullPointerException e) {
 						System.out.println(readIO + " / " + e.toString());
 					}
-					/*
-					//Debug-----
-					System.out.println(offShutterFlg);
-					if( offShutterFlg) {
-						offShutterFlg = false;
-					}
-					System.out.println(offShutterFlg);
-					*/
-
 				}
 			};
 			timer2 = Executors.newSingleThreadScheduledExecutor();
@@ -1804,7 +1799,10 @@ public class VisonController{
 
     @FXML
     void onCameraCalib(ActionEvent event) {
-    	Platform.runLater(() ->info2.appendText("キャリブレーション実行：未実装\n"));
+    	cameraCalibration  cb = new cameraCalibration();
+    	cb.processer();
+
+    	Platform.runLater(() ->info2.appendText("キャリブレーション実行"));
 
     }
     @FXML

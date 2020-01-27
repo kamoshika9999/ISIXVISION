@@ -11,6 +11,7 @@ import jssc.SerialPort;  /* Calls the respective serial port */
 public class Gpio {
 	static SerialPort port;			//ポートオブジェクト保持用
 	static boolean openFlg;			//ポートオープン成功失敗フラグ
+	static boolean useFlg = false;
 	static final int sleepTime = 100; //バッファパージ前のスレッドスリープタイム(mSec)
 	static int debugSleepTime = 50;
 
@@ -30,21 +31,28 @@ public class Gpio {
 			return true;
 		}
 		//-------------------
-    	openFlg=false;
+		if( useFlg ) return false;
+		useFlg = true;
+
+		openFlg=false;
 	    port = new SerialPort( "COM"+p );
 	    try {
 	        if(port.openPort() == true){
 	            System.out.println("Port " + p + " opened successfully...");
 	            port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);//フロー制御無し
+	            port.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
+	            		SerialPort.PARITY_NONE);
 	 	       	openFlg=true;//ポートオープン 成功
 	        }else{
 	        	openFlg = false;//ポートオープン 失敗
+	        	useFlg = false;
 	            return false;
 	        }
-	        //Thread.sleep(sleepTime );
+	        useFlg =false;
 	        return true; //例外無く終了
 
 	    }catch(Exception e) {
+	    	useFlg = false;
 	    	return false;//例外発生し、ポートオープン失敗 openFlgはfalse
 	    }
 	}
@@ -62,21 +70,27 @@ public class Gpio {
 			return true;
 		}
 		//-----------------------
+		if( useFlg ) return false;
+		useFlg = true;
+
 		if( !openFlg ) {
+			useFlg = false;
 			return false; //ポートが開いていない場合はportオブジェクトがnullの為リターン
 		}
 		try {
 	        if(port.closePort() == true){//ポートクローズ
 	            System.out.println("Port " + port.toString() + " closeed successfully...");
 	        }else{
+				useFlg = false;
 	            return false;
 	        }
 	    }catch(Exception e) {
 	    	e.printStackTrace();
+			useFlg = false;
 	    	return false;
 	    }
+		useFlg = false;
 	    return true;
-
 	}
 
 	/**
@@ -93,7 +107,11 @@ public class Gpio {
 			return "0";
 		}
 		//------------------
+		if( useFlg ) return "0";
+		useFlg = true;
+
 		if( !openFlg ) {
+			useFlg = false;
 			return "PortNotOpen";
 		}
 		String rt;
@@ -120,9 +138,10 @@ public class Gpio {
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 		}catch(Exception e) {
 			e.printStackTrace();
+			useFlg = false;
 			return "clearSignal Read error";
 		}
-
+		useFlg = false;
 		return rt;//読み込みに成功したら'1'又は'0'を返す
 
 	}
@@ -144,7 +163,11 @@ public class Gpio {
 			return "1";
 		}
 		//------------------
+		if( useFlg ) return "0";
+		useFlg = true;
+
 		if( !openFlg ) {
+			useFlg = false;
 			return "PortNotOpen";
 		}
 		String rt = "0";
@@ -170,8 +193,10 @@ public class Gpio {
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 		}catch(Exception e) {
 			e.printStackTrace();
+			useFlg = false;
 			return "shutterSignal Read error";
 		}
+		useFlg = false;
 		return rt;//読み込みに成功したら'1'又は'0'を返す
 
 	}
@@ -190,7 +215,11 @@ public class Gpio {
 	        return true;
 		}
 		//------------------
+		if( useFlg ) return false;
+		useFlg = true;
+
 		if( !openFlg ) {
+			useFlg = false;
 			return false;
 		}
         try {
@@ -202,9 +231,10 @@ public class Gpio {
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 		} catch (Exception e) {
 			e.printStackTrace();
+			useFlg = false;
 			return false;
 		}
-
+		useFlg = false;
         return true;
 	}
 
@@ -223,7 +253,11 @@ public class Gpio {
 			return true;
 		}
 		//------------------
+		if( useFlg ) return false;
+		useFlg = true;
+
 		if( !openFlg ) {
+			useFlg = false;
 			return false;
 		}
 		try {
@@ -235,9 +269,11 @@ public class Gpio {
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 		}catch(Exception e) {
 			e.printStackTrace();
+			useFlg = false;
 			return false;
 		}
 
+		useFlg = false;
         return true;
 	}
 
@@ -246,7 +282,11 @@ public class Gpio {
 	 * @return
 	 */
 	public static String readAll(){
+		if( useFlg ) return "erroe";
+		useFlg = true;
+
 		if( !openFlg ) {
+			useFlg = false;
 			return "PortNotOpen";
 		}
 		String rt = "error";
@@ -261,9 +301,11 @@ public class Gpio {
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 		}catch(Exception e) {
 			e.printStackTrace();
+			useFlg = false;
 			return "All Read error";
 		}
 
+		useFlg = false;
 		return rt;//読み込みに成功したら'1'又は'0'を返す
 
 	}
