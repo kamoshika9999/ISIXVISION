@@ -20,11 +20,6 @@
 
 <AnchorPane fx:id="aPane" accessibleRole="TEXT_FIELD" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeypressed" pickOnBounds="false" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.VisonController">
    <children>
-      <CheckBox fx:id="throughImageChk" layoutX="958.0" layoutY="324.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="191.0" text="スルー画像表示">
-         <font>
-            <Font size="18.0" />
-         </font>
-      </CheckBox>
       <ImageView fx:id="imgNG" fitHeight="293.0" fitWidth="430.0" layoutX="769.0" layoutY="402.0" pickOnBounds="true" preserveRatio="true" smooth="false">
          <effect>
             <DropShadow color="#da0606" />
@@ -409,5 +404,10 @@
       <Circle fx:id="GPIO_STATUS_PIN3" fill="#c8c8c8" layoutX="860.0" layoutY="370.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
       <Circle fx:id="GPIO_STATUS_PIN1" fill="#c8c8c8" layoutX="860.0" layoutY="356.0" radius="5.0" stroke="#393636" strokeType="INSIDE" />
       <Button fx:id="shotImgBtn" layoutX="1097.0" layoutY="358.0" mnemonicParsing="false" onAction="#onShotImg" prefHeight="25.0" prefWidth="90.0" text="ショット撮影" />
+      <CheckBox fx:id="throughImageChk" layoutX="958.0" layoutY="324.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="191.0" text="スルー画像表示">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </CheckBox>
    </children>
 </AnchorPane>

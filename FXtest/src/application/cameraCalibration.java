@@ -27,7 +27,12 @@ public class cameraCalibration {
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 	}
-
+	public static void main(String[] args) {
+		cameraCalibration c = new cameraCalibration();
+		System.out.println("開始しました。");
+		c.processer();
+		System.out.println("終了しました。");
+	}
 	public void processer() {
 		if (!Files.exists(picFolderPath)) {
 			System.err.println("The picture folder does not exist!");
@@ -91,7 +96,7 @@ public class cameraCalibration {
 		MatOfPoint3f objectPoint = new MatOfPoint3f();
 
 		List<Point3> objectPoint_ = new ArrayList<>();
-		// final Size patternSize = new Size(6, 9); // 探査するコーナーの数
+		// final Size patternSize = new Size(7, 10); // 探査するコーナーの数
 		for (int row = 0; row < patternSize.height; row++) {
 			for (int col = 0; col < patternSize.width; col++) {
 				objectPoint_.add(getPoint(row, col));

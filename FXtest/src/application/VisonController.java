@@ -667,16 +667,19 @@ public class VisonController{
 			Runnable triggerLoop = new Runnable() {
 				String rt = "-1";//nullを避ける為-1をいれておく
 				long debugCnt = 0;
+				String readIO ="";
 
 				@Override
 				public void run() {
 					try {
+						readIO ="nothing";
 						if( debugFlg ) {
 							System.out.println("GPIO READ/WRITE" + debugCnt);
 							debugCnt++;
 						}
 						//オールクリア信号受信
 						try {
+							readIO ="clearSignal";
 							rt = Gpio.clearSignal();
 						} catch (InterruptedException e1) {
 							System.out.println("rt = Gpio.clearSignal();:::エラー");
@@ -690,7 +693,8 @@ public class VisonController{
 						}else {
 				    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.LIGHTGRAY));
 						}
-
+						//シャッター信号受信
+						readIO ="shutterSignal";
 						rt = Gpio.shutterSignal();
 						Platform.runLater( () ->info1.setText("GPIO=" + rt));
 
@@ -712,7 +716,7 @@ public class VisonController{
 					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
 						}
 					}catch(NullPointerException e) {
-						System.out.println(e.toString());
+						System.out.println(readIO + " / " + e.toString());
 					}
 					/*
 					//Debug-----

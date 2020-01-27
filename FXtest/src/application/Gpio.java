@@ -11,7 +11,7 @@ import jssc.SerialPort;  /* Calls the respective serial port */
 public class Gpio {
 	static SerialPort port;			//ポートオブジェクト保持用
 	static boolean openFlg;			//ポートオープン成功失敗フラグ
-	static final int sleepTime = 50; //バッファパージ前のスレッドスリープタイム(mSec)
+	static final int sleepTime = 100; //バッファパージ前のスレッドスリープタイム(mSec)
 	static int debugSleepTime = 50;
 
 	/**
