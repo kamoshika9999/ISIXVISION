@@ -576,7 +576,7 @@ public class VisonController{
 		//GPIOボードオープン
 		Gpio.open(portNoSpin.getValue().toString());
 		Gpio.OkSignalON();//判定NG以外 IO:1はON
-		
+
 		//デバッグコード
 
 			//Gpio.readAll();
@@ -678,7 +678,7 @@ public class VisonController{
 				public void run() {
 					if( loopcnt > 10000 ) loopcnt = 0;
 					loopcnt++;
-					
+
 					try {
 						readIO ="nothing";
 						if( debugFlg ) {
@@ -1152,6 +1152,9 @@ public class VisonController{
 		        	if( !outTrigDisableChk.isSelected() ){
 		        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
 		        		if( Gpio.openFlg) {
+		        			while( Gpio.useFlg ) {
+		        				System.out.println("rePaint() Gpio.useFlg=true");
+		        			}
 		        			if( Gpio.ngSignalON() ) {
 					    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
 		        			}else {
@@ -1710,6 +1713,9 @@ public class VisonController{
     	Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
 		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
 		try {
+			while( Gpio.useFlg ) {
+				System.out.println("onAllClear() Gpio.useFlg=true");
+			}
 			Gpio.OkSignalON();
 		} catch (InterruptedException e) {
 			System.out.println("void onAllClear(ActionEvent event) { Gpio.OkSignalON();::エラー");
