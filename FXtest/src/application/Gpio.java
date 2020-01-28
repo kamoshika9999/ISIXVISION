@@ -24,8 +24,9 @@ public class Gpio {
 	 * @throws InterruptedException
 	 *
 	 */
-	public static boolean open(String p,int adc_thresh){
+	public static boolean open(String p,int adc_thresh,boolean analog){
 		adcThresh = adc_thresh;
+		adcFlg = analog;
 		//デバッグコード-----
 		if( VisonController.debugFlg ) {
 			try {
@@ -159,6 +160,7 @@ public class Gpio {
 
 	        }else {
 	        	port.writeString("gpio read 1\r");
+	        	Thread.sleep(sleepTime );
 		        rt = port.readString();
 		        //返り値のフォーマット\n\r>\n\r>gpio read 0\n\r1\n\r>
 		        if( rt != null)  {
@@ -243,6 +245,7 @@ public class Gpio {
 	        }else {
 		        port.writeString("gpio read 0\r");
 		        //返り値のフォーマット\n\r>\n\r>gpio read 0\n\r1\n\r>
+		        Thread.sleep(sleepTime );
 		        rt = port.readString();
 		        if( rt != null ) {
 		        	System.out.println(rt);

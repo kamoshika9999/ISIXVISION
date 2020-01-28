@@ -10,10 +10,11 @@ public class preSet implements Serializable{
 	int cameraID;
 	int adc_thresh;
 	int cameraWidth,cameraHeight;
+	boolean adcFlg;
 
 	public preSet() {
 		portNo = 4;
-		delly = 50;
+		delly = 550;
 
 		para = new parameter[4];
 		for(int i=0;i<4;i++) {
@@ -23,6 +24,7 @@ public class preSet implements Serializable{
 			adc_thresh = 2000;
 			cameraWidth = 1920;
 			cameraHeight = 1080;
+			adcFlg = true;
 		}
 	}
 }

@@ -109,8 +109,7 @@ public class VisonController{
 	final long lockedTimerThresh = 1000 * 60 *5;
 	//テンプレートマッチング用
 	private boolean matchTempStartFlg = false;
-	//保存画像を使用した設定に使うフラグ
-	//保存画像使用中はＰＬＣシャッタートリガ強制無効
+	//保存画像を使用した設定に使うフラグ   保存画像使用中はＰＬＣシャッタートリガ強制無効
 	public static boolean saveImgUseFlg;
 
 	//インフォメーション
@@ -332,6 +331,14 @@ public class VisonController{
     private Button calibDataDel;
     @FXML
     private TextField adc_thresh_value;
+    @FXML
+    private CheckBox adc_flg;
+
+	private long savelockedTimer;
+
+	private long savelockedTimerThresh = 1000;
+
+	private int NGsaveCnt = 0;
 
 
     @FXML
@@ -576,7 +583,7 @@ public class VisonController{
 		}
 
 		//GPIOボードオープン
-		Gpio.open(String.valueOf(pObj.portNo), pObj.adc_thresh);
+		Gpio.open(String.valueOf(pObj.portNo), pObj.adc_thresh,pObj.adcFlg);
 		Gpio.OkSignalON();//判定NG以外 IO:1はON
 
 		//デバッグコード
@@ -1140,8 +1147,8 @@ public class VisonController{
 		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng &&
 		        			!outTrigDisableChk.isSelected()
 		        			&& !settingModeFlg) {
-		        		saveImg( saveSrcMat,fileString);
-		        		saveImg( orgMat,fileString);
+		        		saveImgNG( saveSrcMat,fileString);
+		        		saveImgNG( orgMat,fileString);
 		        	}else if( fileString != ""){
 		        		final String infoText = fileString +"\n";
 		        		Platform.runLater( () ->info2.appendText(infoText));
@@ -1178,7 +1185,17 @@ public class VisonController{
      * @param imgMat
      * @param fileString
      */
-    public void saveImg(Mat imgMat,String fileString) {
+    public void saveImgNG(Mat imgMat,String fileString) {
+    	if( NGsaveCnt == 2) {
+    		if( System.currentTimeMillis() - savelockedTimer < savelockedTimerThresh) {
+    			return;
+    		}else {
+    			NGsaveCnt = 0;
+    		}
+    	}
+		savelockedTimer = System.currentTimeMillis();
+		NGsaveCnt++;
+
     	File folder = new File("./ng_image");
     	if( !folder.exists()) {
     		if( !folder.mkdir() ) {
@@ -1191,7 +1208,7 @@ public class VisonController{
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSS");
         String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
         try {
-        	Platform.runLater( () ->Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat));
+        	Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat);
         	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"NG画像保存"+"\n"));
         }catch(Exception e) {
         	Platform.runLater( () ->info2.appendText("NG画像の保存に失敗"+e.toString()+"\n"));
@@ -1204,7 +1221,12 @@ public class VisonController{
      * @param imgMat
      */
     public void saveImgOK(Mat imgMat) {
-    	File folder = new File("./ok_image");
+		if( System.currentTimeMillis() - savelockedTimer < savelockedTimerThresh) {
+			return;
+		}else {
+			savelockedTimer = System.currentTimeMillis();
+		}
+		File folder = new File("./ok_image");
     	if( !folder.exists()) {
     		if( !folder.mkdir() ) {
     			Platform.runLater( () ->info2.appendText("ng_imageフォルダの作成に失敗"+"\n"));
@@ -1213,7 +1235,7 @@ public class VisonController{
     	}
         allSaveCnt++;
         try {
-        	Platform.runLater( () ->Imgcodecs.imwrite(folder+"/" + allSaveCnt + ".jpeg", imgMat));
+        	Imgcodecs.imwrite(folder+"/" + allSaveCnt + ".jpeg", imgMat);
         }catch(Exception e) {
         	Platform.runLater( () ->info2.appendText("OK画像の保存に失敗"+e.toString()+"\n"));
         }
@@ -1244,7 +1266,7 @@ public class VisonController{
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSS");
         String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
         try {
-        	Platform.runLater( () ->Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat));
+        	Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat);
         	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"shot画像保存"+"\n"));
         }catch(Exception e) {
         	Platform.runLater( () ->info2.appendText("shot画像の保存に失敗"+e.toString()+"\n"));
@@ -1269,7 +1291,7 @@ public class VisonController{
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSS");
         String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
         try {
-        	Platform.runLater( () ->Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat));
+        	Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat);
         	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"チェスボード画像保存"+"\n"));
         }catch(Exception e) {
         	Platform.runLater( () ->info2.appendText("チェスボード画像の保存に失敗"+e.toString()+"\n"));
@@ -1589,6 +1611,8 @@ public class VisonController{
 		pObj.adc_thresh = Integer.valueOf(adc_thresh_value.getText());
 		pObj.cameraHeight = Integer.valueOf(capH_text.getText());
 		pObj.cameraWidth = Integer.valueOf(capW_text.getText());
+		pObj.adcFlg = adc_flg.isSelected();
+
 
 		objOut.writeObject(pObj);
 		objOut.flush();
@@ -1631,8 +1655,9 @@ public class VisonController{
     	adc_thresh_value.setText( String.valueOf(pObj.adc_thresh));
     	capH_text.setText( String.valueOf(pObj.cameraHeight));
     	capW_text.setText( String.valueOf(pObj.cameraWidth));
-    	
-    	
+    	adc_flg.setSelected(pObj.adcFlg);
+
+
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
     }
@@ -1922,6 +1947,7 @@ public class VisonController{
         assert cameraCalib != null : "fx:id=\"cameraCalib\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert calibDataDel != null : "fx:id=\"calibDataDel\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert adc_thresh_value != null : "fx:id=\"adc_thresh_value\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert adc_flg != null : "fx:id=\"adc_flg\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         imgORG_imageViewFitWidth = imgORG.getFitWidth();
