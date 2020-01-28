@@ -8,7 +8,8 @@ public class preSet implements Serializable{
 	int portNo;
 	int delly;
 	int cameraID;
-
+	int adc_thresh;
+	int cameraWidth,cameraHeight;
 
 	public preSet() {
 		portNo = 4;
@@ -19,6 +20,9 @@ public class preSet implements Serializable{
 			para[i] = new parameter();
 			select = 1;
 			cameraID = 1;
+			adc_thresh = 2000;
+			cameraWidth = 1920;
+			cameraHeight = 1080;
 		}
 	}
 }

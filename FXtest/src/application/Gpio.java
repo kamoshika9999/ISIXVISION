@@ -13,7 +13,7 @@ public class Gpio {
 	static boolean openFlg;			//ポートオープン成功失敗フラグ
 	static boolean useFlg = false;
 	static boolean adcFlg = true;
-	static final int adcThresh = 600;
+	static int adcThresh;
 	static final int sleepTime = 30; //バッファパージ前のスレッドスリープタイム(mSec)
 	static int debugSleepTime = 50;
 
@@ -24,7 +24,8 @@ public class Gpio {
 	 * @throws InterruptedException
 	 *
 	 */
-	public static boolean open(String p){
+	public static boolean open(String p,int adc_thresh){
+		adcThresh = adc_thresh;
 		//デバッグコード-----
 		if( VisonController.debugFlg ) {
 			try {

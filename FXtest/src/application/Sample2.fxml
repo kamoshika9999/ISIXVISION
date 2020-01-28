@@ -201,9 +201,9 @@
                         </Label>
                         <Spinner fx:id="camIDspinner" initialValue="1" layoutX="177.0" layoutY="14.0" max="9" min="0" prefHeight="25.0" prefWidth="47.0" />
                         <Label layoutX="126.0" layoutY="19.0" prefHeight="17.0" prefWidth="45.0" text="Cam ID" />
-                        <TextField fx:id="capW_text" alignment="CENTER_RIGHT" layoutX="176.0" layoutY="41.0" prefHeight="25.0" prefWidth="52.0" text="800" />
-                        <TextField fx:id="capH_text" alignment="CENTER_RIGHT" layoutX="176.0" layoutY="66.0" prefHeight="25.0" prefWidth="52.0" text="600" />
-                        <Label layoutX="126.0" layoutY="45.0" prefHeight="17.0" prefWidth="45.0" text="CAP W" />
+                        <TextField fx:id="adc_thresh_value" alignment="CENTER_RIGHT" layoutX="443.0" layoutY="16.0" prefHeight="25.0" prefWidth="52.0" text="2000" />
+                        <TextField fx:id="capH_text" alignment="CENTER_RIGHT" layoutX="176.0" layoutY="66.0" prefHeight="25.0" prefWidth="52.0" text="1080" />
+                        <Label layoutX="380.0" layoutY="20.0" prefHeight="17.0" prefWidth="68.0" text="ADC Thresh" />
                         <Label layoutX="126.0" layoutY="69.0" prefHeight="17.0" prefWidth="45.0" text="CAP H" />
                         <Button fx:id="demoMode" layoutX="15.0" layoutY="100.0" mnemonicParsing="false" onAction="#onDemo" prefHeight="25.0" prefWidth="75.0" text="DemoMode">
                            <font>
@@ -229,6 +229,8 @@
                         <Button fx:id="shotImgBtn_chess" layoutX="294.0" layoutY="104.0" mnemonicParsing="false" onAction="#onShotImg_chess" prefHeight="25.0" prefWidth="108.0" text="チェスボード撮影" />
                         <Button fx:id="cameraCalib" layoutX="410.0" layoutY="104.0" mnemonicParsing="false" onAction="#onCameraCalib" prefHeight="25.0" prefWidth="160.0" text="カメラキャリブレーション実行" />
                         <Button fx:id="calibDataDel" layoutX="410.0" layoutY="135.0" mnemonicParsing="false" onAction="#onCalbdataDel" prefHeight="25.0" prefWidth="160.0" text="キャリブレーションデータ削除" />
+                        <TextField fx:id="capW_text" alignment="CENTER_RIGHT" layoutX="176.0" layoutY="47.0" prefHeight="25.0" prefWidth="52.0" text="1920" />
+                        <Label layoutX="126.0" layoutY="50.0" prefHeight="17.0" prefWidth="45.0" text="CAP W" />
                      </children>
                   </AnchorPane>
             </content>

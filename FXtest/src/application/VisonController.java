@@ -330,6 +330,8 @@ public class VisonController{
     private Button cameraCalib;
     @FXML
     private Button calibDataDel;
+    @FXML
+    private TextField adc_thresh_value;
 
 
     @FXML
@@ -574,7 +576,7 @@ public class VisonController{
 		}
 
 		//GPIOボードオープン
-		Gpio.open(portNoSpin.getValue().toString());
+		Gpio.open(String.valueOf(pObj.portNo), pObj.adc_thresh);
 		Gpio.OkSignalON();//判定NG以外 IO:1はON
 
 		//デバッグコード
@@ -1580,9 +1582,13 @@ public class VisonController{
 		para.threshholdCheck[4] = threshholdCheck.isSelected();
 		para.threshhold[4] = threshholdSlider.getValue();
 		para.threshhold_Invers[4] = threshhold_Inverse.isSelected();
+
 		pObj.portNo = portNoSpin.getValue().intValue();
 		pObj.delly = dellySpinner.getValue().intValue();
 		pObj.cameraID = camIDspinner.getValue().intValue();
+		pObj.adc_thresh = Integer.valueOf(adc_thresh_value.getText());
+		pObj.cameraHeight = Integer.valueOf(capH_text.getText());
+		pObj.cameraWidth = Integer.valueOf(capW_text.getText());
 
 		objOut.writeObject(pObj);
 		objOut.flush();
@@ -1622,6 +1628,11 @@ public class VisonController{
     	portNoSpin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 9,pObj.portNo,1));
     	dellySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 900,pObj.delly,5));
     	camIDspinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 9,pObj.cameraID,1));
+    	adc_thresh_value.setText( String.valueOf(pObj.adc_thresh));
+    	capH_text.setText( String.valueOf(pObj.cameraHeight));
+    	capW_text.setText( String.valueOf(pObj.cameraWidth));
+    	
+    	
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
     }
@@ -1910,6 +1921,7 @@ public class VisonController{
         assert shotImgBtn_chess != null : "fx:id=\"shotImgBtn_chess\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert cameraCalib != null : "fx:id=\"cameraCalib\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert calibDataDel != null : "fx:id=\"calibDataDel\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert adc_thresh_value != null : "fx:id=\"adc_thresh_value\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         imgORG_imageViewFitWidth = imgORG.getFitWidth();
