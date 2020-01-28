@@ -12,7 +12,9 @@ public class Gpio {
 	static SerialPort port;			//ポートオブジェクト保持用
 	static boolean openFlg;			//ポートオープン成功失敗フラグ
 	static boolean useFlg = false;
-	static final int sleepTime = 100; //バッファパージ前のスレッドスリープタイム(mSec)
+	static boolean adcFlg = true;
+	static final int adcThresh = 600;
+	static final int sleepTime = 30; //バッファパージ前のスレッドスリープタイム(mSec)
 	static int debugSleepTime = 50;
 
 	/**
@@ -22,10 +24,14 @@ public class Gpio {
 	 * @throws InterruptedException
 	 *
 	 */
-	public static boolean open(String p) throws InterruptedException {
+	public static boolean open(String p){
 		//デバッグコード-----
 		if( VisonController.debugFlg ) {
-			Thread.sleep(debugSleepTime);
+			try {
+				Thread.sleep(debugSleepTime);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			openFlg = true;
             System.out.println("Debug:::Port " + p + " opened successfully...");
 			return true;
@@ -62,10 +68,14 @@ public class Gpio {
 	 * @return true:ポートクローズ成功  false:ポートクローズ失敗
 	 * @throws InterruptedException
 	 */
-	public static boolean close() throws InterruptedException {
+	public static boolean close() {
 		//デバッグコード---------
 		if( VisonController.debugFlg ) {
-			Thread.sleep(debugSleepTime);
+			try {
+				Thread.sleep(debugSleepTime);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
             System.out.println("Debug:::Port  closeed successfully...");
 			return true;
 		}
@@ -99,10 +109,14 @@ public class Gpio {
 	 * @return '1':オールクリア信号受信 '0':非受信
 	 * @throws InterruptedException
 	 */
-	public static String clearSignal() throws InterruptedException {
+	public static String clearSignal(){
 		//デバッグコード----
 		if( VisonController.debugFlg ) {
-			Thread.sleep(debugSleepTime);
+			try {
+				Thread.sleep(debugSleepTime);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			System.out.println("Debug:::clear signal OFF");
 			return "0";
 		}
@@ -117,30 +131,57 @@ public class Gpio {
 		String rt;
 		try {
 	        port.writeString("\r");
-	        port.writeString("gpio read 1\r");
 
-	        rt = port.readString();
-	        //返り値のフォーマット\n\r>\n\r>gpio read 0\n\r1\n\r>
-	        if( rt != null)  {
-		        String tmpStr[] = rt.split("\n\r");
-		        String tmprt ="0";
-		        for( int i=0;i<tmpStr.length;i++ ) {
-		        	if( tmpStr[i].matches(".*read.*") ) {
-		        		tmprt = tmpStr[i+1];
-		        		break;
-		        	}
+	        if( adcFlg ) {
+
+                port.purgePort(SerialPort.PURGE_RXCLEAR | SerialPort.PURGE_TXCLEAR);
+                port.writeString("adc read 1\r");
+                Thread.sleep(sleepTime);
+		        rt = port.readString();
+		        if( rt != null)  {
+			        String tmpStr[] = rt.split("\n\r");
+			        String tmprt ="0";
+			        for( int i=0;i<tmpStr.length;i++ ) {
+			        	if( tmpStr[i].matches(".*read.*") ) {
+			        		tmprt = tmpStr[i+1];
+			        		break;
+			        	}
+			        }
+			        if( Integer.valueOf(tmprt) > adcThresh){
+			        	rt="1";
+			        }else {
+			        	rt ="0";
+			        }
+		        }else {
+		        	rt ="0";
 		        }
-		        rt=tmprt;
+
 	        }else {
-	        	rt ="0";
+	        	port.writeString("gpio read 1\r");
+		        rt = port.readString();
+		        //返り値のフォーマット\n\r>\n\r>gpio read 0\n\r1\n\r>
+		        if( rt != null)  {
+			        String tmpStr[] = rt.split("\n\r");
+			        String tmprt ="0";
+			        for( int i=0;i<tmpStr.length;i++ ) {
+			        	if( tmpStr[i].matches(".*read.*") ) {
+			        		tmprt = tmpStr[i+1];
+			        		break;
+			        	}
+			        }
+			        rt=tmprt;
+		        }else {
+		        	rt ="0";
+		        }
+		        Thread.sleep(sleepTime );
+		        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 	        }
-	        Thread.sleep(sleepTime );
-	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 		}catch(Exception e) {
 			e.printStackTrace();
 			useFlg = false;
 			return "clearSignal Read error";
 		}
+
 		useFlg = false;
 		return rt;//読み込みに成功したら'1'又は'0'を返す
 
@@ -173,29 +214,58 @@ public class Gpio {
 		String rt = "0";
 		try {
 	        port.writeString("\r");
-	        port.writeString("gpio read 0\r");
-	        //返り値のフォーマット\n\r>\n\r>gpio read 0\n\r1\n\r>
-	        rt = port.readString();
-	        if( rt != null ) {
-	        	String tmpStr[] = rt.split("\n\r");
-	        	String tmprt = "0";
-		        for( int i=0;i< tmpStr.length;i++ ) {
-		        	if( tmpStr[i].matches(".*read.*") ) {
-		        		tmprt = tmpStr[i+1];
-		        		break;
-		        	}
+	        if( adcFlg ) {
+                //Thread.sleep(sleepTime);
+                port.purgePort(SerialPort.PURGE_RXCLEAR | SerialPort.PURGE_TXCLEAR);
+                port.writeString("adc read 0\r");
+                Thread.sleep(sleepTime);
+		        rt = port.readString();
+		        if( rt != null)  {
+			        String tmpStr[] = rt.split("\n\r");
+			        String tmprt ="0";
+			        for( int i=0;i<tmpStr.length;i++ ) {
+			        	if( tmpStr[i].matches(".*read.*") ) {
+			        		tmprt = tmpStr[i+1];
+			        		System.out.println("adc read 0"+ tmprt);
+			        		break;
+			        	}
+			        }
+			        if( Integer.valueOf(tmprt) > adcThresh){
+			        	rt="1";
+			        }else {
+			        	rt ="0";
+			        }
+		        }else {
+		        	rt ="null";
 		        }
-		        rt = tmprt;
+
 	        }else {
-	        	rt="0";
+		        port.writeString("gpio read 0\r");
+		        //返り値のフォーマット\n\r>\n\r>gpio read 0\n\r1\n\r>
+		        rt = port.readString();
+		        if( rt != null ) {
+		        	System.out.println(rt);
+		        	String tmpStr[] = rt.split("\n\r");
+		        	String tmprt = "0";
+			        for( int i=0;i< tmpStr.length;i++ ) {
+			        	if( tmpStr[i].matches(".*read.*") ) {
+			        		tmprt = tmpStr[i+1];
+			        		break;
+			        	}
+			        }
+			        rt = tmprt;
+		        }else {
+		        	rt="0";
+		        }
+		        Thread.sleep(sleepTime );
+		        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 	        }
-	        Thread.sleep(sleepTime );
-	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);
 		}catch(Exception e) {
 			e.printStackTrace();
 			useFlg = false;
 			return "shutterSignal Read error";
 		}
+		//System.out.println("シャッターFLG = "+rt);
 		useFlg = false;
 		return rt;//読み込みに成功したら'1'又は'0'を返す
 
@@ -207,10 +277,14 @@ public class Gpio {
 	 * @return true:GPIO 1へセット成功 false:セット失敗
 	 * @throws InterruptedException
 	 */
-	public static boolean OkSignalON() throws InterruptedException {
+	public static boolean OkSignalON(){
 		//デバッグコード----
 		if( VisonController.debugFlg ) {
-			Thread.sleep(debugSleepTime);
+			try {
+				Thread.sleep(debugSleepTime);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 	        System.out.println("Info: <gpio set 3> Command sent...");
 	        return true;
 		}
@@ -245,10 +319,14 @@ public class Gpio {
 	 * @return
 	 * @throws InterruptedException
 	 */
-	public static boolean ngSignalON() throws InterruptedException {
+	public static boolean ngSignalON() {
 		//デバッグコード----
 		if( VisonController.debugFlg ) {
-			Thread.sleep(debugSleepTime);
+			try {
+				Thread.sleep(debugSleepTime);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 	        System.out.println("Debug:::Info: <gpio clear 3> Command sent...");
 			return true;
 		}

@@ -686,13 +686,9 @@ public class VisonController{
 							debugCnt++;
 						}
 						//オールクリア信号受信
-						try {
-							readIO ="clearSignal";
-							rt = Gpio.clearSignal();
-						} catch (InterruptedException e1) {
-							System.out.println("rt = Gpio.clearSignal();:::エラー");
-							e1.printStackTrace();
-						}
+						readIO ="clearSignal";
+						//System.out.println("GPIO useFlg="+Gpio.useFlg);
+						rt = Gpio.clearSignal();
 						if( rt.matches("1") ) {
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
 							onAllClear(null);
@@ -703,8 +699,9 @@ public class VisonController{
 						}
 						//シャッター信号受信
 						readIO ="shutterSignal";
+						//System.out.println("GPIO useFlg="+Gpio.useFlg);
 						rt = Gpio.shutterSignal();
-						Platform.runLater( () ->info1.setText(loopcnt +  " GPIO 0(SHUTTER TRIGGER) = " + rt));
+						Platform.runLater( () ->info1.setText(Gpio.useFlg  + String.valueOf(loopcnt)+  "  GPIO 0(SHUTTER TRIGGER) = " + rt));
 
 						if( rt.matches("1")) {
 							if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
@@ -718,6 +715,7 @@ public class VisonController{
 								shutterFlg = true;
 								offShutterFlg = true;
 					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
+					    		Platform.runLater( () ->info2.appendText("シャッターON"));
 							}
 						}else{
 								offShutterFlg = false;
@@ -1712,15 +1710,11 @@ public class VisonController{
     	Platform.runLater(() ->info2.setText(initInfo2));
     	Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
 		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
-		try {
-			while( Gpio.useFlg ) {
-				System.out.println("onAllClear() Gpio.useFlg=true");
-			}
-			Gpio.OkSignalON();
-		} catch (InterruptedException e) {
-			System.out.println("void onAllClear(ActionEvent event) { Gpio.OkSignalON();::エラー");
-			e.printStackTrace();
+
+		while( Gpio.useFlg ) {
+			System.out.println("onAllClear() Gpio.useFlg=true");
 		}
+		Gpio.OkSignalON();
 
     }
 
