@@ -160,7 +160,6 @@ public class Gpio {
 
 	        }else {
 	        	port.writeString("gpio read 1\r");
-	        	Thread.sleep(sleepTime );
 		        rt = port.readString();
 		        //返り値のフォーマット\n\r>\n\r>gpio read 0\n\r1\n\r>
 		        if( rt != null)  {
@@ -216,10 +215,10 @@ public class Gpio {
 		}
 		String rt = "0";
 		try {
-	        port.writeString("\r");
+			port.writeString("\r");
 	        if( adcFlg ) {
-                //Thread.sleep(sleepTime);
                 port.purgePort(SerialPort.PURGE_RXCLEAR | SerialPort.PURGE_TXCLEAR);
+                Thread.sleep(sleepTime);
                 port.writeString("adc read 0\r");
                 Thread.sleep(sleepTime);
 		        rt = port.readString();
@@ -245,7 +244,6 @@ public class Gpio {
 	        }else {
 		        port.writeString("gpio read 0\r");
 		        //返り値のフォーマット\n\r>\n\r>gpio read 0\n\r1\n\r>
-		        Thread.sleep(sleepTime );
 		        rt = port.readString();
 		        if( rt != null ) {
 		        	System.out.println(rt);
