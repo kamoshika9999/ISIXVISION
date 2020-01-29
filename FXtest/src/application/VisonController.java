@@ -336,7 +336,7 @@ public class VisonController{
 
 	private long savelockedTimer;
 
-	private long savelockedTimerThresh = 1000;
+	private long savelockedTimerThresh = 1;
 
 	private int NGsaveCnt = 0;
 
@@ -584,7 +584,6 @@ public class VisonController{
 
 		//GPIOボードオープン
 		Gpio.open(String.valueOf(pObj.portNo), pObj.adc_thresh,pObj.adcFlg);
-		Gpio.OkSignalON();//判定NG以外 IO:1はON
 
 		//デバッグコード
 
@@ -685,34 +684,31 @@ public class VisonController{
 
 				@Override
 				public void run() {
-					if( loopcnt > 10000 ) loopcnt = 0;
-					loopcnt++;
+					//if( loopcnt > 10000 ) loopcnt = 0;
+					//loopcnt++;
 
 					try {
-						readIO ="nothing";
+						//readIO ="nothing";
 						if( debugFlg ) {
 							System.out.println("GPIO READ/WRITE" + debugCnt);
 							debugCnt++;
 						}
 						//オールクリア信号受信
-						readIO ="clearSignal";
+						//readIO ="clearSignal";
 						//System.out.println("GPIO useFlg="+Gpio.useFlg);
 						rt = Gpio.clearSignal();
-						if( rt.matches("1") ) {
+						if( rt == "1" ) {
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
 							onAllClear(null);
 				    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
 
-						}else {
-				    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.LIGHTGRAY));
 						}
 						//シャッター信号受信
-						readIO ="shutterSignal";
-						//System.out.println("GPIO useFlg="+Gpio.useFlg);
+						//readIO ="shutterSignal";
 						rt = Gpio.shutterSignal();
-						Platform.runLater( () ->info1.setText(Gpio.useFlg  + String.valueOf(loopcnt)+  "  GPIO 0(SHUTTER TRIGGER) = " + rt));
+						//Platform.runLater( () ->info1.setText(Gpio.useFlg  + String.valueOf(loopcnt)+  "  GPIO 0(SHUTTER TRIGGER) = " + rt));
 
-						if( rt.matches("1")) {
+						if( rt == "1") {
 							if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
 								//シャッター
 								try {
@@ -724,14 +720,14 @@ public class VisonController{
 								shutterFlg = true;
 								offShutterFlg = true;
 					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
-					    		Platform.runLater( () ->info2.appendText("シャッターON"));
+					    		//Platform.runLater( () ->info2.appendText("シャッターON"));
 							}
 						}else{
 								offShutterFlg = false;
 					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
 						}
 					}catch(NullPointerException e) {
-						System.out.println(readIO + " / " + e.toString());
+						System.out.println("readIO" + " / " + e.toString());
 					}
 				}
 			};
@@ -1132,7 +1128,7 @@ public class VisonController{
 		        }
 
 	        }
-	        if( !saveImgUseFlg) {
+	        if( !saveImgUseFlg && !settingModeFlg) {
 		        if(hanteCnt==4) {
 		        	Platform.runLater( () ->judg.setText("OK"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
@@ -1301,7 +1297,7 @@ public class VisonController{
     }
 
     /**
-     *
+     * 検出円描画
      * @param circles
      * @param img
      */
@@ -1328,18 +1324,27 @@ public class VisonController{
   	  	  }
   	  }
   	  //最大、最小、平均、距離平均計算
-  	  for( int i= 0; i < circles.cols(); i++) {
-  		  double r = circles.get(0, i)[2];
-  		  radiusAve += r;
-  		  if( i+1 < circles.cols() ) {
-  			  distAve += circles.get(0, i+1)[0] - circles.get(0, i)[0];
-  		  }
-  		  if( radiusMax < r ) radiusMax = r;
-  		  if( radiusMin > r ) radiusMin = r;
+  	  if( circles.cols() >= 2) {
+	  	  for( int i= 0; i < circles.cols(); i++) {
+	  		  double r = circles.get(0, i)[2];
+	  		  radiusAve += r;
+
+	  		  if( radiusMax < r ) radiusMax = r;
+	  		  if( radiusMin > r ) radiusMin = r;
+	  		  
+	  		  if( i != circles.cols()-1 ) {
+	  			  distAve += circles.get(0, circles.cols()-1)[0] - circles.get(0, circles.cols()-2)[0];
+	  		  }
+	  	  }
+  		  distAve /= (circles.cols()-1);
+  	  	  radiusAve /= circles.cols();
+  	  }else {
+  		radiusAve = circles.get(0, 0)[2];
+  		radiusMax = radiusAve;
+  		radiusMin = radiusAve;
+  		distAve = 0;
   	  }
-  	  distAve += circles.get(0, circles.cols()-1)[0] - circles.get(0, circles.cols()-2)[0];
-  	  distAve /= circles.cols();
-  	  radiusAve =radiusAve/ circles.cols();
+
   	  infoText += String.format("MAX=%.1f ,MIN=%.1f ,AVE=%.1f ,DistAve=%.1f ",
   			  radiusMax,radiusMin,radiusAve,distAve);
 
@@ -1514,7 +1519,7 @@ public class VisonController{
     	Platform.runLater(() ->textFieldDetecPara9.setText(String.valueOf(String.format("%.1f",sliderDetecPara9.getValue()))));
     	//Platform.runLater(() ->matchTmempTHreshSlider.setValue(para.matchThreshValue[4]));
     	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
-    	//Platform.runLater(() ->
+
     }
 
     @FXML
@@ -1550,6 +1555,14 @@ public class VisonController{
 		Platform.runLater(() ->threshholdSlider.setValue(para.threshhold[onSetVeri_n]));
     	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
     	Platform.runLater(() ->threshhold_Inverse.setSelected(para.threshhold_Invers[onSetVeri_n]));
+    	Platform.runLater(() ->textFieldDetecPara4.setText(String.valueOf(String.format("%.1f",sliderDetecPara4.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara5.setText(String.valueOf(String.format("%.1f",sliderDetecPara5.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara6.setText(String.valueOf(String.format("%.1f",sliderDetecPara6.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara7.setText(String.valueOf(String.format("%.1f",sliderDetecPara7.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara8.setText(String.valueOf(String.format("%.1f",sliderDetecPara8.getValue()))));
+    	Platform.runLater(() ->textFieldDetecPara9.setText(String.valueOf(String.format("%.1f",sliderDetecPara9.getValue()))));
+    	//Platform.runLater(() ->matchTmempTHreshSlider.setValue(para.matchThreshValue[4]));
+    	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
     	eventTrigger = true;
     }
 
@@ -1571,8 +1584,8 @@ public class VisonController{
     }
     @FXML
     void onKeypressed(KeyEvent e) {
-    	Platform.runLater( () ->info2.appendText("KeyPressTrigger"+"\n"));
-    	manualTrigger = true;
+    	//Platform.runLater( () ->info2.appendText("KeyPressTrigger"+"\n"));
+    	//manualTrigger = true;
     }
     /**
      * シリアライズ
@@ -1612,8 +1625,7 @@ public class VisonController{
 		pObj.cameraHeight = Integer.valueOf(capH_text.getText());
 		pObj.cameraWidth = Integer.valueOf(capW_text.getText());
 		pObj.adcFlg = adc_flg.isSelected();
-
-
+		
 		objOut.writeObject(pObj);
 		objOut.flush();
 		objOut.close();
@@ -1757,18 +1769,7 @@ public class VisonController{
     @FXML
     void onSettingModeBtn(ActionEvent event) {
     	if( settingModeFlg ) {
-    		/*
-    		Platform.runLater(() ->lockShape1.setDisable(false));
-    		Platform.runLater(() ->lockShape2.setDisable(false));
-    		Platform.runLater(() ->lockShape3.setDisable(false));
-    		Platform.runLater(() ->lockShape4.setDisable(false));
-    		Platform.runLater(() ->lockShape5.setDisable(false));
-    		Platform.runLater(() ->lockShape1.setFill(Color.web("#a5abb094",0.8)));
-    		Platform.runLater(() ->lockShape2.setFill(Color.web("#a5abb094",0.8)));
-    		Platform.runLater(() ->lockShape3.setFill(Color.web("#a5abb094",0.8)));
-    		Platform.runLater(() ->lockShape4.setFill(Color.web("#a5abb094",0.8)));
-    		Platform.runLater(() ->lockShape5.setFill(Color.web("#a5abb094",0.8)));
-    		*/
+
     		Platform.runLater(() ->this.accordion_1.setDisable(true));
         	settingModeFlg = false;
         	Platform.runLater(() ->settingMode.setSelected(false));
@@ -1777,26 +1778,12 @@ public class VisonController{
         	saveImgUseFlg = false;
         	updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	}else {
-    		/*
-    		Platform.runLater(() ->lockShape1.setDisable(true));
-    		Platform.runLater(() ->lockShape2.setDisable(true));
-    		Platform.runLater(() ->lockShape3.setDisable(true));
-    		Platform.runLater(() ->lockShape4.setDisable(true));
-    		Platform.runLater(() ->lockShape5.setDisable(true));
-    		Platform.runLater(() ->lockShape1.setFill(Color.web("#a5abb094",0.0)));
-    		Platform.runLater(() ->lockShape2.setFill(Color.web("#a5abb094",0.0)));
-    		Platform.runLater(() ->lockShape3.setFill(Color.web("#a5abb094",0.0)));
-    		Platform.runLater(() ->lockShape4.setFill(Color.web("#a5abb094",0.0)));
-    		Platform.runLater(() ->lockShape5.setFill(Color.web("#a5abb094",0.0)));
-    		*/
+
     		Platform.runLater(() ->this.accordion_1.setDisable(false));
         	settingModeFlg = true;
         	lockedTimer = System.currentTimeMillis();
         	Platform.runLater(() ->settingMode.setSelected(true));
-
     	}
-
-
     }
     @FXML
     void onOutTrigDisableChk(ActionEvent event) {
@@ -1981,15 +1968,20 @@ public class VisonController{
 		}catch( java.lang.NullPointerException e) {
     		Platform.runLater(() ->info1.setText("ok_imageフォルダがありません"));
     	}
-        manualTrigger = true;
-        onAllClear(null);
-
         try {
 			onTest(null);
 		} catch (InterruptedException e) {
 			System.out.println(" void initialize() {onTest(null);::エラー");
 			e.printStackTrace();
 		}
+        manualTrigger = true;
+        try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
+        onAllClear(null);
 
 
     }
