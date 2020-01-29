@@ -336,7 +336,7 @@ public class VisonController{
 
 	private long savelockedTimer;
 
-	private long savelockedTimerThresh = 1;
+	private long savelockedTimerThresh = 500;
 
 	private int NGsaveCnt = 0;
 
