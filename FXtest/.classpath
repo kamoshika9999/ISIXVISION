@@ -2,13 +2,13 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="opencv-420.jar">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="D:/OPENCV3/opencv4/opencv/build/java/x64"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="jssc-2.9.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="slf4j-simple-1.7.9.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/JAVAFX"/>
+	<classpathentry kind="lib" path="C:/isix/opencv/build/java/opencv-420.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/isix/opencv/build/java/x64"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

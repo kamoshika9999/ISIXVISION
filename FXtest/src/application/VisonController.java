@@ -308,9 +308,9 @@ public class VisonController{
     @FXML
     private Circle GPIO_STATUS_PIN0;//シャッタートリガ信号の状態
     @FXML
-    private Circle GPIO_STATUS_PIN1;//ＮＧ出力トリガの状態
+    private Circle GPIO_STATUS_PIN1;//オールクリア信号の状態
     @FXML
-    private Circle GPIO_STATUS_PIN3;//オールクリア信号の状態
+    private Circle GPIO_STATUS_PIN3;//ＮＧ出力トリガの状態
     @FXML
     private CheckBox imgSaveFlg_all;//規定枚数画像保存 規定数超えた画像は自動削除
     @FXML
@@ -671,9 +671,9 @@ public class VisonController{
 
 		if( Gpio.openFlg ) {
 			if( Gpio.OkSignalON() ) {
-				Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
+				Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
 			}else {
-				Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.RED));
+				Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 			}
 			//トリガクラス
 			Runnable triggerLoop = new Runnable() {
@@ -700,8 +700,10 @@ public class VisonController{
 						if( rt == "1" ) {
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
 							onAllClear(null);
-				    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
+				    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
 
+						}else {
+							Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
 						}
 						//シャッター信号受信
 						//readIO ="shutterSignal";
@@ -1159,9 +1161,9 @@ public class VisonController{
 		        				System.out.println("rePaint() Gpio.useFlg=true");
 		        			}
 		        			if( Gpio.ngSignalON() ) {
-					    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
+					    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
 		        			}else {
-					    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.RED));
+					    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 		        			}
 		        		}
 		        	}
@@ -1331,7 +1333,7 @@ public class VisonController{
 
 	  		  if( radiusMax < r ) radiusMax = r;
 	  		  if( radiusMin > r ) radiusMin = r;
-	  		  
+
 	  		  if( i != circles.cols()-1 ) {
 	  			  distAve += circles.get(0, circles.cols()-1)[0] - circles.get(0, circles.cols()-2)[0];
 	  		  }
@@ -1625,7 +1627,7 @@ public class VisonController{
 		pObj.cameraHeight = Integer.valueOf(capH_text.getText());
 		pObj.cameraWidth = Integer.valueOf(capW_text.getText());
 		pObj.adcFlg = adc_flg.isSelected();
-		
+
 		objOut.writeObject(pObj);
 		objOut.flush();
 		objOut.close();
@@ -1757,7 +1759,7 @@ public class VisonController{
     	Platform.runLater(() ->info2.clear());
     	Platform.runLater(() ->info2.setText(initInfo2));
     	Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
-		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
+		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
 
 		while( Gpio.useFlg ) {
 			System.out.println("onAllClear() Gpio.useFlg=true");

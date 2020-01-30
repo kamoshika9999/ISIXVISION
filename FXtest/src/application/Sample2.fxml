@@ -404,8 +404,8 @@
          </font>
       </Label>
       <Circle fx:id="GPIO_STATUS_PIN0" fill="#c8c8c8" layoutX="860.0" layoutY="342.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-      <Circle fx:id="GPIO_STATUS_PIN3" fill="#c8c8c8" layoutX="860.0" layoutY="370.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-      <Circle fx:id="GPIO_STATUS_PIN1" fill="#c8c8c8" layoutX="860.0" layoutY="356.0" radius="5.0" stroke="#393636" strokeType="INSIDE" />
+      <Circle fx:id="GPIO_STATUS_PIN3" fill="#c8c8c8" layoutX="860.0" layoutY="357.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+      <Circle fx:id="GPIO_STATUS_PIN1" fill="#c8c8c8" layoutX="860.0" layoutY="370.0" radius="5.0" stroke="#393636" strokeType="INSIDE" />
       <CheckBox fx:id="throughImageChk" layoutX="958.0" layoutY="338.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="137.0" text="スルー画像表示">
          <font>
             <Font size="14.0" />
