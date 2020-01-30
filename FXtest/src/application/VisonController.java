@@ -30,6 +30,8 @@ import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -44,6 +46,7 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -107,10 +110,15 @@ public class VisonController{
 	boolean settingModeFlg = false;
 	long lockedTimer = 0;
 	final long lockedTimerThresh = 1000 * 60 *5;
-	//テンプレートマッチング用
-	private boolean matchTempStartFlg = false;
+	//パターンマッチング用
+	private boolean ptmSetStartFlg = false;
 	//保存画像を使用した設定に使うフラグ   保存画像使用中はＰＬＣシャッタートリガ強制無効
 	public static boolean saveImgUseFlg;
+
+	//連続画像保存によるタイムラグ緩和のロジックに使用
+	private long savelockedTimer;
+	private long savelockedTimerThresh = 500;
+	private int NGsaveCnt = 0;
 
 	//インフォメーション
 	private String initInfo2;
@@ -334,12 +342,40 @@ public class VisonController{
     @FXML
     private CheckBox adc_flg;
 
-	private long savelockedTimer;
-
-	private long savelockedTimerThresh = 500;
-
-	private int NGsaveCnt = 0;
-
+    //パターンマッチング関係
+    @FXML
+    private Spinner<Integer> ptm_sp1;
+    @FXML
+    private Spinner<Integer> ptm_sp2;
+    @FXML
+    private Spinner<Integer> ptm_sp3;
+    @FXML
+    private Spinner<Integer> ptm_sp4;
+    @FXML
+    private TitledPane ptm_setting_accordion;
+    @FXML
+    private Button ptm_set_pt1;
+    @FXML
+    private Button ptm_set_pt2;
+    @FXML
+    private Button ptm_set_pt3;
+    @FXML
+    private Button ptm_set_pt4;
+    private Button ptm_set_para1;
+    @FXML
+    private Button ptm_set_para2;
+    @FXML
+    private Button ptm_set_para3;
+    @FXML
+    private Button ptm_set_para4;
+    @FXML
+    private CheckBox ptm_pt1_enable;
+    @FXML
+    private CheckBox ptm_pt2_enable;
+    @FXML
+    private CheckBox ptm_pt3_enable;
+    @FXML
+    private CheckBox ptm_pt4_enable;
 
     @FXML
     /**
@@ -813,6 +849,7 @@ public class VisonController{
 
     @FXML
     void mouseDragged(MouseEvent e) { //imgORG上でドラッグ
+    	if( !settingModeFlg ) return;
     	double zoom = this.zoomValue_slider.getValue();
         int x = (int)(draggingRect.getX());
         int y = (int)(draggingRect.getY());
@@ -823,6 +860,7 @@ public class VisonController{
 
     @FXML
     void mousePressed(MouseEvent e) { //imgORG上でマウスプレス
+    	if( !settingModeFlg ) return;
     	double zoom = this.zoomValue_slider.getValue();
         draggingRect.setBounds((int)(imgORG.getViewport().getMinX() + e.getX()/(zoom)),
         					(int)(imgORG.getViewport().getMinY() + e.getY()/(zoom)), 0, 0);
@@ -833,6 +871,7 @@ public class VisonController{
 
     @FXML
     void mouseReleased(MouseEvent e) { //imgORG マウスボタン離す
+    	if( !settingModeFlg ) return;
     	dragging = false;
     	eventTrigger = true;
     }
@@ -958,13 +997,13 @@ public class VisonController{
 		    	}
 			}
 
-	        if (dragging) {
+	        if (dragging && settingModeFlg) {
 	            Imgproc.rectangle(orgMat,
 	            		new Point(draggingRect.x,draggingRect.y),
 	            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
 	            		new Scalar(0,255,0),3);
 	        }else{
-	        	if(draggingRect.getWidth() >0 && draggingRect.getHeight() > 0){
+	        	if(draggingRect.getWidth() >0 && draggingRect.getHeight() > 0 && settingModeFlg){
 		        	Mat roi = glayMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height));
 		        	if( this.gauusianCheck.isSelected() ) {
 		        		double sigmaX = gauusianSliderX.getValue();
@@ -983,22 +1022,25 @@ public class VisonController{
 		        	if( dilateCheck.isSelected()) {
 		        		Imgproc.dilate(roi, roi, new Mat(),new Point(-1,-1),(int)dilateSliderN.getValue());
 		        	}
-		            Mat circles = new Mat();
-					Imgproc.HoughCircles(roi, circles, Imgproc.CV_HOUGH_GRADIENT,
-							sliderDetecPara4.getValue(),
-							sliderDetecPara5.getValue(),
-							sliderDetecPara6.getValue(),
-							sliderDetecPara7.getValue(),
-							(int)sliderDetecPara8.getValue(),
-							(int)sliderDetecPara9.getValue());
-					if( circles.cols() > 0) {
-						this.fncDrwCircles(circles,
-								orgMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height)),
-								true);
-						Imgproc.putText(orgMat, String.valueOf(circles.cols()),
-								new Point(draggingRect.x-25,draggingRect.y-6),
-								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,0,255),2);
-					}
+		        	//穴検出
+		        	if( !ptmSetStartFlg ) {
+			            Mat circles = new Mat();
+						Imgproc.HoughCircles(roi, circles, Imgproc.CV_HOUGH_GRADIENT,
+								sliderDetecPara4.getValue(),
+								sliderDetecPara5.getValue(),
+								sliderDetecPara6.getValue(),
+								sliderDetecPara7.getValue(),
+								(int)sliderDetecPara8.getValue(),
+								(int)sliderDetecPara9.getValue());
+						if( circles.cols() > 0) {
+							this.fncDrwCircles(circles,
+									orgMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height)),
+									true);
+							Imgproc.putText(orgMat, String.valueOf(circles.cols()),
+									new Point(draggingRect.x-25,draggingRect.y-6),
+									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,0,255),2);
+						}
+		        	}
 		            Imgproc.rectangle(orgMat,
 		            		new Point(draggingRect.x,draggingRect.y),
 		            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
@@ -1830,6 +1872,32 @@ public class VisonController{
     	Platform.runLater(() ->info2.appendText("キャリブレーション実行"));
 
     }
+
+    /**
+     * パターンマッチングのアコーディオンを開いた時に発生するイベント
+     * @param event
+     */
+    @FXML
+    void onOpenPtmAccordion(MouseEvent event) {
+    	ptmSetStartFlg = true;
+    	System.out.println("open_ptm");
+
+    }
+
+    /**
+     * 画像パターンの登録
+     * @param event
+     */
+    @FXML
+    void onPtmSetPara(ActionEvent event) {
+
+    }
+
+    @FXML
+    void onPtmSetPt(ActionEvent event) {
+
+    }
+
     @FXML
     void initialize() {
         assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'Sample2.fxml'.";
@@ -1937,7 +2005,24 @@ public class VisonController{
         assert calibDataDel != null : "fx:id=\"calibDataDel\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert adc_thresh_value != null : "fx:id=\"adc_thresh_value\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert adc_flg != null : "fx:id=\"adc_flg\" was not injected: check your FXML file 'Sample2.fxml'.";
-
+        //パターンマッチング関係
+        assert ptm_setting_accordion != null : "fx:id=\"ptm_setting_accordion\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_set_pt1 != null : "fx:id=\"ptm_set_pt1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_set_pt2 != null : "fx:id=\"ptm_set_pt2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_set_pt3 != null : "fx:id=\"ptm_set_pt3\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_set_pt4 != null : "fx:id=\"ptm_set_pt4\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_sp1 != null : "fx:id=\"ptm_sp1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_sp2 != null : "fx:id=\"ptm_sp2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_sp3 != null : "fx:id=\"ptm_sp3\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_sp4 != null : "fx:id=\"ptm_sp4\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_set_para1 != null : "fx:id=\"ptm_set_para1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_set_para2 != null : "fx:id=\"ptm_set_para2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_set_para3 != null : "fx:id=\"ptm_set_para3\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_set_para4 != null : "fx:id=\"ptm_set_para4\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_pt1_enable != null : "fx:id=\"ptm_pt1_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_pt2_enable != null : "fx:id=\"ptm_pt2_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_pt3_enable != null : "fx:id=\"ptm_pt3_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_pt4_enable != null : "fx:id=\"ptm_pt4_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
         //クラス変数の初期化
         imgORG_imageViewFitWidth = imgORG.getFitWidth();
         imgORG_imageViewFitHeight = imgORG.getFitHeight();
@@ -1964,12 +2049,25 @@ public class VisonController{
         updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	Platform.runLater(() ->info1.setText(""));
 
+        accordion_1.expandedPaneProperty().addListener(new 
+                ChangeListener<TitledPane>() {
+                    public void changed(ObservableValue<? extends TitledPane> ov,
+                        TitledPane old_val, TitledPane new_val) {
+                    	if( new_val == ptm_setting_accordion) {
+                    		onOpenPtmAccordion(null);
+                    	}else if(old_val == ptm_setting_accordion ) {
+                    		ptmSetStartFlg = false;
+                    	}
+                  }
+            });
+        
     	try {
 	    	int fileCnt = FileClass.getFiles(new File("./ok_image")).length;
 	    		allSaveCnt = fileCnt;
 		}catch( java.lang.NullPointerException e) {
     		Platform.runLater(() ->info1.setText("ok_imageフォルダがありません"));
     	}
+    	
         try {
 			onTest(null);
 		} catch (InterruptedException e) {
@@ -1980,7 +2078,6 @@ public class VisonController{
         try {
 			Thread.sleep(3000);
 		} catch (InterruptedException e) {
-			// TODO 自動生成された catch ブロック
 			e.printStackTrace();
 		}
         onAllClear(null);

@@ -28,7 +28,7 @@
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="91.0" layoutX="854.0" layoutY="244.0" stroke="BLACK" strokeType="INSIDE" width="302.0" />
       <Accordion fx:id="accordion_1" disable="true" layoutY="350.0" prefHeight="343.0" prefWidth="653.0">
         <panes>
-          <TitledPane animated="false" text="ImageFilter /Hole Detect Setting">
+          <TitledPane text="ImageFilter /Hole Detect Setting">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
@@ -167,7 +167,7 @@
                   </AnchorPane>
             </content>
           </TitledPane>
-          <TitledPane animated="false" text="Hard Setting /SAVE /LOAD /Other">
+          <TitledPane text="Hard Setting /SAVE /LOAD /Other">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
@@ -236,9 +236,36 @@
                   </AnchorPane>
             </content>
           </TitledPane>
-          <TitledPane animated="false" text="Pattern Detect Setting">
+          <TitledPane fx:id="ptm_setting_accordion" text="Pattern Detect Setting">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label layoutY="6.0" prefHeight="17.0" prefWidth="653.0" text="パターンマッチング設定" />
+                        <Button fx:id="ptm_set_pt1" layoutX="14.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetPt" text="パターン①登録" />
+                        <Button fx:id="ptm_set_pt2" layoutX="173.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetPt" text="パターン②登録" />
+                        <Button fx:id="ptm_set_pt3" layoutX="346.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetPt" text="パターン③登録" />
+                        <Button fx:id="ptm_set_pt4" layoutX="519.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetPt" text="パターン④登録" />
+                        <Spinner fx:id="ptm_sp1" layoutX="55.0" layoutY="48.0" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="14.0" layoutY="52.0" prefHeight="17.0" prefWidth="41.0" text="検出数" />
+                        <Spinner fx:id="ptm_sp2" layoutX="214.0" layoutY="48.0" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="173.0" layoutY="52.0" prefHeight="17.0" prefWidth="41.0" text="検出数" />
+                        <Spinner fx:id="ptm_sp3" layoutX="387.0" layoutY="48.0" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="346.0" layoutY="52.0" prefHeight="17.0" prefWidth="41.0" text="検出数" />
+                        <Spinner fx:id="ptm_sp4" layoutX="560.0" layoutY="48.0" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="519.0" layoutY="52.0" prefHeight="17.0" prefWidth="41.0" text="検出数" />
+                        <ImageView fitHeight="120.0" fitWidth="120.0" layoutX="14.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fitHeight="120.0" fitWidth="120.0" layoutX="173.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fitHeight="120.0" fitWidth="120.0" layoutX="346.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fitHeight="120.0" fitWidth="120.0" layoutX="504.0" layoutY="69.0" pickOnBounds="true" preserveRatio="true" />
+                        <Button fx:id="ptm_set_para1" layoutX="14.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <Button fx:id="ptm_set_para2" layoutX="169.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <Button fx:id="ptm_set_para3" layoutX="345.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <Button fx:id="ptm_set_para4" layoutX="515.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <CheckBox fx:id="ptm_pt1_enable" layoutX="14.0" layoutY="231.0" mnemonicParsing="false" text="有効化" />
+                        <CheckBox fx:id="ptm_pt2_enable" layoutX="173.0" layoutY="231.0" mnemonicParsing="false" text="有効化" />
+                        <CheckBox fx:id="ptm_pt3_enable" layoutX="346.0" layoutY="231.0" mnemonicParsing="false" text="有効化" />
+                        <CheckBox fx:id="ptm_pt4_enable" layoutX="519.0" layoutY="231.0" mnemonicParsing="false" text="有効化" />
+                     </children></AnchorPane>
             </content>
           </TitledPane>
         </panes>
