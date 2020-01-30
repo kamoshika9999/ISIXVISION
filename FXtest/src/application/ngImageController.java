@@ -69,7 +69,7 @@ public class ngImageController {
     void onUseImageSetting(ActionEvent event) {
         if( files.length > 0 ) {
 	    	VisonController.saveImgUseFlg = true;//現在表示中のイメージを使用して設定
-	    	VisonController.srcMat = img;//Matを渡す
+	    	VisonController.saveImgMat = img;//Matを渡す
         }
 		Scene scene = ((Node) event.getSource()).getScene();
 		Window window = scene.getWindow();

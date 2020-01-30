@@ -114,6 +114,7 @@ public class VisonController{
 	private boolean ptmSetStartFlg = false;
 	//保存画像を使用した設定に使うフラグ   保存画像使用中はＰＬＣシャッタートリガ強制無効
 	public static boolean saveImgUseFlg;
+	public static Mat saveImgMat;
 
 	//連続画像保存によるタイムラグ緩和のロジックに使用
 	private long savelockedTimer;
@@ -878,6 +879,10 @@ public class VisonController{
 
 
     private void rePaint() {
+    	if( saveImgUseFlg ) {
+    		srcMat = saveImgMat.clone();
+    		autoTrigger = false;
+    	}
     	if( srcMat.width() < 1) return;
     	try {
 	    	if( this.triggerCCircle.getFill() != Color.YELLOW) {
@@ -1005,7 +1010,7 @@ public class VisonController{
 	        }else{
 	        	if(draggingRect.getWidth() >0 && draggingRect.getHeight() > 0 && settingModeFlg){
 		        	Mat roi = glayMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height));
-		        	if( this.gauusianCheck.isSelected() ) {
+		        	if( gauusianCheck.isSelected() ) {
 		        		double sigmaX = gauusianSliderX.getValue();
 		        		double sigmaY = gauusianSliderY.getValue();
 		        		int tmpValue =(int)gauusianSliderA.getValue();
@@ -1033,7 +1038,7 @@ public class VisonController{
 								(int)sliderDetecPara8.getValue(),
 								(int)sliderDetecPara9.getValue());
 						if( circles.cols() > 0) {
-							this.fncDrwCircles(circles,
+							fncDrwCircles(circles,
 									orgMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height)),
 									true);
 							Imgproc.putText(orgMat, String.valueOf(circles.cols()),
