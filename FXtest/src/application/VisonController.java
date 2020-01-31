@@ -1812,6 +1812,9 @@ public class VisonController{
 			System.out.println("onAllClear() Gpio.useFlg=true");
 		}
 		Gpio.OkSignalON();
+		if( !Gpio.openFlg ) {
+			Platform.runLater( () ->info2.appendText("\n---------------\n- GPIO異常 -\n----------------\n"));
+		}
 
     }
 
