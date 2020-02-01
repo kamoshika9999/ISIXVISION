@@ -19,6 +19,9 @@ public class parameter implements Serializable {
     boolean[] threshhold_Invers;
 	int[] matchCnt;
 	double[] matchThreshValue;
+	String[] ptmFileName;//パターンマッチングの登録Mat
+	boolean[] ptmEnable;//パターンマッチング有効無効フラグ
+	int[] ptmDetectCnt;
 
 	//[4]はドラッグ中の枠用
 	double[]	circlePara4, //投票分解能
@@ -29,6 +32,30 @@ public class parameter implements Serializable {
 				circlePara9; //検出円最大
 	Rectangle[] rects; //検出ウィンドウのサイズ
 	boolean[] setFlg; //検出実行フラグ
+	public int[] detectionCnt;
+
+	public boolean[] para_gauusianCheck;
+	public double[] para_gauusianSliderX;
+	public double[] para_gauusianSliderY;
+	public double[] para_gauusianSliderA;
+
+	public boolean[] para_dilateCheck;
+	public double[] para_dilateSliderN;
+
+	public boolean[] para_erodeCheck;
+	public double[] para_erodeSliderN;
+
+	public boolean[] para_threshholdCheck;
+	public double[] para_threshholdSlider;
+
+	public boolean[] para_cannyCheck;
+	public double[] para_cannyThresh1;
+	public double[] para_cannyThresh2;
+
+	public double[] para_ptmThreshSliderN;
+	public double[] para_zoomValue_slider;
+	public Rectangle[] para_rectsDetection;
+
 
 	public parameter() {
 		arrySize = 5;
@@ -63,6 +90,33 @@ public class parameter implements Serializable {
 		matchCnt = new int[arrySize];
 		matchThreshValue = new double[arrySize];
 
+		ptmDetectCnt = new int[arrySize];
+		ptmEnable = new boolean[arrySize];
+
+		detectionCnt = new int[arrySize];
+
+		para_gauusianCheck = new boolean[arrySize];
+		para_gauusianSliderX = new double[arrySize];
+		para_gauusianSliderY = new double[arrySize];
+		para_gauusianSliderA = new double[arrySize];
+
+		para_dilateCheck = new boolean[arrySize];
+		para_dilateSliderN = new double[arrySize];
+
+		para_erodeCheck = new boolean[arrySize];
+		para_erodeSliderN = new double[arrySize];
+
+		para_threshholdCheck = new boolean[arrySize];
+		para_threshholdSlider = new double[arrySize];
+
+		para_cannyCheck = new boolean[arrySize];
+		para_cannyThresh1 = new double[arrySize];
+		para_cannyThresh2 = new double[arrySize];
+
+		para_ptmThreshSliderN = new double[arrySize];
+		para_zoomValue_slider = new double[arrySize];
+		para_rectsDetection = new Rectangle[arrySize];
+
 		for(int i=0;i<arrySize;i++){
 			circlePara4[i] = 2;
 			circlePara5[i] = 10;
@@ -83,6 +137,10 @@ public class parameter implements Serializable {
 			threshhold_Invers[i] = false;
 			matchCnt[i] = 6;
 			matchThreshValue[i] = 0.8;
+			ptmEnable[i] = false;
+			ptmDetectCnt[i] = 0;
+			
+			para_rectsDetection[i] = new Rectangle();
 		}
 	}
 }

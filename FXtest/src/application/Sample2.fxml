@@ -28,6 +28,75 @@
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="91.0" layoutX="854.0" layoutY="244.0" stroke="BLACK" strokeType="INSIDE" width="302.0" />
       <Accordion fx:id="accordion_1" disable="true" layoutY="350.0" prefHeight="343.0" prefWidth="653.0">
         <panes>
+          <TitledPane text="Hard Setting /SAVE /LOAD /Other">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label layoutX="232.0" layoutY="21.0" text="Port No">
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Label>
+                        <Spinner fx:id="portNoSpin" initialValue="4" layoutX="294.0" layoutY="16.0" max="9" min="1" prefHeight="25.0" prefWidth="70.0" />
+                        <CheckBox fx:id="outTrigDisableChk" layoutX="14.0" layoutY="17.0" mnemonicParsing="false" onAction="#onOutTrigDisableChk" text="出力トリガ無効">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                           <effect>
+                              <DropShadow />
+                           </effect>
+                        </CheckBox>
+                        <CheckBox fx:id="settingMode" layoutX="14.0" layoutY="45.0" mnemonicParsing="false" onAction="#onEventTrigger" text="Filter View">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                           <effect>
+                              <DropShadow />
+                           </effect>
+                        </CheckBox>
+                        <Spinner fx:id="dellySpinner" initialValue="50" layoutX="294.0" layoutY="49.0" prefHeight="25.0" prefWidth="69.0" />
+                        <Label layoutX="232.0" layoutY="53.0" text="Delly(mSec)">
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Label>
+                        <Spinner fx:id="camIDspinner" initialValue="1" layoutX="177.0" layoutY="14.0" max="9" min="0" prefHeight="25.0" prefWidth="47.0" />
+                        <Label layoutX="126.0" layoutY="19.0" prefHeight="17.0" prefWidth="45.0" text="Cam ID" />
+                        <TextField fx:id="adc_thresh_value" alignment="CENTER_RIGHT" layoutX="443.0" layoutY="16.0" prefHeight="25.0" prefWidth="52.0" text="2000" />
+                        <TextField fx:id="capH_text" alignment="CENTER_RIGHT" layoutX="176.0" layoutY="66.0" prefHeight="25.0" prefWidth="52.0" text="1080" />
+                        <Label layoutX="380.0" layoutY="20.0" prefHeight="17.0" prefWidth="68.0" text="ADC Thresh" />
+                        <Label layoutX="126.0" layoutY="69.0" prefHeight="17.0" prefWidth="45.0" text="CAP H" />
+                        <Button fx:id="demoMode" layoutX="15.0" layoutY="100.0" mnemonicParsing="false" onAction="#onDemo" prefHeight="25.0" prefWidth="75.0" text="DemoMode">
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="saveBtn" layoutX="13.0" layoutY="228.0" mnemonicParsing="false" onAction="#saveAllPara" text="SAVE" />
+                        <Button fx:id="loadBtn" layoutX="62.0" layoutY="228.0" mnemonicParsing="false" onAction="#loadAllPara" text="LOAD" />
+                        <Button fx:id="triggerBtn" layoutX="95.0" layoutY="134.0" mnemonicParsing="false" onAction="#onTrigger" text="ManualTrigger">
+                           <font>
+                              <Font size="11.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="aTriggerBtn" layoutX="15.0" layoutY="134.0" mnemonicParsing="false" onAction="#onTrigger" text="AutoTrigger">
+                           <font>
+                              <Font size="11.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="getInfoBtn" layoutX="97.0" layoutY="100.0" mnemonicParsing="false" onAction="#onInfoBtnAction" prefHeight="25.0" prefWidth="85.0" text="CameraInfo" />
+                        <Button fx:id="testBtn" layoutX="14.0" layoutY="163.0" mnemonicParsing="false" onAction="#onTest" prefHeight="25.0" prefWidth="77.0" text="検査開始" />
+                        <Button fx:id="stopTest" layoutX="99.0" layoutY="163.0" mnemonicParsing="false" onAction="#onTestStop" prefHeight="25.0" prefWidth="85.0" text="停止" />
+                        <Button fx:id="GPIO_allRead" layoutX="196.0" layoutY="104.0" mnemonicParsing="false" onAction="#onGPIOAllRead" prefHeight="25.0" prefWidth="90.0" text="GPIO AllRead" />
+                        <Button fx:id="shotImgBtn_chess" layoutX="294.0" layoutY="104.0" mnemonicParsing="false" onAction="#onShotImg_chess" prefHeight="25.0" prefWidth="108.0" text="チェスボード撮影" />
+                        <Button fx:id="cameraCalib" layoutX="410.0" layoutY="104.0" mnemonicParsing="false" onAction="#onCameraCalib" prefHeight="25.0" prefWidth="160.0" text="カメラキャリブレーション実行" />
+                        <Button fx:id="calibDataDel" layoutX="410.0" layoutY="135.0" mnemonicParsing="false" onAction="#onCalbdataDel" prefHeight="25.0" prefWidth="160.0" text="キャリブレーションデータ削除" />
+                        <TextField fx:id="capW_text" alignment="CENTER_RIGHT" layoutX="176.0" layoutY="47.0" prefHeight="25.0" prefWidth="52.0" text="1920" />
+                        <Label layoutX="126.0" layoutY="50.0" prefHeight="17.0" prefWidth="45.0" text="CAP W" />
+                        <CheckBox fx:id="adc_flg" layoutX="380.0" layoutY="42.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="115.0" selected="true" text="ADC FLG" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </TitledPane>
           <TitledPane text="ImageFilter /Hole Detect Setting">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
@@ -167,96 +236,19 @@
                   </AnchorPane>
             </content>
           </TitledPane>
-          <TitledPane text="Hard Setting /SAVE /LOAD /Other">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                     <children>
-                        <Label layoutX="232.0" layoutY="21.0" text="Port No">
-                           <font>
-                              <Font size="10.0" />
-                           </font>
-                        </Label>
-                        <Spinner fx:id="portNoSpin" initialValue="4" layoutX="294.0" layoutY="16.0" max="9" min="1" prefHeight="25.0" prefWidth="70.0" />
-                        <CheckBox fx:id="outTrigDisableChk" layoutX="14.0" layoutY="17.0" mnemonicParsing="false" onAction="#onOutTrigDisableChk" text="出力トリガ無効">
-                           <font>
-                              <Font size="13.0" />
-                           </font>
-                           <effect>
-                              <DropShadow />
-                           </effect>
-                        </CheckBox>
-                        <CheckBox fx:id="settingMode" layoutX="14.0" layoutY="45.0" mnemonicParsing="false" onAction="#onEventTrigger" text="Filter View">
-                           <font>
-                              <Font size="13.0" />
-                           </font>
-                           <effect>
-                              <DropShadow />
-                           </effect>
-                        </CheckBox>
-                        <Spinner fx:id="dellySpinner" initialValue="50" layoutX="294.0" layoutY="49.0" prefHeight="25.0" prefWidth="69.0" />
-                        <Label layoutX="232.0" layoutY="53.0" text="Delly(mSec)">
-                           <font>
-                              <Font size="10.0" />
-                           </font>
-                        </Label>
-                        <Spinner fx:id="camIDspinner" initialValue="1" layoutX="177.0" layoutY="14.0" max="9" min="0" prefHeight="25.0" prefWidth="47.0" />
-                        <Label layoutX="126.0" layoutY="19.0" prefHeight="17.0" prefWidth="45.0" text="Cam ID" />
-                        <TextField fx:id="adc_thresh_value" alignment="CENTER_RIGHT" layoutX="443.0" layoutY="16.0" prefHeight="25.0" prefWidth="52.0" text="2000" />
-                        <TextField fx:id="capH_text" alignment="CENTER_RIGHT" layoutX="176.0" layoutY="66.0" prefHeight="25.0" prefWidth="52.0" text="1080" />
-                        <Label layoutX="380.0" layoutY="20.0" prefHeight="17.0" prefWidth="68.0" text="ADC Thresh" />
-                        <Label layoutX="126.0" layoutY="69.0" prefHeight="17.0" prefWidth="45.0" text="CAP H" />
-                        <Button fx:id="demoMode" layoutX="15.0" layoutY="100.0" mnemonicParsing="false" onAction="#onDemo" prefHeight="25.0" prefWidth="75.0" text="DemoMode">
-                           <font>
-                              <Font size="10.0" />
-                           </font>
-                        </Button>
-                        <Button fx:id="saveBtn" layoutX="13.0" layoutY="228.0" mnemonicParsing="false" onAction="#saveAllPara" text="SAVE" />
-                        <Button fx:id="loadBtn" layoutX="62.0" layoutY="228.0" mnemonicParsing="false" onAction="#loadAllPara" text="LOAD" />
-                        <Button fx:id="triggerBtn" layoutX="95.0" layoutY="134.0" mnemonicParsing="false" onAction="#onTrigger" text="ManualTrigger">
-                           <font>
-                              <Font size="11.0" />
-                           </font>
-                        </Button>
-                        <Button fx:id="aTriggerBtn" layoutX="15.0" layoutY="134.0" mnemonicParsing="false" onAction="#onTrigger" text="AutoTrigger">
-                           <font>
-                              <Font size="11.0" />
-                           </font>
-                        </Button>
-                        <Button fx:id="getInfoBtn" layoutX="97.0" layoutY="100.0" mnemonicParsing="false" onAction="#onInfoBtnAction" prefHeight="25.0" prefWidth="85.0" text="CameraInfo" />
-                        <Button fx:id="testBtn" layoutX="14.0" layoutY="163.0" mnemonicParsing="false" onAction="#onTest" prefHeight="25.0" prefWidth="77.0" text="検査開始" />
-                        <Button fx:id="stopTest" layoutX="99.0" layoutY="163.0" mnemonicParsing="false" onAction="#onTestStop" prefHeight="25.0" prefWidth="85.0" text="停止" />
-                        <Button fx:id="GPIO_allRead" layoutX="196.0" layoutY="104.0" mnemonicParsing="false" onAction="#onGPIOAllRead" prefHeight="25.0" prefWidth="90.0" text="GPIO AllRead" />
-                        <Button fx:id="shotImgBtn_chess" layoutX="294.0" layoutY="104.0" mnemonicParsing="false" onAction="#onShotImg_chess" prefHeight="25.0" prefWidth="108.0" text="チェスボード撮影" />
-                        <Button fx:id="cameraCalib" layoutX="410.0" layoutY="104.0" mnemonicParsing="false" onAction="#onCameraCalib" prefHeight="25.0" prefWidth="160.0" text="カメラキャリブレーション実行" />
-                        <Button fx:id="calibDataDel" layoutX="410.0" layoutY="135.0" mnemonicParsing="false" onAction="#onCalbdataDel" prefHeight="25.0" prefWidth="160.0" text="キャリブレーションデータ削除" />
-                        <TextField fx:id="capW_text" alignment="CENTER_RIGHT" layoutX="176.0" layoutY="47.0" prefHeight="25.0" prefWidth="52.0" text="1920" />
-                        <Label layoutX="126.0" layoutY="50.0" prefHeight="17.0" prefWidth="45.0" text="CAP W" />
-                        <CheckBox fx:id="adc_flg" layoutX="380.0" layoutY="42.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="115.0" selected="true" text="ADC FLG" />
-                     </children>
-                  </AnchorPane>
-            </content>
-          </TitledPane>
           <TitledPane fx:id="ptm_setting_accordion" text="Pattern Detect Setting">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
                         <Label layoutY="6.0" prefHeight="17.0" prefWidth="653.0" text="パターンマッチング設定" />
-                        <Button fx:id="ptm_set_pt1" layoutX="14.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetPt" text="パターン①登録" />
-                        <Button fx:id="ptm_set_pt2" layoutX="173.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetPt" text="パターン②登録" />
-                        <Button fx:id="ptm_set_pt3" layoutX="346.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetPt" text="パターン③登録" />
-                        <Button fx:id="ptm_set_pt4" layoutX="519.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetPt" text="パターン④登録" />
-                        <Spinner fx:id="ptm_sp1" layoutX="55.0" layoutY="48.0" prefHeight="25.0" prefWidth="48.0" />
-                        <Label layoutX="14.0" layoutY="52.0" prefHeight="17.0" prefWidth="41.0" text="検出数" />
-                        <Spinner fx:id="ptm_sp2" layoutX="214.0" layoutY="48.0" prefHeight="25.0" prefWidth="48.0" />
-                        <Label layoutX="173.0" layoutY="52.0" prefHeight="17.0" prefWidth="41.0" text="検出数" />
-                        <Spinner fx:id="ptm_sp3" layoutX="387.0" layoutY="48.0" prefHeight="25.0" prefWidth="48.0" />
-                        <Label layoutX="346.0" layoutY="52.0" prefHeight="17.0" prefWidth="41.0" text="検出数" />
-                        <Spinner fx:id="ptm_sp4" layoutX="560.0" layoutY="48.0" prefHeight="25.0" prefWidth="48.0" />
-                        <Label layoutX="519.0" layoutY="52.0" prefHeight="17.0" prefWidth="41.0" text="検出数" />
-                        <ImageView fitHeight="120.0" fitWidth="120.0" layoutX="14.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
-                        <ImageView fitHeight="120.0" fitWidth="120.0" layoutX="173.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
-                        <ImageView fitHeight="120.0" fitWidth="120.0" layoutX="346.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
-                        <ImageView fitHeight="120.0" fitWidth="120.0" layoutX="504.0" layoutY="69.0" pickOnBounds="true" preserveRatio="true" />
+                        <Button fx:id="ptm_set_pt1" layoutX="14.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン①登録" />
+                        <Button fx:id="ptm_set_pt2" layoutX="173.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン②登録" />
+                        <Button fx:id="ptm_set_pt3" layoutX="346.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン③登録" />
+                        <Button fx:id="ptm_set_pt4" layoutX="519.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン④登録" />
+                        <ImageView fx:id="ptm_img1" fitHeight="120.0" fitWidth="120.0" layoutX="14.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="ptm_img2" fitHeight="120.0" fitWidth="120.0" layoutX="173.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="ptm_img3" fitHeight="120.0" fitWidth="120.0" layoutX="346.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="ptm_img4" fitHeight="120.0" fitWidth="120.0" layoutX="504.0" layoutY="69.0" pickOnBounds="true" preserveRatio="true" />
                         <Button fx:id="ptm_set_para1" layoutX="14.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
                         <Button fx:id="ptm_set_para2" layoutX="169.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
                         <Button fx:id="ptm_set_para3" layoutX="345.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
@@ -291,7 +283,7 @@
       <Button fx:id="move_left_btn" layoutX="711.0" layoutY="197.0" mnemonicParsing="false" onAction="#onMoveBtn" text="←" />
       <Button fx:id="move_right_btn" layoutX="769.0" layoutY="198.0" mnemonicParsing="false" onAction="#onMoveBtn" text="→" />
       <Button fx:id="move_down_btn" layoutX="740.0" layoutY="210.0" mnemonicParsing="false" onAction="#onMoveBtn" text="↓" />
-      <Slider fx:id="zoomValue_slider" blockIncrement="1.0" layoutX="858.0" layoutY="193.0" majorTickUnit="1.0" max="30.0" min="0.1" minorTickCount="0" onMouseClicked="#onZoomSlider" onMouseDragged="#onZoomSlider" onMouseReleased="#onZoomSlider" onScroll="#onWheel" prefHeight="38.0" prefWidth="284.0" showTickLabels="true" showTickMarks="true" value="1.0" />
+      <Slider fx:id="zoomValue_slider" blockIncrement="1.0" layoutX="858.0" layoutY="193.0" majorTickUnit="1.0" max="5.0" min="0.1" minorTickCount="0" onMouseClicked="#onZoomSlider" onMouseDragged="#onZoomSlider" onMouseReleased="#onZoomSlider" onScroll="#onWheel" prefHeight="38.0" prefWidth="284.0" showTickLabels="true" showTickMarks="true" value="1.0" />
       <Slider fx:id="move_speed_slider" layoutX="683.0" layoutY="171.0" majorTickUnit="1.0" max="5.0" min="1.0" minorTickCount="0" nodeOrientation="RIGHT_TO_LEFT" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" orientation="VERTICAL" prefHeight="63.0" prefWidth="14.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="3.0" />
       <Label layoutX="676.0" layoutY="236.0" text="移動速度" />
       <Label layoutX="810.0" layoutY="196.0" text="拡大率" />
@@ -405,7 +397,7 @@
          </font>
       </Label>
       <CheckBox fx:id="imgSaveFlg" layoutX="744.0" layoutY="315.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
-      <TextArea fx:id="info2" layoutX="690.0" layoutY="11.0" prefHeight="157.0" prefWidth="502.0" text="Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;OPENCV 4.2  JAVAFX11.0 JRE13.0 &#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/26&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="690.0" layoutY="11.0" prefHeight="157.0" prefWidth="502.0" text="Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;OPENCV 4.2  JAVAFX11.0 JRE13.0 &#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />

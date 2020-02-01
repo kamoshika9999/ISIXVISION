@@ -112,9 +112,9 @@ public class VisonController{
 	final long lockedTimerThresh = 1000 * 60 *5;
 	//パターンマッチング用
 	private boolean ptmSetStartFlg = false;
-	//保存画像を使用した設定に使うフラグ   保存画像使用中はＰＬＣシャッタートリガ強制無効
-	public static boolean saveImgUseFlg;
+	public static boolean saveImgUseFlg;//保存画像を使用した設定に使うフラグ   保存画像使用中はＰＬＣシャッタートリガ強制無効
 	public static Mat saveImgMat;
+	public Mat[][] ptmImgMat = new Mat[4][4];//[presetNo][ptm1～ptm4]
 
 	//連続画像保存によるタイムラグ緩和のロジックに使用
 	private long savelockedTimer;
@@ -345,14 +345,6 @@ public class VisonController{
 
     //パターンマッチング関係
     @FXML
-    private Spinner<Integer> ptm_sp1;
-    @FXML
-    private Spinner<Integer> ptm_sp2;
-    @FXML
-    private Spinner<Integer> ptm_sp3;
-    @FXML
-    private Spinner<Integer> ptm_sp4;
-    @FXML
     private TitledPane ptm_setting_accordion;
     @FXML
     private Button ptm_set_pt1;
@@ -362,6 +354,7 @@ public class VisonController{
     private Button ptm_set_pt3;
     @FXML
     private Button ptm_set_pt4;
+    @FXML
     private Button ptm_set_para1;
     @FXML
     private Button ptm_set_para2;
@@ -377,6 +370,14 @@ public class VisonController{
     private CheckBox ptm_pt3_enable;
     @FXML
     private CheckBox ptm_pt4_enable;
+    @FXML
+    private ImageView ptm_img1;
+    @FXML
+    private ImageView ptm_img2;
+    @FXML
+    private ImageView ptm_img3;
+    @FXML
+    private ImageView ptm_img4;
 
     @FXML
     /**
@@ -470,6 +471,7 @@ public class VisonController{
 
     @FXML
     void onZoomSlider(MouseEvent event) {
+
     	vRect = this.imgORG.getViewport();
     	double zoom = zoomValue_slider.getValue();
     	double zoomedWidth,zoomedHeight;
@@ -829,24 +831,25 @@ public class VisonController{
 			capObj.release();
 		}
 	}
-		/**
-		 * Update the {@link ImageView} in the JavaFX main thread
-		 *
-		 * @param view
-		 *            the {@link ImageView} to update
-		 * @param image
-		 *            the {@link Image} to show
-		 */
-		private void updateImageView(ImageView view, Image image) {
-			Utils.onFXThread(view.imageProperty(), image);
-		}
 
-		/**
-		 * On application close, stop the acquisition from the camera
-		 */
-		protected void setClosed() {
-			this.stopAcquisition();
-		}
+	 /**
+	 * Update the {@link ImageView} in the JavaFX main thread
+	 *
+	 * @param view
+	 *            the {@link ImageView} to update
+	 * @param image
+	 *            the {@link Image} to show
+	 */
+	private void updateImageView(ImageView view, Image image) {
+		Utils.onFXThread(view.imageProperty(), image);
+	}
+
+	/**
+	 * On application close, stop the acquisition from the camera
+	 */
+	protected void setClosed() {
+		this.stopAcquisition();
+	}
 
     @FXML
     void mouseDragged(MouseEvent e) { //imgORG上でドラッグ
@@ -1667,6 +1670,11 @@ public class VisonController{
 		para.threshhold[4] = threshholdSlider.getValue();
 		para.threshhold_Invers[4] = threshhold_Inverse.isSelected();
 
+		para.ptmEnable[0] = ptm_pt1_enable.isSelected();
+		para.ptmEnable[1] = ptm_pt2_enable.isSelected();
+		para.ptmEnable[2] = ptm_pt3_enable.isSelected();
+		para.ptmEnable[3] = ptm_pt4_enable.isSelected();
+
 		pObj.portNo = portNoSpin.getValue().intValue();
 		pObj.delly = dellySpinner.getValue().intValue();
 		pObj.cameraID = camIDspinner.getValue().intValue();
@@ -1679,7 +1687,40 @@ public class VisonController{
 		objOut.flush();
 		objOut.close();
 
+		//パターンマッチング画像の保存 ptmImgMat[preSetNo][ptm1～ptm4]
+		for(int i=0;i<4;i++) {
+			for(int j=0;j<4;j++) {
+				if( ptmImgMat[i][j] != null ) {
+					savePtmImg(ptmImgMat[i][j],"ptm"+String.format("_%d_%d", i,j));
+				}
+			}
+		}
+
 		Platform.runLater( () ->info2.appendText("設定が保存されました。\n"));
+    }
+
+    /**
+     * パターンマッチング画像の保存
+     * @param imgMat
+     * @param fileName
+     */
+    public void savePtmImg(Mat imgMat,String fileName) {
+
+    	File folder = new File("./ptm_image");
+    	if( !folder.exists()) {
+    		if( !folder.mkdir() ) {
+    			Platform.runLater( () ->info2.appendText("ptm_imageフォルダの作成に失敗"+"\n"));
+    			return;
+    		}
+    	}
+        try {
+        	Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat);
+        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"PTM画像保存"+"\n"));
+        }catch(Exception e) {
+        	Platform.runLater( () ->info2.appendText("PTM画像の保存に失敗"+e.toString()+"\n"));
+        }
+        Platform.runLater( () ->info2.appendText("PTM画像ファイルを保存\n" + fileName +".jpeg\n"));
+
     }
 
     /**
@@ -1718,9 +1759,37 @@ public class VisonController{
     	capW_text.setText( String.valueOf(pObj.cameraWidth));
     	adc_flg.setSelected(pObj.adcFlg);
 
+    	//パターンマッチング部
+    	loadPtmImg();
+    	updateImageView(ptm_img1, Utils.mat2Image(ptmImgMat[pObj.select][0]));
+    	updateImageView(ptm_img2, Utils.mat2Image(ptmImgMat[pObj.select][1]));
+    	updateImageView(ptm_img3, Utils.mat2Image(ptmImgMat[pObj.select][2]));
+    	updateImageView(ptm_img4, Utils.mat2Image(ptmImgMat[pObj.select][3]));
+    	ptm_pt1_enable.setSelected(para.ptmEnable[0]);
+    	ptm_pt2_enable.setSelected(para.ptmEnable[1]);
+    	ptm_pt3_enable.setSelected(para.ptmEnable[2]);
+    	ptm_pt4_enable.setSelected(para.ptmEnable[3]);
+
 
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
+    }
+
+    /**
+     * パターンマッチング画像のロード
+     */
+    private void loadPtmImg() {
+    	for( int i=0;i<4;i++) {
+    		for( int j=0;j<4;j++) {
+    	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/ptm"+String.format("_%d_%d", i,j)+".jpeg");
+    	    	if( tmpMat.width() > 0 ) {
+    	    		ptmImgMat[i][j] = tmpMat;
+    	    	}else {
+    	    		ptmImgMat[i][j] = new Mat(1,1,CvType.CV_8U);
+    	    	}
+
+    		}
+    	}
     }
 
     @FXML
@@ -1806,7 +1875,6 @@ public class VisonController{
     	Platform.runLater(() ->info2.clear());
     	Platform.runLater(() ->info2.setText(initInfo2));
     	Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
-		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
 
 		while( Gpio.useFlg ) {
 			System.out.println("onAllClear() Gpio.useFlg=true");
@@ -1814,6 +1882,9 @@ public class VisonController{
 		Gpio.OkSignalON();
 		if( !Gpio.openFlg ) {
 			Platform.runLater( () ->info2.appendText("\n---------------\n- GPIO異常 -\n----------------\n"));
+			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+		}else {
+			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
 		}
 
     }
@@ -1877,7 +1948,7 @@ public class VisonController{
     	cameraCalibration  cb = new cameraCalibration();
     	cb.processer();
 
-    	Platform.runLater(() ->info2.appendText("キャリブレーション実行"));
+    	Platform.runLater(() ->info2.appendText("キャリブレーション実行\n"));
 
     }
 
@@ -1893,16 +1964,140 @@ public class VisonController{
     }
 
     /**
+     * パターンマッチングのパラメーター設定
+     * @param event
+     * @throws SecurityException
+     * @throws NoSuchFieldException
+     */
+    @FXML
+    void onPtmSetPara(ActionEvent e){
+    	Button obj = (Button)e.getSource();
+    	ImageView iv;
+    	int selectBtn;
+    	if( obj == ptm_set_para1 ) {
+    		selectBtn = 0;
+    		iv = ptm_img1;
+    	}else if( obj == ptm_set_para2 ) {
+    		selectBtn = 1;
+    		iv = ptm_img2;
+    	}else if( obj == ptm_set_para3 ) {
+    		selectBtn = 2;
+    		iv = ptm_img3;
+    	}else if( obj == ptm_set_para4 ) {
+    		selectBtn = 3;
+    		iv = ptm_img4;
+    	}else {
+    		return;
+    	}
+
+    	parameter para = pObj.para[pObj.select];
+
+		//パラメーターを渡す
+		PtmView.ptmSrcMat = srcMat.clone();
+
+		PtmView.arg_ptmMat = ptmImgMat[pObj.select][selectBtn].clone();
+		PtmView.arg_detectionCnt = para.detectionCnt[selectBtn];
+
+		PtmView.arg_gauusianCheck = para.para_gauusianCheck[selectBtn];
+		PtmView.arg_gauusianSliderX = para.para_gauusianSliderX[selectBtn];
+		PtmView.arg_gauusianSliderY = para.para_gauusianSliderY[selectBtn];
+		PtmView.arg_gauusianSliderA = para.para_gauusianSliderA[selectBtn];
+
+		PtmView.arg_dilateCheck = para.para_dilateCheck[selectBtn];
+		PtmView.arg_dilateSliderN = para.para_dilateSliderN[selectBtn];
+
+		PtmView.arg_erodeCheck = para.para_erodeCheck[selectBtn];
+		PtmView.arg_erodeSliderN = para.para_erodeSliderN[selectBtn];
+
+		PtmView.arg_threshholdCheck = para.threshholdCheck[selectBtn];
+		PtmView.arg_threshhold_Inverse = para.threshhold_Invers[selectBtn];
+		PtmView.arg_threshholdSlider = para.para_threshholdSlider[selectBtn];//2値化閾値
+
+		PtmView.arg_cannyCheck = para.para_cannyCheck[selectBtn];
+		PtmView.arg_cannyThresh1 = para.para_cannyThresh1[selectBtn];
+		PtmView.arg_cannyThresh2 = para.para_cannyThresh2[selectBtn];
+
+		PtmView.arg_ptmThreshSliderN = para.para_ptmThreshSliderN[selectBtn];//閾値
+		PtmView.arg_zoomValue_slider = para.para_zoomValue_slider[selectBtn];
+		PtmView.arg_rectsDetection = para.para_rectsDetection[selectBtn];//検出範囲
+
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("PtmView.fxml"));
+		AnchorPane root = null;
+		try {
+			root = (AnchorPane) loader.load();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+		Stage stage = new Stage();
+		stage.setScene(scene);
+		stage.setResizable(false);
+
+		//設定ウィンドウを開く
+		stage.showAndWait();
+
+		if( PtmView.confimFlg ) {
+			ptmImgMat[pObj.select][selectBtn] = PtmView.arg_ptmMat;
+			updateImageView(iv, Utils.mat2Image(ptmImgMat[pObj.select][selectBtn]));
+
+			para.detectionCnt[selectBtn] = PtmView.arg_detectionCnt;
+
+			para.para_gauusianCheck[selectBtn] = PtmView.arg_gauusianCheck;
+			para.para_gauusianSliderX[selectBtn] = PtmView.arg_gauusianSliderX;
+			para.para_gauusianSliderY[selectBtn]  = PtmView.arg_gauusianSliderY;
+			para.para_gauusianSliderA[selectBtn] = PtmView.arg_gauusianSliderA;
+
+			para.para_dilateCheck[selectBtn] = PtmView.arg_dilateCheck;
+			para.para_dilateSliderN[selectBtn] = PtmView.arg_dilateSliderN;
+
+			para.para_erodeCheck[selectBtn] = PtmView.arg_erodeCheck;
+			para.para_erodeSliderN[selectBtn] = PtmView.arg_erodeSliderN;
+
+			para.threshholdCheck[selectBtn] = PtmView.arg_threshholdCheck;
+			para.threshhold_Invers[selectBtn] = PtmView.arg_threshhold_Inverse;
+			para.para_threshholdSlider[selectBtn] = PtmView.arg_threshholdSlider;//2値化閾値
+
+			para.para_cannyCheck[selectBtn] = PtmView.arg_cannyCheck;
+			para.para_cannyThresh1[selectBtn] = PtmView.arg_cannyThresh1;
+			para.para_cannyThresh2[selectBtn] = PtmView.arg_cannyThresh2;
+
+			para.para_ptmThreshSliderN[selectBtn] = PtmView.arg_ptmThreshSliderN;//閾値
+			para.para_zoomValue_slider[selectBtn] = PtmView.arg_zoomValue_slider;
+			para.para_rectsDetection[selectBtn] = PtmView.arg_rectsDetection;//検出範囲
+		}
+
+    }
+
+    /**
      * 画像パターンの登録
      * @param event
      */
     @FXML
-    void onPtmSetPara(ActionEvent event) {
+    void onPtmSetImage(ActionEvent e) {
+    	if( saveImgUseFlg ) {
+    		Platform.runLater(() ->info2.appendText("保存画像を使用してパターンの登録はできません\n"));
+    		return;
+    	}
+    	if( srcMat.width() < 10 ) {
+    		Platform.runLater(() ->info2.appendText("登録パターンが小さすぎます\n"));
+    		return;
+    	}
+    	Mat roi = srcMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height)).clone();
 
-    }
-
-    @FXML
-    void onPtmSetPt(ActionEvent event) {
+    	Object eObject = e.getSource();
+    	if( eObject == this.ptm_set_pt1 ) {
+    		updateImageView(ptm_img1, Utils.mat2Image(roi));
+    		ptmImgMat[pObj.select][0] = roi;
+    	}else if( eObject == this.ptm_set_pt2 ) {
+    		updateImageView(ptm_img2, Utils.mat2Image(roi));
+    		ptmImgMat[pObj.select][1] = roi;
+    	}else if( eObject == this.ptm_set_pt3 ) {
+    		updateImageView(ptm_img3, Utils.mat2Image(roi));
+    		ptmImgMat[pObj.select][2] = roi;
+    	}else if( eObject == this.ptm_set_pt4 ) {
+    		updateImageView(ptm_img4, Utils.mat2Image(roi));
+    		ptmImgMat[pObj.select][3] = roi;
+    	}
 
     }
 
@@ -2019,10 +2214,6 @@ public class VisonController{
         assert ptm_set_pt2 != null : "fx:id=\"ptm_set_pt2\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ptm_set_pt3 != null : "fx:id=\"ptm_set_pt3\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ptm_set_pt4 != null : "fx:id=\"ptm_set_pt4\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_sp1 != null : "fx:id=\"ptm_sp1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_sp2 != null : "fx:id=\"ptm_sp2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_sp3 != null : "fx:id=\"ptm_sp3\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_sp4 != null : "fx:id=\"ptm_sp4\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ptm_set_para1 != null : "fx:id=\"ptm_set_para1\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ptm_set_para2 != null : "fx:id=\"ptm_set_para2\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ptm_set_para3 != null : "fx:id=\"ptm_set_para3\" was not injected: check your FXML file 'Sample2.fxml'.";
@@ -2031,6 +2222,11 @@ public class VisonController{
         assert ptm_pt2_enable != null : "fx:id=\"ptm_pt2_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ptm_pt3_enable != null : "fx:id=\"ptm_pt3_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ptm_pt4_enable != null : "fx:id=\"ptm_pt4_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_img1 != null : "fx:id=\"ptm_img1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_img2 != null : "fx:id=\"ptm_img2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_img3 != null : "fx:id=\"ptm_img3\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_img4 != null : "fx:id=\"ptm_img4\" was not injected: check your FXML file 'Sample2.fxml'.";
+
         //クラス変数の初期化
         imgORG_imageViewFitWidth = imgORG.getFitWidth();
         imgORG_imageViewFitHeight = imgORG.getFitHeight();
@@ -2049,15 +2245,13 @@ public class VisonController{
 			pObj = new preSet();
 		}
 
-
-
         updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
         updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
         updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
         updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	Platform.runLater(() ->info1.setText(""));
 
-        accordion_1.expandedPaneProperty().addListener(new 
+        accordion_1.expandedPaneProperty().addListener(new
                 ChangeListener<TitledPane>() {
                     public void changed(ObservableValue<? extends TitledPane> ov,
                         TitledPane old_val, TitledPane new_val) {
@@ -2068,14 +2262,14 @@ public class VisonController{
                     	}
                   }
             });
-        
+
     	try {
 	    	int fileCnt = FileClass.getFiles(new File("./ok_image")).length;
 	    		allSaveCnt = fileCnt;
 		}catch( java.lang.NullPointerException e) {
     		Platform.runLater(() ->info1.setText("ok_imageフォルダがありません"));
     	}
-    	
+
         try {
 			onTest(null);
 		} catch (InterruptedException e) {
