@@ -1507,6 +1507,7 @@ public class VisonController{
       boolean result = true;
 	  Mat roi = new Mat(1,1,CvType.CV_8U);
 	  int whiteArea = 0;
+	  final int offset = 5; 
 
 	  whiteAreaAverage = 0;
 	  whiteAreaMax = 0;
@@ -1517,10 +1518,10 @@ public class VisonController{
 		int  x = (int)v[0];
 		int  y = (int)v[1];
 		int  r = (int)v[2];
-		if( x-r-1 < 0 || y-r-1<0 || x-r+r+r>judgeAreaMat.width() || y-r+r+r>judgeAreaMat.height() ) {
+		if( x-r-offset < 0 || y-r-offset<0 || x-r+r+r>judgeAreaMat.width() || y-r+r+r>judgeAreaMat.height() ) {
 			result = false;
 		}else {
-	  		roi = judgeAreaMat.submat(new Rect( x-r-1, y-r-1, r+r+1, r+r+1));
+	  		roi = judgeAreaMat.submat(new Rect( x-r-offset, y-r-offset, r+r+offset, r+r+offset));
 	  		whiteArea = Core.countNonZero(roi);
 	  		whiteAreaAverage += whiteArea;
 	  		whiteAreaMax = whiteAreaMax < whiteArea?whiteArea:whiteAreaMax;

@@ -200,6 +200,7 @@ public class PtmView {
     	}
 
     	draggingRect.width =0;
+    	draggingRect.height =0;
 
     	rePaint();
     }
@@ -269,6 +270,9 @@ public class PtmView {
     		tmp_ptmMat = roi.clone();
             updateImageView(ptmSubView,Utils.mat2Image(tmp_ptmMat));
         	Platform.runLater(() ->ptmInfo.appendText("登録画像が更新されました\n"));
+        	draggingRect.width =0;
+        	draggingRect.height =0;
+
         	rePaint();
     	}
     }
