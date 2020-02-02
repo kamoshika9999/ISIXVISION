@@ -1543,7 +1543,7 @@ public class VisonController{
     }
     
     /**
-     * クリックで面積スピナーの値を一致される
+     * クリックで面積スピナーの値を一致させる
      * @param event
      */
     @FXML

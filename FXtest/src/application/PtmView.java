@@ -2,6 +2,8 @@ package application;
 
 import java.awt.Rectangle;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import org.opencv.core.CvType;
@@ -351,7 +353,7 @@ public class PtmView {
     void onWheel(ScrollEvent e) {
     	viewOrgZoom = zoomValue_slider.getValue();
     	Rectangle2D rect = ptmMainView.getViewport();
-    	double zoomStep = 0.05;
+    	double zoomStep = 0.01;
     	double zoomOrg = viewOrgZoom;
     	double imgWidth = ptmMainView.getImage().getWidth();//に格納されているイメージの幅
     	double imgHeight = ptmMainView.getImage().getHeight();
@@ -398,7 +400,7 @@ public class PtmView {
     			ptmMainView.getFitHeight() /viewOrgZoom);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
     	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect));
-    	Platform.runLater(() ->zoomLabel.setText(String.format("%.1f",viewOrgZoom)));
+    	Platform.runLater(() ->zoomLabel.setText(String.format("%.2f",viewOrgZoom)));
 
     	rePaint();
 
@@ -416,7 +418,8 @@ public class PtmView {
 
     	double minX = rect.getMinX();
     	double minY = rect.getMinY();
-		if( ptmMainView.getFitWidth() < imgWidth * zoom) {
+
+    	if( ptmMainView.getFitWidth() < imgWidth * zoom) {
 		    	zoomedWidth = ptmMainView.getFitWidth() / zoom;
 		    	zoomedHeight = ptmMainView.getFitHeight() / zoom;
 		}else {
@@ -531,50 +534,78 @@ public class PtmView {
     		Imgproc.Canny(tmpMatPT,tmpMatPT,thresh1,thresh2);
     	}
 
-    	//検出処理
+    	//パターン検出処理
     	//比較結果を格納するMatを生成
     	Mat roi = tmpMat.submat(new Rect(tmp_rectsDetection.x,tmp_rectsDetection.y,
     			tmp_rectsDetection.width,tmp_rectsDetection.height));
     	Mat orgroi = orgMat.submat(new Rect(tmp_rectsDetection.x,tmp_rectsDetection.y,
     			tmp_rectsDetection.width,tmp_rectsDetection.height));
     	int cnt = 0;
+    	boolean flg,flg2;
+    	List<Point> finedPoint = new ArrayList<>();
     	if( roi.width() > tmpMatPT.width() && roi.height() > tmpMatPT.height() ) {
 
 	    	Mat result = new Mat(roi.rows() - tmpMatPT.rows() + 1, roi.cols() - tmpMatPT.cols() + 1, CvType.CV_32FC1);
-    		//Mat result = new Mat();
-	    	//テンプレートマッチ実行（TM_CCOEFF_NORMED：相関係数＋正規化）
+ 	    	//テンプレートマッチ実行（TM_CCOEFF_NORMED：相関係数＋正規化）
 	    	Imgproc.matchTemplate(roi, tmpMatPT, result, Imgproc.TM_CCOEFF_NORMED);
 	    	//結果から相関係数がしきい値以下を削除（０にする）
 	    	Imgproc.threshold(result, result,
 	    			ptmThreshSliderN.getValue(),1.0, Imgproc.THRESH_TOZERO);
 
-	    	boolean flg;
 
+	    	int tmpPtWidth =  tmpMatPT.width()/2;//テンプレート画像の1/2近傍チェック用
+	    	int tmpPtHeight = tmpMatPT.height()/2;
 	    	for (int i=0;i<result.rows();i++) {
 	    		flg = false;
 	    		String rtStr ="";
 	    		for (int j=0;j<result.cols();j++) {
 	    			rt = result.get(i, j)[0];
+	    			flg2=false;
 	    			if ( rt > 0) {
-	    				cnt++;
-	    		    	Imgproc.rectangle(orgroi, new Point(j, i), new Point(j + tmpMatPT.cols(), i + tmpMatPT.rows()), new Scalar(255, 255, 0),3);
-	    		    	rtStr = rtStr + String.format("%.2f", rt)+" : ";
+	    				//近傍に検出エリアが無いか確認 テンプレート画像の1/2近傍
+	    				if( !finedPoint.isEmpty() ) {
+		    				for(Point p:finedPoint) {
+		    					if( p.x  + tmpPtWidth > j && p.x - tmpPtWidth < j &&
+		    							p.y  + tmpPtHeight > i && p.y - tmpPtHeight < i) {
+		    						flg2 = true;
+		    						break;
+		    					}
+		    				}
+	    					if( !flg2 ){
+	    	    				cnt++;
+	    						finedPoint.add(new Point(j,i));
+	    	    		    	rtStr = rtStr + String.format("%.2f", rt)+" : ";
+	    	    		    	Imgproc.rectangle(orgroi,new Point(j,i),
+	    	    		    			new Point(j+tmpMatPT.width(),i+tmpMatPT.height()),
+	    	    		    			new Scalar(255,255,255),3);
+	    	    		    	j = (int) (j + tmpMatPT.cols() + tmpPtWidth);
+	    	    		    	flg = true;
+	    	    		    	break;
 
-	    		    	j += tmpMatPT.cols()/1.1;
-	    		    	flg = true;
+	    					}
+	    				}else {
+    	    				cnt++;
+    						finedPoint.add(new Point(j,i));
+    	    		    	rtStr = rtStr + String.format("%.2f", rt)+" : ";
+    	    		    	Imgproc.rectangle(orgroi,new Point(j,i),
+    	    		    			new Point(j+tmpMatPT.width(),i+tmpMatPT.height()),
+    	    		    			new Scalar(255,255,255),3);
+    	    		    	j = (int) (j + tmpMatPT.cols() + tmpPtWidth);
+    	    		    	flg = true;
+	    				}
 	    			}
 	    		}
     			if( flg ) {
-    				i += tmpMatPT.rows()/1.1;
     				String tmp = rtStr;
-        			Platform.runLater( () ->ptmInfo.appendText("一致率="+tmp+"\n"));
+        			Platform.runLater( () ->ptmInfo.appendText("一致率="+tmp+" "));
     			}
 
 	   		 }
     	}else {
     		System.out.println("サイズ不正");
     	}
-    	//System.out.println("マッチングカウント=" + String.valueOf(cnt) );
+    	Platform.runLater( () ->ptmInfo.appendText("\n"));
+    	System.out.println("マッチングカウント=" + String.valueOf(cnt) );
 
 		updateImageView(ptmMainView,Utils.mat2Image(orgMat));
 		updateImageView(ptmMainViewDst,Utils.mat2Image(tmpMat));
@@ -654,8 +685,12 @@ public class PtmView {
         assert ptmSubViewDst != null : "fx:id=\"ptmSubViewDst\" was not injected: check your FXML file 'ptmView.fxml'.";
         assert ptmMainViewDst != null : "fx:id=\"ptmMainViewDst\" was not injected: check your FXML file 'ptmView.fxml'.";
 
-        updateImageView(ptmMainView,Utils.mat2Image(ptmSrcMat));
-        tmp_ptmMat = arg_ptmMat.clone();
+        vRect = new Rectangle2D( 0,0,ptmSrcMat.width(),ptmSrcMat.height());
+    	ptmMainView.setViewport(vRect);
+    	ptmMainViewDst.setViewport(vRect);
+
+    	tmp_ptmMat = arg_ptmMat.clone();
+    	updateImageView(ptmMainView,Utils.mat2Image(ptmSrcMat));
         updateImageView(ptmSubView,Utils.mat2Image(tmp_ptmMat));
 
         if( arg_rectsDetection != null ) {
@@ -664,9 +699,9 @@ public class PtmView {
         	tmp_rectsDetection = new Rectangle();
         }
 
+
         setSlider();
-
-
+ 
 
     }
 }
