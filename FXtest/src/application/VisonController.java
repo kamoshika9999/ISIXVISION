@@ -87,9 +87,9 @@ public class VisonController{
 	public static ScheduledExecutorService timer2;
 
 	//穴面積判定用
-	private double whiteRaitoAverage;
-	private double whiteRaitoMax;
-	private double whiteRaitoMin;
+	private long whiteAreaAverage;
+	private long whiteAreaMax;
+	private long whiteAreaMin;
 
 
 	//シャッタートリガ用
@@ -404,6 +404,7 @@ public class VisonController{
     private Spinner<Integer> whiteRatioMaxSp;
     @FXML
     private Spinner<Integer> whiteRatioMinSp;
+
 
 
 
@@ -1091,19 +1092,19 @@ public class VisonController{
 									new Point(draggingRect.x-25,draggingRect.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,0,255),2);
 							//面積判定
-							boolean ratioFlg = holeWhiteRatioCheck(
+							boolean ratioFlg = holeWhiteAreaCheck(
 									roi,circles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
 							if( ratioFlg ) {
 								Imgproc.putText(orgMat,
-										"WhiteRatio OK  ave=" + String.format("%.0f",whiteRaitoAverage) +
-												"Max=" + String.format("%.0f",whiteRaitoMax) +
-												"Min=" + String.format("%.0f",whiteRaitoMin),
+										"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
+												"Max=" + String.format("%d",whiteAreaMax) +
+												"Min=" + String.format("%d",whiteAreaMin),
 										new Point(draggingRect.x+10,draggingRect.y-6),
 										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
 							}else {
-								Imgproc.putText(orgMat, "WhiteRatio NG  ave=" + String.format("%.0f",whiteRaitoAverage) +
-										"Max=" + String.format("%.0f",whiteRaitoMax) +
-										"Min=" + String.format("%.0f",whiteRaitoMin),
+								Imgproc.putText(orgMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
+										"Max=" + String.format("%d",whiteAreaMax) +
+										"Min=" + String.format("%d",whiteAreaMin),
 										new Point(draggingRect.x+10,draggingRect.y-6),
 										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),2);
 							}
@@ -1169,18 +1170,18 @@ public class VisonController{
 								new Point(r.x-25,r.y-6),
 								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),3);
 						//面積判定
-						ratioFlg = holeWhiteRatioCheck(
-								roi,circles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
+						ratioFlg = holeWhiteAreaCheck(
+								roi,circles,para.whiteAreaMax[i],para.whiteAreaMin[i]);
 						if( ratioFlg ) {
-							Imgproc.putText(orgMat, "WhiteRatio OK  ave=" + String.format("%.0f",whiteRaitoAverage) +
-									"Max=" + String.format("%.0f",whiteRaitoMax) +
-									"Min=" + String.format("%.0f",whiteRaitoMin),
+							Imgproc.putText(orgMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
+									"Max=" + String.format("%d",whiteAreaMax) +
+									"Min=" + String.format("%d",whiteAreaMin),
 									new Point(r.x+10,r.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
 						}else {
-							Imgproc.putText(orgMat, "WhiteRatio NG  ave=" + String.format("%.0f",whiteRaitoAverage) +
-									"Max=" + String.format("%.0f",whiteRaitoMax) +
-									"Min=" + String.format("%.0f",whiteRaitoMin),
+							Imgproc.putText(orgMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
+									"Max=" + String.format("%d",whiteAreaMax) +
+									"Min=" + String.format("%d",whiteAreaMin),
 									new Point(r.x+10,r.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),2);
 						}
@@ -1498,18 +1499,18 @@ public class VisonController{
      * 穴面積判定
      * @param judgeAreaMat
      * @param circles
-     * @param threshholdMax　白面積比率の上限
-     * @param threshholdMin　白面積比率の下限
+     * @param threshholdAreaMax　白面積の上限
+     * @param threshholdAreaMin　白面積の下限
      * @return
      */
-    private boolean holeWhiteRatioCheck(Mat judgeAreaMat,Mat circles,int threshholdMax,int threshholdMin) {
+    private boolean holeWhiteAreaCheck(Mat judgeAreaMat,Mat circles,int threshholdAreaMax,int threshholdAreaMin) {
       boolean result = true;
 	  Mat roi = new Mat(1,1,CvType.CV_8U);
-	  double whiteAreaRatio = 0;
+	  int whiteArea = 0;
 
-	  whiteRaitoAverage = 0.0;
-	  whiteRaitoMax = 0.0;
-	  whiteRaitoMin = 1.0;
+	  whiteAreaAverage = 0;
+	  whiteAreaMax = 0;
+	  whiteAreaMin = 99999;
 
 	  for( int i= 0; i < circles.cols(); i++) {
 		double[] v = circles.get(0, i);//[0]:X  [1]:Y  [2]:r
@@ -1520,27 +1521,41 @@ public class VisonController{
 			result = false;
 		}else {
 	  		roi = judgeAreaMat.submat(new Rect( x-r-1, y-r-1, r+r+1, r+r+1));
-	  		whiteAreaRatio = (double)Core.countNonZero(roi) / (double)roi.total();
-	  		whiteRaitoAverage += whiteAreaRatio;
-	  		whiteRaitoMax = whiteRaitoMax < whiteAreaRatio?whiteAreaRatio:whiteRaitoMax;
-	  		whiteRaitoMin = whiteRaitoMin > whiteAreaRatio?whiteAreaRatio:whiteRaitoMin;
-	  		if( whiteAreaRatio*100 > threshholdMax || whiteAreaRatio*100 < threshholdMin)
+	  		whiteArea = Core.countNonZero(roi);
+	  		whiteAreaAverage += whiteArea;
+	  		whiteAreaMax = whiteAreaMax < whiteArea?whiteArea:whiteAreaMax;
+	  		whiteAreaMin = whiteAreaMin > whiteArea?whiteArea:whiteAreaMin;
+	  		if( whiteArea > threshholdAreaMax || whiteArea < threshholdAreaMin)
 	  			result = false;
 		}
 	  }
 	  if( settingModeFlg ) {
-	  	  double wr = whiteAreaRatio;
-	  	  Platform.runLater(() ->this.whiteRatioLabel.setText( String.format("%.1f", wr*100)));
-	  	  Platform.runLater(() ->this.blackRatioLabel.setText( String.format("%.1f", 100 - wr*100)));
+	  	  int wa = whiteArea;
+	  	  int ba = (int) (roi.total() - wa);
+	  	  Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", wa)));
+	  	  Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", ba)));
 	  	  updateImageView(debugImg, Utils.mat2Image(roi));
 	  }
 
-	  whiteRaitoAverage = whiteRaitoAverage / circles.cols() *100;
-	  whiteRaitoMax *= 100;
-	  whiteRaitoMin *= 100;
+	  whiteAreaAverage = whiteAreaAverage / circles.cols();
 	  return result;
     }
-
+    
+    /**
+     * クリックで面積スピナーの値を一致される
+     * @param event
+     */
+    @FXML
+    void onWhiteAreaLabelClicked(MouseEvent event) {
+    	Platform.runLater( () ->whiteRatioMaxSp.setValueFactory(
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,
+				Integer.valueOf(whiteRatioLabel.getText()),
+				5)));
+    	Platform.runLater( () ->whiteRatioMinSp.setValueFactory(
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,
+						Integer.valueOf(whiteRatioLabel.getText()),
+				5)));
+    }
     /**
      * 穴の検出パラメーターを設定 ①送り穴～②ポケ穴の４ボタン
      * @param e
@@ -1605,8 +1620,8 @@ public class VisonController{
     	para.threshholdCheck[i] = threshholdCheck.isSelected();
     	para.threshhold[i] = threshholdSlider.getValue();
     	para.threshhold_Invers[i] = threshhold_Inverse.isSelected();
-    	para.whiteRatioMax[i] = whiteRatioMaxSp.getValue().intValue();
-    	para.whiteRatioMin[i] = whiteRatioMinSp.getValue().intValue();
+    	para.whiteAreaMax[i] = whiteRatioMaxSp.getValue().intValue();
+    	para.whiteAreaMin[i] = whiteRatioMinSp.getValue().intValue();
 
     	settingMode.setSelected(false);//セッティングモードから抜ける
     	draggingRect = new Rectangle(0,0,1,1);
@@ -1676,8 +1691,8 @@ public class VisonController{
 		para.threshholdCheck[4] = threshholdCheck.isSelected();
 		para.threshhold[4] = threshholdSlider.getValue();
 		para.threshhold_Invers[4] = threshhold_Inverse.isSelected();
-		para.whiteRatioMax[4] = whiteRatioMaxSp.getValue();
-		para.whiteRatioMin[4] = whiteRatioMinSp.getValue();
+		para.whiteAreaMax[4] = whiteRatioMaxSp.getValue();
+		para.whiteAreaMin[4] = whiteRatioMinSp.getValue();
 
 
 		setSlidbar();
@@ -1754,6 +1769,12 @@ public class VisonController{
     	Platform.runLater(() ->textFieldDetecPara9.setText(String.valueOf(String.format("%.1f",sliderDetecPara9.getValue()))));
     	//Platform.runLater(() ->matchTmempTHreshSlider.setValue(para.matchThreshValue[4]));
     	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
+		whiteRatioMaxSp.setValueFactory(
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.whiteAreaMax[onSetVeri_n],5));
+		whiteRatioMinSp.setValueFactory(
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.whiteAreaMin[onSetVeri_n],5));
+
+    	
     	eventTrigger = true;
     }
 
@@ -1895,9 +1916,9 @@ public class VisonController{
     			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
     	zoomValue_slider.setValue(para.zoom);
 		whiteRatioMaxSp.setValueFactory(
-				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100,para.whiteRatioMax[4],1));
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.whiteAreaMax[4],5));
 		whiteRatioMinSp.setValueFactory(
-				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100,para.whiteRatioMin[4],1));
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.whiteAreaMin[4],5));
     	setBtnPara();
 
     	portNoSpin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 9,pObj.portNo,1));
