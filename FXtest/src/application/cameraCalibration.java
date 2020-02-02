@@ -1,12 +1,15 @@
 package application;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.opencv.calib3d.Calib3d;
@@ -33,14 +36,14 @@ public class cameraCalibration {
 		c.processer();
 		System.out.println("終了しました。");
 	}
-	public void processer() {
+	public boolean processer() {
 		if (!Files.exists(picFolderPath)) {
 			System.err.println("The picture folder does not exist!");
-			return;
+			return false;
 		}
 		if (!Files.isDirectory(picFolderPath)) {
 			System.err.println("The path is not a folder!");
-			return;
+			return false;
 		}
 
 		List<Mat> imagePoints = new ArrayList<>(); // 各撮影画像のコーナーの二次元座標を入れる。
@@ -82,6 +85,14 @@ public class cameraCalibration {
 
 		System.out.println("CameraMatrix: " + cameraMatrix.dump());
 		System.out.println("DistortionCoefficients: " + distortionCoefficients.dump());
+
+        Map<String, Mat> exportMats = new HashMap<>();
+        exportMats.put("CameraMatrix", cameraMatrix);
+        exportMats.put("DistortionCoefficients", distortionCoefficients);
+        final Path exportFilePath = Paths.get("./CameraCalibration.xml");
+        MatIO.exportMat(exportMats, exportFilePath);
+
+        return true;
 	}
 
 	public List<Mat> getObjectPoints(int size, Size patternSize) {
@@ -130,9 +141,15 @@ public class cameraCalibration {
 		imagePoints.add(corners);
 
 		Calib3d.drawChessboardCorners(mat, patternSize, corners, true);
+    	File folder = new File("./chess_imageDst");
+    	if( !folder.exists()) {
+    		if( !folder.mkdir() ) {
+    			System.out.println("chess_imageDstフォルダの作成に失敗"+"\n");
+    		}
+    	}
 
 		Path picPath = Paths.get(picPathString);
-		Path path = Paths.get("./chess_image", picPath.getFileName().toString());
+		Path path = Paths.get("./chess_imageDst", picPath.getFileName().toString());
 		Imgcodecs.imwrite(path.toString(), mat);
 
 		return Optional.of(inputMat);

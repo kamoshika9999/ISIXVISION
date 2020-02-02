@@ -8,16 +8,20 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -84,6 +88,8 @@ public class VisonController{
 
 	//穴面積判定用
 	private double whiteRaitoAverage;
+	private double whiteRaitoMax;
+	private double whiteRaitoMin;
 
 
 	//シャッタートリガ用
@@ -125,6 +131,11 @@ public class VisonController{
 	private long savelockedTimer;
 	private long savelockedTimerThresh = 500;
 	private int NGsaveCnt = 0;
+
+	//カメラキャリブレーション用
+	private boolean cameraCalibFlg = false;
+	private Mat cameraMatrix;//内部パラメータ
+	private Mat distortionCoefficients;//歪み係数
 
 	//インフォメーション
 	private String initInfo2;
@@ -397,6 +408,8 @@ public class VisonController{
 
 
 
+
+
     @FXML
     /**
      * スライダーの値を対応するテキストフィールドに入力する
@@ -626,6 +639,16 @@ public class VisonController{
 		}else {
 			// カメラが正常に開いている時
 			this.cameraActive = true;
+
+			//キャリブレーションデーター読み込み
+			File calibFile = new File("./CameraCalibration.xml");
+			if( calibFile.exists() ) {
+				cameraCalibFlg = true;
+				final Path filePath = Paths.get("./CameraCalibration.xml");
+				final Map<String, Mat> calibrationMats = MatIO.loadMat(filePath);
+				cameraMatrix = calibrationMats.get("CameraMatrix");//内部パラメータ
+				distortionCoefficients = calibrationMats.get("DistortionCoefficients");//歪み係数
+			}
 		}
 		source_video = new VideoCapture("./test.mp4" );//デモモード用動画
 		double video_width = source_video.get( Videoio.CAP_PROP_FRAME_WIDTH ); // 横幅を取得
@@ -817,6 +840,8 @@ public class VisonController{
 				Platform.runLater( () ->info2.appendText("Exception during the image elaboration: " + e +"\n"));
 			}
 		}
+		if( cameraCalibFlg )
+			Calib3d.undistort(frame, frame, cameraMatrix, distortionCoefficients);
 		return frame;
 	}
 
@@ -1069,11 +1094,16 @@ public class VisonController{
 							boolean ratioFlg = holeWhiteRatioCheck(
 									roi,circles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
 							if( ratioFlg ) {
-								Imgproc.putText(orgMat, "WhiteRatio OK  ave=" + String.format("%.0f",whiteRaitoAverage),
+								Imgproc.putText(orgMat,
+										"WhiteRatio OK  ave=" + String.format("%.0f",whiteRaitoAverage) +
+												"Max=" + String.format("%.0f",whiteRaitoMax) +
+												"Min=" + String.format("%.0f",whiteRaitoMin),
 										new Point(draggingRect.x+10,draggingRect.y-6),
 										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
 							}else {
-								Imgproc.putText(orgMat, "WhiteRatio NG  ave=" + String.format("%.0f",whiteRaitoAverage),
+								Imgproc.putText(orgMat, "WhiteRatio NG  ave=" + String.format("%.0f",whiteRaitoAverage) +
+										"Max=" + String.format("%.0f",whiteRaitoMax) +
+										"Min=" + String.format("%.0f",whiteRaitoMin),
 										new Point(draggingRect.x+10,draggingRect.y-6),
 										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),2);
 							}
@@ -1142,11 +1172,15 @@ public class VisonController{
 						ratioFlg = holeWhiteRatioCheck(
 								roi,circles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
 						if( ratioFlg ) {
-							Imgproc.putText(orgMat, "WhiteRatio OK  ave=" + String.format("%.0f",whiteRaitoAverage),
+							Imgproc.putText(orgMat, "WhiteRatio OK  ave=" + String.format("%.0f",whiteRaitoAverage) +
+									"Max=" + String.format("%.0f",whiteRaitoMax) +
+									"Min=" + String.format("%.0f",whiteRaitoMin),
 									new Point(r.x+10,r.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
 						}else {
-							Imgproc.putText(orgMat, "WhiteRatio NG  ave=" + String.format("%.0f",whiteRaitoAverage),
+							Imgproc.putText(orgMat, "WhiteRatio NG  ave=" + String.format("%.0f",whiteRaitoAverage) +
+									"Max=" + String.format("%.0f",whiteRaitoMax) +
+									"Min=" + String.format("%.0f",whiteRaitoMin),
 									new Point(r.x+10,r.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),2);
 						}
@@ -1472,8 +1506,11 @@ public class VisonController{
       boolean result = true;
 	  Mat roi = new Mat(1,1,CvType.CV_8U);
 	  double whiteAreaRatio = 0;
-	  whiteRaitoAverage = 0;
-	  
+
+	  whiteRaitoAverage = 0.0;
+	  whiteRaitoMax = 0.0;
+	  whiteRaitoMin = 1.0;
+
 	  for( int i= 0; i < circles.cols(); i++) {
 		double[] v = circles.get(0, i);//[0]:X  [1]:Y  [2]:r
 		int  x = (int)v[0];
@@ -1485,6 +1522,8 @@ public class VisonController{
 	  		roi = judgeAreaMat.submat(new Rect( x-r-1, y-r-1, r+r+1, r+r+1));
 	  		whiteAreaRatio = (double)Core.countNonZero(roi) / (double)roi.total();
 	  		whiteRaitoAverage += whiteAreaRatio;
+	  		whiteRaitoMax = whiteRaitoMax < whiteAreaRatio?whiteAreaRatio:whiteRaitoMax;
+	  		whiteRaitoMin = whiteRaitoMin > whiteAreaRatio?whiteAreaRatio:whiteRaitoMin;
 	  		if( whiteAreaRatio*100 > threshholdMax || whiteAreaRatio*100 < threshholdMin)
 	  			result = false;
 		}
@@ -1495,8 +1534,10 @@ public class VisonController{
 	  	  Platform.runLater(() ->this.blackRatioLabel.setText( String.format("%.1f", 100 - wr*100)));
 	  	  updateImageView(debugImg, Utils.mat2Image(roi));
 	  }
-	  
+
 	  whiteRaitoAverage = whiteRaitoAverage / circles.cols() *100;
+	  whiteRaitoMax *= 100;
+	  whiteRaitoMin *= 100;
 	  return result;
     }
 
@@ -1539,7 +1580,7 @@ public class VisonController{
     		}
     	}
     	setBtnPara();
-    	
+
     	eventTrigger = true;
 
     }
@@ -1831,7 +1872,7 @@ public class VisonController{
     	try {
 	    	FileInputStream fi = new FileInputStream("./conf4.txt");
 	    	ObjectInputStream objIn = new ObjectInputStream(fi);
-	
+
 	    	pObj = (preSet)objIn.readObject();
 	    	objIn.close();
     	}catch(Exception e) {
@@ -1878,7 +1919,7 @@ public class VisonController{
     	ptm_pt3_enable.setSelected(para.ptmEnable[2]);
     	ptm_pt4_enable.setSelected(para.ptmEnable[3]);
 
-    	
+
 
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
@@ -2048,16 +2089,55 @@ public class VisonController{
     }
     @FXML
     void onCalbdataDel(ActionEvent event) {
-    	Platform.runLater(() ->info2.appendText("キャリブレーションデーター削除：未実装\n"));
-
+    	if( !cameraCalibFlg ) {
+    		Platform.runLater(() ->info2.appendText("キャリブレーションデーターがありません"));
+    		return;
+    	}
+		File calibFile = new File("./CameraCalibration.xml");
+		if( calibFile.exists() ) {
+			calibFile.delete();
+		}
+    	Platform.runLater(() ->info2.appendText("キャリブレーションデーター削除\n"));
     }
 
+
+    /**
+     * カメラキャリブレーション実行
+     * @param event
+     */
     @FXML
     void onCameraCalib(ActionEvent event) {
     	cameraCalibration  cb = new cameraCalibration();
-    	cb.processer();
+    	if( cb.processer() ) {
+			File calibFile = new File("./CameraCalibration.xml");
+			if( calibFile.exists() ) {
+				cameraCalibFlg = true;
+				final Path filePath = Paths.get("./CameraCalibration.xml");
+				final Map<String, Mat> calibrationMats = MatIO.loadMat(filePath);
+				cameraMatrix = calibrationMats.get("CameraMatrix");//内部パラメータ
+				distortionCoefficients = calibrationMats.get("DistortionCoefficients");//歪み係数
+			}
+			cameraCalibFlg = true;
+        	Platform.runLater(() ->info2.appendText("キャリブレーションを実行しました。\n"));
 
-    	Platform.runLater(() ->info2.appendText("キャリブレーション実行\n"));
+    	}else {
+    		Platform.runLater(() ->info2.appendText("キャリブレーションに失敗しました。\n"));
+    	}
+
+    	calibTestController.cameraMatrix = this.cameraMatrix;
+    	calibTestController.distortionCoefficients = this.distortionCoefficients;
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("calibTest.fxml"));
+		AnchorPane root = null;
+		try {
+			root = (AnchorPane) loader.load();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+		Stage stage = new Stage();
+		stage.setScene(scene);
+		stage.setResizable(false);
+		stage.showAndWait();
 
     }
 

@@ -38,6 +38,7 @@ public class ngImageController {
     private Label info1;
     @FXML
     private Button useImgSettingBtn;
+    
 
     @FXML
     void onClose(ActionEvent event) {
