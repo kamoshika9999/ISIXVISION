@@ -55,6 +55,8 @@ public class parameter implements Serializable {
 	public double[] para_ptmThreshSliderN;
 	public double[] para_zoomValue_slider;
 	public Rectangle[] para_rectsDetection;
+	public int[] whiteRatioMax;
+	public int[] whiteRatioMin;
 
 
 	public parameter() {
@@ -117,6 +119,9 @@ public class parameter implements Serializable {
 		para_zoomValue_slider = new double[arrySize];
 		para_rectsDetection = new Rectangle[arrySize];
 
+		whiteRatioMax = new int[arrySize];
+		whiteRatioMin = new int[arrySize];
+
 		for(int i=0;i<arrySize;i++){
 			circlePara4[i] = 2;
 			circlePara5[i] = 10;
@@ -139,7 +144,9 @@ public class parameter implements Serializable {
 			matchThreshValue[i] = 0.8;
 			ptmEnable[i] = false;
 			ptmDetectCnt[i] = 0;
-			
+			whiteRatioMax[i] = 50;
+			whiteRatioMin[i] = 20;
+
 			para_rectsDetection[i] = new Rectangle();
 		}
 	}

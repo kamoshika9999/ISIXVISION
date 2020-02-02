@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -80,6 +81,10 @@ public class VisonController{
     public static VideoCapture capObj = new VideoCapture();
 	public static ScheduledExecutorService timer;
 	public static ScheduledExecutorService timer2;
+
+	//穴面積判定用
+	private double whiteRaitoAverage;
+
 
 	//シャッタートリガ用
 	boolean shutterFlg = false;
@@ -378,6 +383,19 @@ public class VisonController{
     private ImageView ptm_img3;
     @FXML
     private ImageView ptm_img4;
+    @FXML
+    private ImageView debugImg;//穴の面積判定用
+    @FXML
+    private Label whiteRatioLabel;//穴の面積判定用
+    @FXML
+    private Label blackRatioLabel;//穴の面積判定用
+    @FXML
+    private Spinner<Integer> whiteRatioMaxSp;
+    @FXML
+    private Spinner<Integer> whiteRatioMinSp;
+
+
+
 
     @FXML
     /**
@@ -1041,12 +1059,24 @@ public class VisonController{
 								(int)sliderDetecPara8.getValue(),
 								(int)sliderDetecPara9.getValue());
 						if( circles.cols() > 0) {
-							fncDrwCircles(circles,
+							fncDrwCircles(roi,circles,
 									orgMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height)),
 									true);
 							Imgproc.putText(orgMat, String.valueOf(circles.cols()),
 									new Point(draggingRect.x-25,draggingRect.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,0,255),2);
+							//面積判定
+							boolean ratioFlg = holeWhiteRatioCheck(
+									roi,circles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
+							if( ratioFlg ) {
+								Imgproc.putText(orgMat, "WhiteRatio OK  ave=" + String.format("%.0f",whiteRaitoAverage),
+										new Point(draggingRect.x+10,draggingRect.y-6),
+										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
+							}else {
+								Imgproc.putText(orgMat, "WhiteRatio NG  ave=" + String.format("%.0f",whiteRaitoAverage),
+										new Point(draggingRect.x+10,draggingRect.y-6),
+										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),2);
+							}
 						}
 		        	}
 		            Imgproc.rectangle(orgMat,
@@ -1102,19 +1132,31 @@ public class VisonController{
 							(int)para.circlePara8[i],
 							(int)para.circlePara9[i]);
 
-
+					boolean ratioFlg = true;
 					if( circles.cols() > 0 && !settingMode.isSelected()) {
-						fncDrwCircles(circles, orgMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
+						fncDrwCircles(roi,circles, orgMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
 						Imgproc.putText(orgMat, String.valueOf(circles.cols()),
 								new Point(r.x-25,r.y-6),
 								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),3);
+						//面積判定
+						ratioFlg = holeWhiteRatioCheck(
+								roi,circles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
+						if( ratioFlg ) {
+							Imgproc.putText(orgMat, "WhiteRatio OK  ave=" + String.format("%.0f",whiteRaitoAverage),
+									new Point(r.x+10,r.y-6),
+									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
+						}else {
+							Imgproc.putText(orgMat, "WhiteRatio NG  ave=" + String.format("%.0f",whiteRaitoAverage),
+									new Point(r.x+10,r.y-6),
+									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),2);
+						}
 					}
 
 					//判定
 		            switch(i) {
 		            	case 0:
 		            		Platform.runLater( () ->okuri1_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && ratioFlg ) {
 		            			Platform.runLater( () ->okuri1_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.GREEN));
 		            			hanteCnt++;
@@ -1127,7 +1169,7 @@ public class VisonController{
 		            		break;
 		            	case 1:
 		            		Platform.runLater( () ->okuri2_n.setText(String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && ratioFlg ) {
 		            			Platform.runLater( () ->okuri2_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.GREEN));
 		            			hanteCnt++;
@@ -1140,7 +1182,7 @@ public class VisonController{
 		            		break;
 		            	case 2:
 		            		Platform.runLater( () ->okuri3_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && ratioFlg ) {
 		            			Platform.runLater( () ->okuri3_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.GREEN));
 		            			hanteCnt++;
@@ -1152,7 +1194,7 @@ public class VisonController{
 		            		break;
 		            	case 3:
 		            		Platform.runLater( () ->okuri4_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && ratioFlg ) {
 		            			Platform.runLater( () ->okuri4_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.GREEN));
 		            			hanteCnt++;
@@ -1353,7 +1395,7 @@ public class VisonController{
      * @param circles
      * @param img
      */
-    private String fncDrwCircles(Mat circles ,Mat img,boolean infoFlg) {
+    private String fncDrwCircles(Mat judgeAreaMat,Mat circles ,Mat img,boolean infoFlg) {
   	  double[] data,data2;
   	  double rho;
   	  Point pt = new Point();
@@ -1418,6 +1460,50 @@ public class VisonController{
   	  return infoText;
   	}
 
+    /**
+     * 穴面積判定
+     * @param judgeAreaMat
+     * @param circles
+     * @param threshholdMax　白面積比率の上限
+     * @param threshholdMin　白面積比率の下限
+     * @return
+     */
+    private boolean holeWhiteRatioCheck(Mat judgeAreaMat,Mat circles,int threshholdMax,int threshholdMin) {
+      boolean result = true;
+	  Mat roi = new Mat(1,1,CvType.CV_8U);
+	  double whiteAreaRatio = 0;
+	  whiteRaitoAverage = 0;
+	  
+	  for( int i= 0; i < circles.cols(); i++) {
+		double[] v = circles.get(0, i);//[0]:X  [1]:Y  [2]:r
+		int  x = (int)v[0];
+		int  y = (int)v[1];
+		int  r = (int)v[2];
+		if( x-r-1 < 0 || y-r-1<0 || x-r+r+r>judgeAreaMat.width() || y-r+r+r>judgeAreaMat.height() ) {
+			result = false;
+		}else {
+	  		roi = judgeAreaMat.submat(new Rect( x-r-1, y-r-1, r+r+1, r+r+1));
+	  		whiteAreaRatio = (double)Core.countNonZero(roi) / (double)roi.total();
+	  		whiteRaitoAverage += whiteAreaRatio;
+	  		if( whiteAreaRatio*100 > threshholdMax || whiteAreaRatio*100 < threshholdMin)
+	  			result = false;
+		}
+	  }
+	  if( settingModeFlg ) {
+	  	  double wr = whiteAreaRatio;
+	  	  Platform.runLater(() ->this.whiteRatioLabel.setText( String.format("%.1f", wr*100)));
+	  	  Platform.runLater(() ->this.blackRatioLabel.setText( String.format("%.1f", 100 - wr*100)));
+	  	  updateImageView(debugImg, Utils.mat2Image(roi));
+	  }
+	  
+	  whiteRaitoAverage = whiteRaitoAverage / circles.cols() *100;
+	  return result;
+    }
+
+    /**
+     * 穴の検出パラメーターを設定 ①送り穴～②ポケ穴の４ボタン
+     * @param e
+     */
     @FXML
     void onSetValue(ActionEvent e) {
     	parameter para = pObj.para[pObj.select];
@@ -1428,28 +1514,32 @@ public class VisonController{
     			para.setFlg[0] = false;
 			}else {
     			setPara(0);
+    	    	onSettingModeBtn(null);
     		}
     	}else if(eObject == okuri2_btn) {
     		if(para.setFlg[1] ){
     			para.setFlg[1] = false;
     		}else {
     			setPara(1);
+    	    	onSettingModeBtn(null);
     		}
     	}else if(eObject == okuri3_btn) {
     		if(para.setFlg[2]){
     			para.setFlg[2] = false;
     		}else {
     			setPara(2);
+    	    	onSettingModeBtn(null);
     		}
     	}else if(eObject == okuri4_btn) {
     		if(para.setFlg[3]){
     			para.setFlg[3] = false;
     		}else {
     			setPara(3);
+    	    	onSettingModeBtn(null);
     		}
     	}
     	setBtnPara();
-
+    	
     	eventTrigger = true;
 
     }
@@ -1474,6 +1564,9 @@ public class VisonController{
     	para.threshholdCheck[i] = threshholdCheck.isSelected();
     	para.threshhold[i] = threshholdSlider.getValue();
     	para.threshhold_Invers[i] = threshhold_Inverse.isSelected();
+    	para.whiteRatioMax[i] = whiteRatioMaxSp.getValue().intValue();
+    	para.whiteRatioMin[i] = whiteRatioMinSp.getValue().intValue();
+
     	settingMode.setSelected(false);//セッティングモードから抜ける
     	draggingRect = new Rectangle(0,0,1,1);
     }
@@ -1520,6 +1613,7 @@ public class VisonController{
 			Platform.runLater(() ->okuri4_label.setText("設定済"));
 
 		}
+
 		para.rects[4] = this.draggingRect;
 		para.viewRect[0] = imgORG.getViewport().getMinX();
 		para.viewRect[1] = imgORG.getViewport().getMinY();
@@ -1541,7 +1635,11 @@ public class VisonController{
 		para.threshholdCheck[4] = threshholdCheck.isSelected();
 		para.threshhold[4] = threshholdSlider.getValue();
 		para.threshhold_Invers[4] = threshhold_Inverse.isSelected();
-    	setSlidbar();
+		para.whiteRatioMax[4] = whiteRatioMaxSp.getValue();
+		para.whiteRatioMin[4] = whiteRatioMinSp.getValue();
+
+
+		setSlidbar();
     }
     private void setSlidbar() {
     	parameter para = pObj.para[pObj.select];
@@ -1683,6 +1781,7 @@ public class VisonController{
 		pObj.cameraWidth = Integer.valueOf(capW_text.getText());
 		pObj.adcFlg = adc_flg.isSelected();
 
+
 		objOut.writeObject(pObj);
 		objOut.flush();
 		objOut.close();
@@ -1728,12 +1827,17 @@ public class VisonController{
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public void loadAllPara() throws IOException, ClassNotFoundException{
-    	FileInputStream fi = new FileInputStream("./conf4.txt");
-    	ObjectInputStream objIn = new ObjectInputStream(fi);
-
-    	pObj = (preSet)objIn.readObject();
-    	objIn.close();
+    public void loadAllPara(){
+    	try {
+	    	FileInputStream fi = new FileInputStream("./conf4.txt");
+	    	ObjectInputStream objIn = new ObjectInputStream(fi);
+	
+	    	pObj = (preSet)objIn.readObject();
+	    	objIn.close();
+    	}catch(Exception e) {
+    		System.out.println(e);
+    		pObj = new preSet();
+    	}
 
     	parameter para = pObj.para[pObj.select];
     	draggingRect = (Rectangle)para.rects[4].clone();
@@ -1749,6 +1853,10 @@ public class VisonController{
     	imgGLAY3.setViewport(new Rectangle2D(
     			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
     	zoomValue_slider.setValue(para.zoom);
+		whiteRatioMaxSp.setValueFactory(
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100,para.whiteRatioMax[4],1));
+		whiteRatioMinSp.setValueFactory(
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100,para.whiteRatioMin[4],1));
     	setBtnPara();
 
     	portNoSpin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 9,pObj.portNo,1));
@@ -1770,6 +1878,7 @@ public class VisonController{
     	ptm_pt3_enable.setSelected(para.ptmEnable[2]);
     	ptm_pt4_enable.setSelected(para.ptmEnable[3]);
 
+    	
 
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
@@ -2226,6 +2335,11 @@ public class VisonController{
         assert ptm_img2 != null : "fx:id=\"ptm_img2\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ptm_img3 != null : "fx:id=\"ptm_img3\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ptm_img4 != null : "fx:id=\"ptm_img4\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert debugImg != null : "fx:id=\"debugImg\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert whiteRatioLabel != null : "fx:id=\"whiteRatioLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert blackRatioLabel != null : "fx:id=\"blackRatioLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert whiteRatioMaxSp != null : "fx:id=\"whiteRatioMaxSp\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert whiteRatioMinSp != null : "fx:id=\"whiteRatioMinSp\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         imgORG_imageViewFitWidth = imgORG.getFitWidth();
@@ -2238,12 +2352,7 @@ public class VisonController{
 		//イニシャルinfo2の内容保存
 		initInfo2 = this.info2.getText();
 
-        try {
-			loadAllPara();
-		} catch (ClassNotFoundException | IOException e) {
-			Platform.runLater( () ->info2.appendText( e +"\n"));
-			pObj = new preSet();
-		}
+		loadAllPara();
 
         updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
         updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));

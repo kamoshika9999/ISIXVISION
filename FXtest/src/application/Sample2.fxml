@@ -26,7 +26,7 @@
          </effect>
       </ImageView>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="91.0" layoutX="854.0" layoutY="244.0" stroke="BLACK" strokeType="INSIDE" width="302.0" />
-      <Accordion fx:id="accordion_1" disable="true" layoutY="350.0" prefHeight="343.0" prefWidth="653.0">
+      <Accordion fx:id="accordion_1" disable="true" layoutY="350.0" prefHeight="343.0" prefWidth="768.0">
         <panes>
           <TitledPane text="Hard Setting /SAVE /LOAD /Other">
             <content>
@@ -232,6 +232,16 @@
                            </effect>
                         </Button>
                         <CheckBox fx:id="gauusianCheck" layoutX="18.0" layoutY="113.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Gauusian" />
+                        <Label layoutX="525.0" layoutY="113.0" text="Label" />
+                        <ImageView fx:id="debugImg" fitHeight="91.0" fitWidth="102.0" layoutX="666.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
+                        <Label layoutX="683.0" layoutY="105.0" text="白比率" />
+                        <Label layoutX="683.0" layoutY="123.0" text="黒比率" />
+                        <Label fx:id="blackRatioLabel" layoutX="722.0" layoutY="123.0" text="100%" />
+                        <Label fx:id="whiteRatioLabel" layoutX="722.0" layoutY="105.0" text="100%" />
+                        <Spinner fx:id="whiteRatioMaxSp" layoutX="688.0" layoutY="142.0" prefHeight="25.0" prefWidth="70.0" />
+                        <Label layoutX="623.0" layoutY="148.0" text="白比率上限" />
+                        <Spinner fx:id="whiteRatioMinSp" layoutX="688.0" layoutY="169.0" prefHeight="25.0" prefWidth="70.0" />
+                        <Label layoutX="623.0" layoutY="173.0" text="白比率下限" />
                      </children>
                   </AnchorPane>
             </content>
@@ -312,7 +322,7 @@
             <Font size="36.0" />
          </font>
       </Label>
-      <Label layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver2.0" textFill="#0a22d7">
+      <Label layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver2.1" textFill="#0a22d7">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
@@ -397,22 +407,13 @@
          </font>
       </Label>
       <CheckBox fx:id="imgSaveFlg" layoutX="744.0" layoutY="315.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
-      <TextArea fx:id="info2" layoutX="690.0" layoutY="11.0" prefHeight="157.0" prefWidth="502.0" text="Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;OPENCV 4.2  JAVAFX11.0 JRE13.0 &#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="690.0" layoutY="11.0" prefHeight="157.0" prefWidth="502.0" text="Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;OPENCV 4.2  JAVAFX11.0 JRE13.0 &#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />
          </effect>
       </Button>
       <Label fx:id="zoomLabel" layoutX="1145.0" layoutY="192.0" prefHeight="25.0" prefWidth="41.0" text="Label" />
-      <CheckBox fx:id="imgSaveFlg_all" layoutX="743.0" layoutY="360.0" mnemonicParsing="false" text="OK SAVE" />
-      <Button fx:id="OKImageBtn" layoutX="670.0" layoutY="350.0" mnemonicParsing="false" onAction="#onOKImageBtn" prefHeight="39.0" prefWidth="63.0" text="OK Image Viewer" wrapText="true">
-         <effect>
-            <DropShadow color="#3000f0" />
-         </effect>
-         <font>
-            <Font size="10.0" />
-         </font>
-      </Button>
       <Label layoutX="856.0" layoutY="244.0" text="①送り穴" />
       <Label layoutX="856.0" layoutY="268.0" text="①ポケ穴" />
       <Label layoutX="858.0" layoutY="291.0" text="②送り穴" />
@@ -431,5 +432,14 @@
          </font>
       </CheckBox>
       <Button fx:id="shotImgBtn" layoutX="1097.0" layoutY="344.0" mnemonicParsing="false" onAction="#onShotImg" prefHeight="25.0" prefWidth="90.0" text="ショット撮影" />
+      <CheckBox fx:id="imgSaveFlg_all" layoutX="743.0" layoutY="360.0" mnemonicParsing="false" text="OK SAVE" />
+      <Button fx:id="OKImageBtn" layoutX="670.0" layoutY="350.0" mnemonicParsing="false" onAction="#onOKImageBtn" prefHeight="39.0" prefWidth="63.0" text="OK Image Viewer" wrapText="true">
+         <effect>
+            <DropShadow color="#3000f0" />
+         </effect>
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>
