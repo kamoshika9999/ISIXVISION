@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="SHIFT_JIS" standalone="no"?>
+<root>
+<CameraMatrix channels="1" cols="3" dims="2" rows="3">[639.3115988451556, 0, 428.6560398334984;
+ 0, 638.7187204572623, 336.2164089424041;
+ 0, 0, 1]</CameraMatrix>
+<DistortionCoefficients channels="1" cols="5" dims="2" rows="1">[-0.1152917505740438, 0.3352169499247784, 0.01206666446211142, -0.002756750130430476, -0.6751115945329903]</DistortionCoefficients>
+</root>
