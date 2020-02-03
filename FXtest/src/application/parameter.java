@@ -23,6 +23,7 @@ public class parameter implements Serializable {
 	String[] ptmFileName;//パターンマッチングの登録Mat
 	boolean[] ptmEnable;//パターンマッチング有効無効フラグ
 	int[] ptmDetectCnt;
+	public Rectangle[] para_rectsDetection;
 	double[] detectionScale;//パターンマッチングの検出に使用するスケール倍率の逆数
 
 	//[4]はドラッグ中の枠用
@@ -56,7 +57,6 @@ public class parameter implements Serializable {
 
 	public double[] para_ptmThreshSliderN;
 	public double[] para_zoomValue_slider;
-	public Rectangle[] para_rectsDetection;
 	public int[] whiteAreaMax;
 	public int[] whiteAreaMin;
 
