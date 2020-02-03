@@ -15,9 +15,9 @@
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.PtmView">
    <children>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="84.0" layoutX="242.0" layoutY="574.0" stroke="BLACK" strokeType="INSIDE" width="296.0" />
-      <ImageView fx:id="ptmMainView" fitHeight="328.0" fitWidth="337.0" layoutX="8.0" layoutY="50.0" onMouseDragged="#mouseDragged" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" onScroll="#onWheel" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="ptmMainView" fitHeight="320.0" fitWidth="320.0" layoutX="8.0" layoutY="50.0" onMouseDragged="#mouseDragged" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" onScroll="#onWheel" pickOnBounds="true" preserveRatio="true" smooth="false">
          <viewport>
-            <Rectangle2D height="320.0" width="620.0" />
+            <Rectangle2D />
          </viewport></ImageView>
       <ImageView fx:id="ptmSubView" fitHeight="165.0" fitWidth="214.0" layoutX="878.0" layoutY="50.0" pickOnBounds="true" preserveRatio="true">
         </ImageView>
@@ -72,9 +72,9 @@
       <Label layoutX="143.0" layoutY="415.0" text="拡大率" />
       <Label fx:id="zoomLabel" layoutX="478.0" layoutY="411.0" prefHeight="25.0" prefWidth="41.0" text="Label" />
       <Label layoutX="23.0" layoutY="669.0" prefHeight="17.0" prefWidth="41.0" text="閾値" />
-      <ImageView fx:id="ptmMainViewDst" fitHeight="328.0" fitWidth="337.0" layoutX="381.0" layoutY="50.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="ptmMainViewDst" fitHeight="320.0" fitWidth="320.0" layoutX="381.0" layoutY="50.0" pickOnBounds="true" preserveRatio="true" smooth="false">
          <viewport>
-            <Rectangle2D height="320.0" width="620.0" />
+            <Rectangle2D />
          </viewport>
       </ImageView>
       <ImageView fx:id="ptmSubViewDst" fitHeight="165.0" fitWidth="214.0" layoutX="878.0" layoutY="238.0" pickOnBounds="true" preserveRatio="true" />

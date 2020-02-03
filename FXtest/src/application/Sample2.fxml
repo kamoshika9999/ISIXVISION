@@ -20,7 +20,7 @@
 
 <AnchorPane fx:id="aPane" accessibleRole="TEXT_FIELD" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeypressed" pickOnBounds="false" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.VisonController">
    <children>
-      <ImageView fx:id="imgNG" fitHeight="293.0" fitWidth="430.0" layoutX="769.0" layoutY="402.0" pickOnBounds="true" preserveRatio="true" smooth="false">
+      <ImageView fx:id="imgNG" fitHeight="293.0" fitWidth="430.0" layoutX="754.0" layoutY="400.0" pickOnBounds="true" preserveRatio="true" smooth="false">
          <effect>
             <DropShadow color="#da0606" />
          </effect>
@@ -273,12 +273,12 @@
         </panes>
       </Accordion>
       <Label fx:id="info1" layoutX="124.0" prefHeight="38.0" prefWidth="459.0" text="infomation" wrapText="true" />
-      <ImageView fx:id="imgORG" fitHeight="240.0" fitWidth="320.0" layoutX="4.0" layoutY="64.0" onMouseDragged="#mouseDragged" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" onScroll="#onWheel" pickOnBounds="true" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="64.0">
+      <ImageView fx:id="imgORG" fitHeight="240.0" fitWidth="320.0" layoutX="4.0" layoutY="64.0" onMouseDragged="#mouseDragged" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" onScroll="#onWheel" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="64.0">
          <image>
             <Image url="file:./IMG_20191216_162108.jpg" />
          </image>
          <viewport>
-            <Rectangle2D height="240.0" width="320.0" />
+            <Rectangle2D />
          </viewport>
       </ImageView>
       <ImageView fx:id="imgGLAY" fitHeight="120.0" fitWidth="160.0" layoutX="496.0" layoutY="185.0" pickOnBounds="true" preserveRatio="true" smooth="false">
@@ -286,7 +286,7 @@
             <Image url="file:./IMG_20191216_162108.jpg" />
          </image>
          <viewport>
-            <Rectangle2D height="240.0" width="320.0" />
+            <Rectangle2D />
          </viewport>
       </ImageView>
       <Button fx:id="move_up_btn" layoutX="740.0" layoutY="184.0" mnemonicParsing="false" onAction="#onMoveBtn" text="↑" />
@@ -348,7 +348,7 @@
             <Image url="file:./IMG_20191216_162108.jpg" />
          </image>
          <viewport>
-            <Rectangle2D height="240.0" width="320.0" />
+            <Rectangle2D />
          </viewport>
       </ImageView>
       <ImageView fx:id="imgGLAY2" fitHeight="120.0" fitWidth="160.0" layoutX="496.0" layoutY="63.0" pickOnBounds="true" preserveRatio="true" smooth="false">
@@ -356,7 +356,7 @@
             <Image url="file:./IMG_20191216_162108.jpg" />
          </image>
          <viewport>
-            <Rectangle2D height="240.0" width="320.0" />
+            <Rectangle2D />
          </viewport>
       </ImageView>
       <ImageView fx:id="imgGLAY3" fitHeight="120.0" fitWidth="160.0" layoutX="333.0" layoutY="185.0" pickOnBounds="true" preserveRatio="true" smooth="false">
@@ -364,7 +364,7 @@
             <Image url="file:./IMG_20191216_162108.jpg" />
          </image>
          <viewport>
-            <Rectangle2D height="240.0" width="320.0" />
+            <Rectangle2D />
          </viewport>
       </ImageView>
       <Label layoutX="496.0" layoutY="183.0" text="④Canny" textFill="#e6f20d" />

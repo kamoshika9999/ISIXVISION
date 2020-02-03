@@ -76,11 +76,14 @@ public class VisonController{
 
 	public static Mat srcMat = new Mat();//保存画像を使用した設定に使用する為publicにしておく
 	private Mat glayMat;
-	private double imgORG_imageViewFitWidth;
-	private double imgORG_imageViewFitHeight;
     List<Rectangle> rects;
     Rectangle draggingRect;
     volatile boolean dragging;
+	boolean moveDragingFlg;
+	Point[] moveDraggingPoint = new Point[2];
+	Point moveDraggingPointView = new Point();
+
+
     preSet pObj;
     public static VideoCapture capObj = new VideoCapture();
 	public static ScheduledExecutorService timer;
@@ -407,10 +410,6 @@ public class VisonController{
 
 
 
-
-
-
-
     @FXML
     /**
      * スライダーの値を対応するテキストフィールドに入力する
@@ -491,6 +490,13 @@ public class VisonController{
     			xMin = imgWidth - width;
     		}
     	}
+		if( height > imgHeight ) {
+			yMin= 0;
+		}
+		if( width > imgWidth ) {
+			xMin = 0;
+		}
+		
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->imgORG.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
@@ -503,31 +509,44 @@ public class VisonController{
 
     @FXML
     void onZoomSlider(MouseEvent event) {
+    	vRect = imgORG.getViewport();
+    	Rectangle2D rect = imgORG.getViewport();
+    	double imgWidth = imgORG.getImage().getWidth();//に格納されているイメージの幅
+    	double imgHeight = imgORG.getImage().getHeight();//に格納されているイメージの幅
 
-    	vRect = this.imgORG.getViewport();
-    	double zoom = zoomValue_slider.getValue();
-    	double zoomedWidth,zoomedHeight;
 
-    	zoomedWidth = imgORG_imageViewFitWidth / zoom;
-    	zoomedHeight = imgORG_imageViewFitHeight / zoom;
-    	vRect = new Rectangle2D( vRect.getMinX(),vRect.getMinY(),
-    				zoomedWidth,zoomedHeight);
+    	if( imgORG.getFitWidth() < imgWidth * zoomValue_slider.getValue() ) {
+    		viewOrgZoom = zoomValue_slider.getValue();
+    	}
+
+    	double minX = rect.getMinX();
+    	double minY = rect.getMinY();
+    	
+		if( vRect.getHeight() > imgHeight ) {
+			minY= 0;
+		}
+		if( vRect.getWidth() > imgWidth ) {
+			minX = 0;
+		}
+
+    	vRect = new Rectangle2D( minX,minY,
+    			imgORG.getFitWidth() /viewOrgZoom,
+    			imgORG.getFitHeight() /viewOrgZoom);
+
+    	Platform.runLater(() ->zoomValue_slider.setValue( viewOrgZoom));
+    	Platform.runLater(() ->zoomLabel.setText(String.format("%.2f",viewOrgZoom)));
+
     	Platform.runLater(() ->imgORG.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY2.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY3.setViewport(vRect));
-    	Platform.runLater(() ->zoomLabel.setText(String.format("%.1f",zoom)));
-    	eventTrigger = true;
     }
     @FXML
     void onWheel(ScrollEvent e) {
-    	viewOrgZoom = zoomValue_slider.getValue();
     	Rectangle2D rect = imgORG.getViewport();
-    	double zoomStep = 0.05;
-    	double zoomOrg = viewOrgZoom;
-    	double imgWidth = imgORG.getImage().getWidth();//imgORGに格納されているイメージの幅
-    	double imgHeight = imgORG.getImage().getHeight();
+    	double zoomStep = 0.01;
+    	double imgWidth = imgORG.getImage().getWidth();//に格納されているイメージの幅
 
     	if( e.getDeltaY() < 0) {
     		if(zoomValue_slider.getMin() < viewOrgZoom - zoomStep ) {
@@ -547,53 +566,19 @@ public class VisonController{
     	Platform.runLater(() ->zoomValue_slider.setValue( viewOrgZoom));
 
 
-    	double moveX = (rect.getWidth() / zoomOrg - rect.getWidth() / viewOrgZoom)/2;
-    	double moveY = (rect.getHeight() / zoomOrg - rect.getHeight() / viewOrgZoom)/2;
-    	double minX,minY;
-    	if( rect.getMinX() + moveX < 0 ) {
-    		minX = 0;
-    	}else if( rect.getMaxX()+moveX > imgWidth) {
-    		minX = imgWidth - rect.getWidth();
-    	}else{
-    		minX = rect.getMinX() + moveX;
-    	}
-
-    	if( rect.getMinY() + moveY < 0) {
-    		minY = 0;
-    	}else if( rect.getMaxY()+moveY > imgHeight) {
-    		minY = imgHeight - rect.getHeight();
-    	}else{
-    		minY = rect.getMinY() + moveY;
-    	}
+    	double minX = rect.getMinX();
+    	double minY = rect.getMinY();
 
     	vRect = new Rectangle2D( minX,minY,
-    			imgORG_imageViewFitWidth/viewOrgZoom,
-    			imgORG_imageViewFitHeight/viewOrgZoom);
+    			imgORG.getFitWidth() /viewOrgZoom,
+    			imgORG.getFitHeight() /viewOrgZoom);
     	Platform.runLater(() ->imgORG.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY2.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY3.setViewport(vRect));
     	Platform.runLater(() ->zoomLabel.setText(String.format("%.1f",viewOrgZoom)));
-
     }
-    /*
-    private void reZoomView() {
-    	vRect = this.imgORG.getViewport();
-    	double zoom = zoomValue_slider.getValue();
-    	double zoomedWidth,zoomedHeight;
-
-    	zoomedWidth = imgORG_imageViewFitWidth / zoom;
-    	zoomedHeight = imgORG_imageViewFitHeight / zoom;
-    	vRect = new Rectangle2D( vRect.getMinX(),vRect.getMinY(),
-    				zoomedWidth,zoomedHeight);
-    	Platform.runLater(() ->imgORG.setViewport(vRect));
-    	Platform.runLater(() ->imgGLAY.setViewport(vRect));
-    	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
-    	Platform.runLater(() ->imgGLAY2.setViewport(vRect));
-    	Platform.runLater(() ->imgGLAY3.setViewport(vRect));
-    }
-    */
 
     @FXML
     void onDemo(ActionEvent event) {
@@ -895,11 +880,55 @@ public class VisonController{
 		this.stopAcquisition();
 	}
 
+	//ビューの移動
+	private void moveView() {
+    	vRect = imgORG.getViewport();//メインビューのサイズを取得
+    	double xMin,yMin,width,height,imgWidth,imgHeight;
+    	width = vRect.getWidth();
+    	height = vRect.getHeight();
+    	imgWidth = imgORG.getImage().getWidth();//メインビューに格納されているイメージのサイズ取得
+    	imgHeight = imgORG.getImage().getHeight();
+    	
+    	yMin = moveDraggingPointView.y+ (moveDraggingPoint[0].y - moveDraggingPoint[1].y)/viewOrgZoom;
+    	xMin = moveDraggingPointView.x+ (moveDraggingPoint[0].x - moveDraggingPoint[1].x)/viewOrgZoom;
+
+		if(  yMin > imgHeight  - height ) {
+			yMin = imgHeight - height;//移動制限
+		}else if( yMin < 0 ) {
+			yMin = 0;
+		}
+		if(  xMin > imgWidth  - width ) {
+			xMin = imgWidth - width;//移動制限
+		}else if( xMin < 0 ) {
+			xMin = 0;
+		}
+		if( height > imgHeight ) {
+			yMin= 0;
+		}
+		if( width > imgWidth ) {
+			xMin = 0;
+		}
+		
+    	vRect = new Rectangle2D( xMin,yMin,width,height);
+    	Platform.runLater(() ->imgORG.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY2.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY3.setViewport(vRect));
+    	Platform.runLater(() ->imgGLAY.setViewport(vRect));
+	}
+
     @FXML
     void mouseDragged(MouseEvent e) { //imgORG上でドラッグ
-    	if( !settingModeFlg ) return;
     	double zoom = this.zoomValue_slider.getValue();
-        int x = (int)(draggingRect.getX());
+    	if( moveDragingFlg && e.isMiddleButtonDown() ) {
+            moveDraggingPoint[1].x = e.getX();
+            moveDraggingPoint[1].y = e.getY();
+            moveView();
+    		return;
+    	}
+
+    	if( !settingModeFlg ) return;
+    	int x = (int)(draggingRect.getX());
         int y = (int)(draggingRect.getY());
         draggingRect.setSize((int)(imgORG.getViewport().getMinX() + e.getX()/(zoom)) - x,
         				(int)(imgORG.getViewport().getMinY() + e.getY()/(zoom) - y));
@@ -908,8 +937,16 @@ public class VisonController{
 
     @FXML
     void mousePressed(MouseEvent e) { //imgORG上でマウスプレス
-    	if( !settingModeFlg ) return;
     	double zoom = this.zoomValue_slider.getValue();
+    	if( e.isMiddleButtonDown() ) {
+    		moveDragingFlg = true;
+            moveDraggingPoint[0].x = e.getX();
+            moveDraggingPoint[0].y = e.getY();
+            moveDraggingPointView.x = imgORG.getViewport().getMinX();
+            moveDraggingPointView.y = imgORG.getViewport().getMinY();
+    		return;
+    	}
+    	if( !settingModeFlg ) return;
         draggingRect.setBounds((int)(imgORG.getViewport().getMinX() + e.getX()/(zoom)),
         					(int)(imgORG.getViewport().getMinY() + e.getY()/(zoom)), 0, 0);
         dragging = true;
@@ -919,6 +956,10 @@ public class VisonController{
 
     @FXML
     void mouseReleased(MouseEvent e) { //imgORG マウスボタン離す
+    	if( moveDragingFlg && e.isMiddleButtonDown() ) {
+    		moveDragingFlg = false;
+    		return;
+    	}
     	if( !settingModeFlg ) return;
     	dragging = false;
     	eventTrigger = true;
@@ -1507,7 +1548,7 @@ public class VisonController{
       boolean result = true;
 	  Mat roi = new Mat(1,1,CvType.CV_8U);
 	  int whiteArea = 0;
-	  final int offset = 5; 
+	  final int offset = 5;
 
 	  whiteAreaAverage = 0;
 	  whiteAreaMax = 0;
@@ -1541,7 +1582,7 @@ public class VisonController{
 	  whiteAreaAverage = whiteAreaAverage / circles.cols();
 	  return result;
     }
-    
+
     /**
      * クリックで面積スピナーの値を一致させる
      * @param event
@@ -1775,7 +1816,7 @@ public class VisonController{
 		whiteRatioMinSp.setValueFactory(
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.whiteAreaMin[onSetVeri_n],5));
 
-    	
+
     	eventTrigger = true;
     }
 
@@ -1905,6 +1946,9 @@ public class VisonController{
     	parameter para = pObj.para[pObj.select];
     	draggingRect = (Rectangle)para.rects[4].clone();
 
+    	viewOrgZoom = para.zoom;
+    	zoomValue_slider.setValue(viewOrgZoom);
+
     	imgORG.setViewport(new Rectangle2D(
     			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
     	imgGLAY.setViewport(new Rectangle2D(
@@ -1915,7 +1959,6 @@ public class VisonController{
     			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
     	imgGLAY3.setViewport(new Rectangle2D(
     			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
-    	zoomValue_slider.setValue(para.zoom);
 		whiteRatioMaxSp.setValueFactory(
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.whiteAreaMax[4],5));
 		whiteRatioMinSp.setValueFactory(
@@ -2444,11 +2487,12 @@ public class VisonController{
         assert whiteRatioMinSp != null : "fx:id=\"whiteRatioMinSp\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
-        imgORG_imageViewFitWidth = imgORG.getFitWidth();
-        imgORG_imageViewFitHeight = imgORG.getFitHeight();
-        this.rects = Collections.synchronizedList(new ArrayList<>());
-        this.draggingRect = new Rectangle(0, 0,1,1);
-        this.dragging = false;
+        rects = Collections.synchronizedList(new ArrayList<>());
+        draggingRect = new Rectangle(0, 0,1,1);
+        moveDraggingPoint[0] = new Point();//ドラッグ移動始点
+        moveDraggingPoint[1] = new Point();//ドラッグ移動終点
+        dragging = false;
+        moveDragingFlg = false;
 		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094"));
 
 		//イニシャルinfo2の内容保存

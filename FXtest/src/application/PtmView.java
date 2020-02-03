@@ -35,11 +35,15 @@ import javafx.stage.Window;
 
 public class PtmView {
 	//クラス変数
-	public static Mat ptmSrcMat;
-	public static Mat arg_ptmMat;
-	private Mat tmp_ptmMat;
+	boolean moveDragingFlg;
+	Point[] moveDraggingPoint = new Point[2];
+	Point moveDraggingPointView = new Point();
 
-	public static int arg_detectionCnt;
+	public static Mat ptmSrcMat; //メインビューに表示する画像 判定される画像
+	public static Mat arg_ptmMat;//フォルダに保存されているテンプレート画像
+	private Mat tmp_ptmMat;//決定される前のテンプレート画像 このクラス内でのみ判定に使われる画像
+
+	public static int arg_detectionCnt;//探索する画像の数
 
 	public static boolean arg_gauusianCheck;
 	public static double arg_gauusianSliderX;
@@ -60,7 +64,7 @@ public class PtmView {
 	public static double arg_cannyThresh1;
 	public static double arg_cannyThresh2;
 
-	public static double arg_ptmThreshSliderN;
+	public static double arg_ptmThreshSliderN;//マッチングの閾値
 	public static double arg_zoomValue_slider;
 	public static Rectangle arg_rectsDetection;
 	private Rectangle tmp_rectsDetection;
@@ -216,6 +220,41 @@ public class PtmView {
         rePaint();
     }
 
+	//ビューの移動
+	private void moveView() {
+    	vRect = ptmMainView.getViewport();//メインビューのサイズを取得
+    	double xMin,yMin,width,height,imgWidth,imgHeight;
+    	width = vRect.getWidth();
+    	height = vRect.getHeight();
+    	imgWidth = ptmMainView.getImage().getWidth();//メインビューに格納されているイメージのサイズ取得
+    	imgHeight = ptmMainView.getImage().getHeight();
+
+    	yMin = moveDraggingPointView.y+ (moveDraggingPoint[0].y - moveDraggingPoint[1].y)/viewOrgZoom;
+    	xMin = moveDraggingPointView.x+ (moveDraggingPoint[0].x - moveDraggingPoint[1].x)/viewOrgZoom;
+
+		if(  yMin > imgHeight  - height ) {
+			yMin = imgHeight - height;//移動制限
+		}else if( yMin < 0 ) {
+			yMin = 0;
+		}
+		if(  xMin > imgWidth  - width ) {
+			xMin = imgWidth - width;//移動制限
+		}else if( xMin < 0 ) {
+			xMin = 0;
+		}
+		if( height > imgHeight ) {
+			yMin= 0;
+		}
+		if( width > imgWidth ) {
+			xMin = 0;
+		}
+		
+
+    	vRect = new Rectangle2D( xMin,yMin,width,height);
+    	Platform.runLater(() ->ptmMainView.setViewport(vRect));
+    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect));
+	}
+
     @FXML
     void onMoveBtn(ActionEvent event) {
     	int speed =  (int)(move_speed_slider.getValue())*20;//移動するピクセル数の設定
@@ -257,11 +296,17 @@ public class PtmView {
     			xMin = imgWidth - width;
     		}
     	}
+		if( height > imgHeight ) {
+			yMin= 0;
+		}
+		if( width > imgWidth ) {
+			xMin = 0;
+		}
+		
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
     	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect));
 
-        rePaint();
 
     }
 
@@ -351,12 +396,9 @@ public class PtmView {
 
     @FXML
     void onWheel(ScrollEvent e) {
-    	viewOrgZoom = zoomValue_slider.getValue();
     	Rectangle2D rect = ptmMainView.getViewport();
     	double zoomStep = 0.01;
-    	double zoomOrg = viewOrgZoom;
     	double imgWidth = ptmMainView.getImage().getWidth();//に格納されているイメージの幅
-    	double imgHeight = ptmMainView.getImage().getHeight();
 
     	if( e.getDeltaY() < 0) {
     		if(zoomValue_slider.getMin() < viewOrgZoom - zoomStep ) {
@@ -376,24 +418,8 @@ public class PtmView {
     	Platform.runLater(() ->zoomValue_slider.setValue( viewOrgZoom));
 
 
-    	double moveX = (rect.getWidth() / zoomOrg - rect.getWidth() / viewOrgZoom)/2;
-    	double moveY = (rect.getHeight() / zoomOrg - rect.getHeight() / viewOrgZoom)/2;
-    	double minX,minY;
-    	if( rect.getMinX() + moveX < 0 ) {
-    		minX = 0;
-    	}else if( rect.getMaxX()+moveX > imgWidth) {
-    		minX = imgWidth - rect.getWidth();
-    	}else{
-    		minX = rect.getMinX() + moveX;
-    	}
-
-    	if( rect.getMinY() + moveY < 0) {
-    		minY = 0;
-    	}else if( rect.getMaxY()+moveY > imgHeight) {
-    		minY = imgHeight - rect.getHeight();
-    	}else{
-    		minY = rect.getMinY() + moveY;
-    	}
+    	double minX = rect.getMinX();
+    	double minY = rect.getMinY();
 
     	vRect = new Rectangle2D( minX,minY,
     			ptmMainView.getFitWidth() /viewOrgZoom,
@@ -401,50 +427,49 @@ public class PtmView {
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
     	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect));
     	Platform.runLater(() ->zoomLabel.setText(String.format("%.2f",viewOrgZoom)));
-
-    	rePaint();
-
-
     }
 
     @FXML
     void onZoomSlider(MouseEvent event) {
     	vRect = ptmMainView.getViewport();
-    	double zoom = zoomValue_slider.getValue();
-    	double zoomedWidth,zoomedHeight;
-    	double imgWidth = ptmMainView.getImage().getWidth();//格納されているイメージの幅
-    	double imgHeight = ptmMainView.getImage().getHeight();
     	Rectangle2D rect = ptmMainView.getViewport();
+    	double imgWidth = ptmMainView.getImage().getWidth();//に格納されているイメージの幅
+    	double imgHeight = ptmMainView.getImage().getHeight();
+
+
+    	if( ptmMainView.getFitWidth() < imgWidth * zoomValue_slider.getValue() ) {
+    		viewOrgZoom = zoomValue_slider.getValue();
+    	}
 
     	double minX = rect.getMinX();
     	double minY = rect.getMinY();
-
-    	if( ptmMainView.getFitWidth() < imgWidth * zoom) {
-		    	zoomedWidth = ptmMainView.getFitWidth() / zoom;
-		    	zoomedHeight = ptmMainView.getFitHeight() / zoom;
-		}else {
-			zoomedWidth = imgWidth;
-			zoomedHeight = imgHeight;
-			minX = 0;
-			minY = 0;
+		if( vRect.getHeight() > imgHeight ) {
+			minY= 0;
 		}
-
-		vRect = new Rectangle2D( minX,minY,
-    				zoomedWidth,zoomedHeight);
-
-		double zoomCalc = ptmMainView.getFitWidth() / zoomedWidth;
+		if( vRect.getWidth() > imgWidth ) {
+			minX = 0;
+		}
+    	vRect = new Rectangle2D( minX,minY,
+    			ptmMainView.getFitWidth() /viewOrgZoom,
+    			ptmMainView.getFitHeight() /viewOrgZoom);
 
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
     	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect));
-    	Platform.runLater(() ->zoomLabel.setText(String.format("%.1f",zoomCalc)));
-    	Platform.runLater(() ->zoomValue_slider.setValue( zoomCalc ));
 
-    	rePaint();
-
+    	Platform.runLater(() ->zoomValue_slider.setValue( viewOrgZoom));
+    	Platform.runLater(() ->zoomLabel.setText(String.format("%.2f",viewOrgZoom)));
     }
+
     @FXML
     void mouseDragged(MouseEvent e) { //ptmMainView上でドラッグ
     	double zoom = zoomValue_slider.getValue();
+    	if( moveDragingFlg && e.isMiddleButtonDown() ) {
+            moveDraggingPoint[1].x = e.getX();
+            moveDraggingPoint[1].y = e.getY();
+            moveView();
+    		return;
+    	}
+
         int x = (int)(draggingRect.getX());
         int y = (int)(draggingRect.getY());
         draggingRect.setSize((int)(ptmMainView.getViewport().getMinX() + e.getX()/(zoom)) - x,
@@ -455,7 +480,16 @@ public class PtmView {
     @FXML
     void mousePressed(MouseEvent e) { //ptmMainView上でマウスプレス
     	double zoom = this.zoomValue_slider.getValue();
-        draggingRect.setBounds((int)(ptmMainView.getViewport().getMinX() + e.getX()/(zoom)),
+    	if( e.isMiddleButtonDown() ) {
+    		moveDragingFlg = true;
+            moveDraggingPoint[0].x = e.getX();
+            moveDraggingPoint[0].y = e.getY();
+            moveDraggingPointView.x = ptmMainView.getViewport().getMinX();
+            moveDraggingPointView.y = ptmMainView.getViewport().getMinY();
+    		return;
+    	}
+
+    	draggingRect.setBounds((int)(ptmMainView.getViewport().getMinX() + e.getX()/(zoom)),
         					(int)(ptmMainView.getViewport().getMinY() + e.getY()/(zoom)), 0, 0);
 
         rePaint();
@@ -463,7 +497,12 @@ public class PtmView {
 
     @FXML
     void mouseReleased(MouseEvent e) { //imgORG マウスボタン離す
-        rePaint();
+    	if( moveDragingFlg && e.isMiddleButtonDown() ) {
+    		moveDragingFlg = false;
+    		return;
+    	}
+
+    	rePaint();
     }
     /**
 	 * Update the {@link ImageView} in the JavaFX main thread
@@ -685,7 +724,13 @@ public class PtmView {
         assert ptmSubViewDst != null : "fx:id=\"ptmSubViewDst\" was not injected: check your FXML file 'ptmView.fxml'.";
         assert ptmMainViewDst != null : "fx:id=\"ptmMainViewDst\" was not injected: check your FXML file 'ptmView.fxml'.";
 
-        vRect = new Rectangle2D( 0,0,ptmSrcMat.width(),ptmSrcMat.height());
+        moveDraggingPoint[0] = new Point();//ドラッグ移動始点
+        moveDraggingPoint[1] = new Point();//ドラッグ移動終点
+        moveDragingFlg = false;
+
+        viewOrgZoom = arg_zoomValue_slider;
+        vRect = new Rectangle2D( 0,0,ptmMainView.getFitWidth()/viewOrgZoom,
+        										ptmMainView.getFitHeight()/viewOrgZoom);
     	ptmMainView.setViewport(vRect);
     	ptmMainViewDst.setViewport(vRect);
 
@@ -701,7 +746,7 @@ public class PtmView {
 
 
         setSlider();
- 
+
 
     }
 }
