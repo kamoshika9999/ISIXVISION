@@ -17,6 +17,7 @@ public class parameter implements Serializable {
     boolean[] threshholdCheck;
     double[] threshhold;
     boolean[] threshhold_Invers;
+
 	int[] matchCnt;
 	double[] matchThreshValue;
 	String[] ptmFileName;//パターンマッチングの登録Mat
@@ -92,12 +93,9 @@ public class parameter implements Serializable {
 
 		matchCnt = new int[arrySize];
 		matchThreshValue = new double[arrySize];
-
 		ptmDetectCnt = new int[arrySize];
 		ptmEnable = new boolean[arrySize];
-
 		detectionCnt = new int[arrySize];
-
 		detectionScale = new double[arrySize];
 
 		para_gauusianCheck = new boolean[arrySize];

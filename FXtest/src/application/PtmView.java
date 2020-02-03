@@ -600,13 +600,7 @@ public class PtmView {
     		//閾値
     		threshhold[0] = ptmThreshSliderN.getValue();
     		//テンプレートマッチング　クラスのインスタンス作成
-    		templateMatching tm = new templateMatching(
-    				tmpMat,//.clone(),
-    				rect,
-    				ptnMat,
-    				orgMat,
-    				threshhold);
-    		//orgMat = tm.detectPattern();//実行し結果を表示用Matに上書き
+    		templateMatching tm = new templateMatching(tmpMat,rect,ptnMat,orgMat,threshhold);
     		orgMat = tm.detectPattern2(scaleSlider.getValue());//実行し結果を表示用Matに上書き
 
 	    	final int tmp_cnt = tm.resultValue[0].cnt;
