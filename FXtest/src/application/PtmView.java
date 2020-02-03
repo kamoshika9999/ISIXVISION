@@ -2,11 +2,8 @@ package application;
 
 import java.awt.Rectangle;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
@@ -35,15 +32,28 @@ import javafx.stage.Window;
 
 public class PtmView {
 	//クラス変数
+	private boolean dragingFlg;
 	boolean moveDragingFlg;
 	Point[] moveDraggingPoint = new Point[2];
 	Point moveDraggingPointView = new Point();
+	private Rectangle draggingRect = new Rectangle(0,0,1,1);
+	private Rectangle2D vRect;
+	private double viewOrgZoom;
+	private int fpsCnt;
+	private long fpsEnd;
+	private long fpsFirst;
+	double rt;
+	Rect[] rect = new Rect[1];
+	Mat[] ptnMat = new Mat[1];
+	double[] threshhold = new double[1];
+
 
 	public static Mat ptmSrcMat; //メインビューに表示する画像 判定される画像
 	public static Mat arg_ptmMat;//フォルダに保存されているテンプレート画像
 	private Mat tmp_ptmMat;//決定される前のテンプレート画像 このクラス内でのみ判定に使われる画像
 
 	public static int arg_detectionCnt;//探索する画像の数
+	public static double arg_detectionScale;
 
 	public static boolean arg_gauusianCheck;
 	public static double arg_gauusianSliderX;
@@ -72,128 +82,96 @@ public class PtmView {
 
     @FXML
     private ResourceBundle resources;
-
     @FXML
     private URL location;
-
     @FXML
     private Button detectionAreaSet;
-
     @FXML
     private Slider gauusianSliderX;
-
     @FXML
     private CheckBox dilateCheck;
-
     @FXML
     private Slider dilateSliderN;
-
     @FXML
     private Slider gauusianSliderY;
-
     @FXML
     private Slider gauusianSliderA;
-
     @FXML
     private CheckBox threshholdCheck;
-
     @FXML
     private Slider threshholdSlider;
-
     @FXML
     private CheckBox threshhold_Inverse;
-
     @FXML
     private CheckBox gauusianCheck;
-
     @FXML
     private CheckBox erodeCheck;
-
     @FXML
     private Slider erodeSliderN;
-
     @FXML
     private CheckBox cannyCheck;
-
     @FXML
     private Slider cannyThresh1;
     @FXML
     private Slider cannyThresh2;
-
     @FXML
     private Label threshholdLabel1;
-
     @FXML
     private Label threshholdLabel11;
-
     @FXML
     private Spinner<Integer> ptm_sp;
-
     @FXML
     private Slider ptmThreshSliderN;
-
     @FXML
     private Label threshLabel;
-
     @FXML
     private TextArea ptmInfo;
-
     @FXML
     private Button ptmConfirm;
-
     @FXML
     private Button ptmCancel;
-
     @FXML
     private Button ptmTest;
-
     @FXML
     private Button ptmReturn;
-
     @FXML
     private Button patternSet;
-
     @FXML
     private Button move_up_btn;
-
     @FXML
     private Button move_left_btn;
-
     @FXML
     private Button move_right_btn;
-
     @FXML
     private Button move_down_btn;
-
     @FXML
     private Slider zoomValue_slider;
-
     @FXML
     private Slider move_speed_slider;
-
     @FXML
     private Label zoomLabel;
-
     @FXML
     private ImageView ptmMainView;
-
     @FXML
     private ImageView ptmMainViewDst;
-
     @FXML
     private ImageView ptmSubView;
     @FXML
     private ImageView ptmSubViewDst;
+    @FXML
+    private Label detectCntLabel;
+    @FXML
+    private Label detectRationMax;
+    @FXML
+    private Label detectRationMin;
+    @FXML
+    private Label detectRationAve;
+    @FXML
+    private Slider scaleSlider;
+    @FXML
+    private Label scaleValue;
 
 
-	private Rectangle draggingRect = new Rectangle(0,0,1,1);
-	private Rectangle2D vRect;
-	private double viewOrgZoom;
-	private int fpsCnt;
-	private long fpsEnd;
-	private long fpsFirst;
-	private boolean testFlg;
-	double rt;
     @FXML
     void onCheckBtn(ActionEvent event) {
 
@@ -252,7 +230,13 @@ public class PtmView {
 
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
-    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect));
+
+    	Rectangle2D vRect2 = new Rectangle2D(
+    			xMin / scaleSlider.getValue(),
+    			yMin / scaleSlider.getValue(),
+    			width / scaleSlider.getValue(),
+    			height / scaleSlider.getValue());
+    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
 	}
 
     @FXML
@@ -305,9 +289,13 @@ public class PtmView {
 
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
-    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect));
 
-
+    	Rectangle2D vRect2 = new Rectangle2D(
+    			xMin / scaleSlider.getValue(),
+    			yMin / scaleSlider.getValue(),
+    			width / scaleSlider.getValue(),
+    			height / scaleSlider.getValue());
+    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
     }
 
     @FXML
@@ -361,6 +349,8 @@ public class PtmView {
     	arg_ptmMat = tmp_ptmMat.clone();
     	arg_rectsDetection = (Rectangle)tmp_rectsDetection.clone();
 
+    	arg_detectionScale = scaleSlider.getValue();
+
     	Platform.runLater(() ->ptmInfo.appendText("確定されました\n"));
 
     }
@@ -374,6 +364,8 @@ public class PtmView {
 
     @FXML
     void onPtmTest(ActionEvent event) {
+    	Platform.runLater( () ->ptmInfo.appendText("FPS計測開始.....\n"));
+
     	fpsFirst = System.currentTimeMillis();
     	double fps = 0;
     	for(int i=0; i <= 29;i++) {
@@ -389,7 +381,7 @@ public class PtmView {
     		rePaint();
     	}
     	double fps_ = fps;
-		Platform.runLater( () ->ptmInfo.appendText(String.format("FPS=%.1f", fps_)+"\n"));
+		Platform.runLater( () ->ptmInfo.appendText( String.format("FPS=%.1f", fps_) +"\n"));
     	Platform.runLater( () ->ptmInfo.appendText("FPS計測終了\n"));
 
     }
@@ -425,8 +417,14 @@ public class PtmView {
     			ptmMainView.getFitWidth() /viewOrgZoom,
     			ptmMainView.getFitHeight() /viewOrgZoom);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
-    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect));
+    	Rectangle2D vRect2 = new Rectangle2D( minX / scaleSlider.getValue(),minY / scaleSlider.getValue(),
+    			ptmMainView.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
+    			ptmMainView.getFitHeight() /viewOrgZoom /scaleSlider.getValue());
+    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
     	Platform.runLater(() ->zoomLabel.setText(String.format("%.2f",viewOrgZoom)));
+    	Platform.runLater(() ->this.scaleValue.setText(String.format("%.2f",scaleSlider.getValue())));
+
+    	rePaint();
     }
 
     @FXML
@@ -454,10 +452,16 @@ public class PtmView {
     			ptmMainView.getFitHeight() /viewOrgZoom);
 
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
-    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect));
+
+    	Rectangle2D vRect2 = new Rectangle2D( minX / scaleSlider.getValue(),minY / scaleSlider.getValue(),
+    			ptmMainView.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
+    			ptmMainView.getFitHeight() /viewOrgZoom /scaleSlider.getValue());
+    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
 
     	Platform.runLater(() ->zoomValue_slider.setValue( viewOrgZoom));
     	Platform.runLater(() ->zoomLabel.setText(String.format("%.2f",viewOrgZoom)));
+    	Platform.runLater(() ->this.scaleValue.setText(String.format("%.2f",scaleSlider.getValue())));
+    	rePaint();
     }
 
     @FXML
@@ -472,8 +476,18 @@ public class PtmView {
 
         int x = (int)(draggingRect.getX());
         int y = (int)(draggingRect.getY());
-        draggingRect.setSize((int)(ptmMainView.getViewport().getMinX() + e.getX()/(zoom)) - x,
-        				(int)(ptmMainView.getViewport().getMinY() + e.getY()/(zoom) - y));
+
+        double mX = e.getX()/zoom;
+        double mY = e.getY()/zoom;
+
+        if( mX > ptmSrcMat.width() ) {
+        	mX = ptmSrcMat.width()-1;
+        }
+        if( mY > ptmSrcMat.height() ) {
+        	mY = ptmSrcMat.height()-1;
+        }
+        draggingRect.setSize((int)(ptmMainView.getViewport().getMinX() + mX - x),
+        				(int)(ptmMainView.getViewport().getMinY() + mY - y));
         rePaint();
     }
 
@@ -488,7 +502,7 @@ public class PtmView {
             moveDraggingPointView.y = ptmMainView.getViewport().getMinY();
     		return;
     	}
-
+    	dragingFlg = true;
     	draggingRect.setBounds((int)(ptmMainView.getViewport().getMinX() + e.getX()/(zoom)),
         					(int)(ptmMainView.getViewport().getMinY() + e.getY()/(zoom)), 0, 0);
 
@@ -501,7 +515,9 @@ public class PtmView {
     		moveDragingFlg = false;
     		return;
     	}
-
+    	if(draggingRect.width < 0 || draggingRect.height < 0)
+    		draggingRect.setBounds(1, 1, 1, 1);
+    	dragingFlg = false;
     	rePaint();
     }
     /**
@@ -525,13 +541,13 @@ public class PtmView {
 		Imgproc.rectangle(orgMat,
         		new Point(draggingRect.x,draggingRect.y),
         		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
-        		new Scalar(255,255,255),3);
+        		new Scalar(255,255,255),6);
 
 		if( tmp_rectsDetection.getWidth() > 10 ) {
 			Imgproc.rectangle(orgMat,
 	        		new Point(tmp_rectsDetection.x,tmp_rectsDetection.y),
 	        		new Point(tmp_rectsDetection.x+tmp_rectsDetection.width,tmp_rectsDetection.y+tmp_rectsDetection.height),
-	        		new Scalar(255,0,0),2);
+	        		new Scalar(255,0,0),6);
 		}
 
 		//フィルタ処理
@@ -573,78 +589,36 @@ public class PtmView {
     		Imgproc.Canny(tmpMatPT,tmpMatPT,thresh1,thresh2);
     	}
 
-    	//パターン検出処理
-    	//比較結果を格納するMatを生成
-    	Mat roi = tmpMat.submat(new Rect(tmp_rectsDetection.x,tmp_rectsDetection.y,
-    			tmp_rectsDetection.width,tmp_rectsDetection.height));
-    	Mat orgroi = orgMat.submat(new Rect(tmp_rectsDetection.x,tmp_rectsDetection.y,
-    			tmp_rectsDetection.width,tmp_rectsDetection.height));
-    	int cnt = 0;
-    	boolean flg,flg2;
-    	List<Point> finedPoint = new ArrayList<>();
-    	if( roi.width() > tmpMatPT.width() && roi.height() > tmpMatPT.height() ) {
+    	if( !dragingFlg ) {
 
-	    	Mat result = new Mat(roi.rows() - tmpMatPT.rows() + 1, roi.cols() - tmpMatPT.cols() + 1, CvType.CV_32FC1);
- 	    	//テンプレートマッチ実行（TM_CCOEFF_NORMED：相関係数＋正規化）
-	    	Imgproc.matchTemplate(roi, tmpMatPT, result, Imgproc.TM_CCOEFF_NORMED);
-	    	//結果から相関係数がしきい値以下を削除（０にする）
-	    	Imgproc.threshold(result, result,
-	    			ptmThreshSliderN.getValue(),1.0, Imgproc.THRESH_TOZERO);
+    		//テンプレート画像
+    		ptnMat[0] = tmpMatPT;
+    		//検出エリア
+    		rect[0] = new Rect(
+    				tmp_rectsDetection.x,tmp_rectsDetection.y,
+    				tmp_rectsDetection.width,tmp_rectsDetection.height);
+    		//閾値
+    		threshhold[0] = ptmThreshSliderN.getValue();
+    		//テンプレートマッチング　クラスのインスタンス作成
+    		templateMatching tm = new templateMatching(
+    				tmpMat,//.clone(),
+    				rect,
+    				ptnMat,
+    				orgMat,
+    				threshhold);
+    		//orgMat = tm.detectPattern();//実行し結果を表示用Matに上書き
+    		orgMat = tm.detectPattern2(scaleSlider.getValue());//実行し結果を表示用Matに上書き
 
-
-	    	int tmpPtWidth =  tmpMatPT.width()/2;//テンプレート画像の1/2近傍チェック用
-	    	int tmpPtHeight = tmpMatPT.height()/2;
-	    	for (int i=0;i<result.rows();i++) {
-	    		flg = false;
-	    		String rtStr ="";
-	    		for (int j=0;j<result.cols();j++) {
-	    			rt = result.get(i, j)[0];
-	    			flg2=false;
-	    			if ( rt > 0) {
-	    				//近傍に検出エリアが無いか確認 テンプレート画像の1/2近傍
-	    				if( !finedPoint.isEmpty() ) {
-		    				for(Point p:finedPoint) {
-		    					if( p.x  + tmpPtWidth > j && p.x - tmpPtWidth < j &&
-		    							p.y  + tmpPtHeight > i && p.y - tmpPtHeight < i) {
-		    						flg2 = true;
-		    						break;
-		    					}
-		    				}
-	    					if( !flg2 ){
-	    	    				cnt++;
-	    						finedPoint.add(new Point(j,i));
-	    	    		    	rtStr = rtStr + String.format("%.2f", rt)+" : ";
-	    	    		    	Imgproc.rectangle(orgroi,new Point(j,i),
-	    	    		    			new Point(j+tmpMatPT.width(),i+tmpMatPT.height()),
-	    	    		    			new Scalar(0,255,255),3);
-	    	    		    	j = (int) (j + tmpMatPT.cols() + tmpPtWidth);
-	    	    		    	flg = true;
-	    	    		    	break;
-
-	    					}
-	    				}else {
-    	    				cnt++;
-    						finedPoint.add(new Point(j,i));
-    	    		    	rtStr = rtStr + String.format("%.2f", rt)+" : ";
-    	    		    	Imgproc.rectangle(orgroi,new Point(j,i),
-    	    		    			new Point(j+tmpMatPT.width(),i+tmpMatPT.height()),
-    	    		    			new Scalar(0,255,255),3);
-    	    		    	j = (int) (j + tmpMatPT.cols() + tmpPtWidth);
-    	    		    	flg = true;
-	    				}
-	    			}
-	    		}
-    			if( flg ) {
-    				String tmp = rtStr;
-        			Platform.runLater( () ->ptmInfo.appendText("一致率="+tmp+" "));
-    			}
-
-	   		 }
-    	}else {
-    		System.out.println("サイズ不正");
+	    	final int tmp_cnt = tm.resultValue[0].cnt;
+	    	final double tmp_detectMax = tm.resultValue[0].detectMax;
+	    	final double tmp_detectMin = tm.resultValue[0].detectMin;
+	    	final double tmp_detectAve = tm.resultValue[0].detectAve;
+	    	Platform.runLater(() ->detectCntLabel.setText(String.valueOf(tmp_cnt)));
+	    	Platform.runLater(() ->detectRationMax.setText(String.format("%.3f",tmp_detectMax)));
+	    	Platform.runLater(() ->detectRationMin.setText(String.format("%.3f",tmp_detectMin)));
+	    	Platform.runLater(() ->detectRationAve.setText(String.format("%.3f",tmp_detectAve)));
     	}
-    	Platform.runLater( () ->ptmInfo.appendText("\n"));
-    	System.out.println("マッチングカウント=" + String.valueOf(cnt) );
+
 
 		updateImageView(ptmMainView,Utils.mat2Image(orgMat));
 		updateImageView(ptmMainViewDst,Utils.mat2Image(tmpMat));
@@ -654,6 +628,10 @@ public class PtmView {
 
 	private void setSlider() {
 		Platform.runLater(() ->zoomValue_slider.setValue(arg_zoomValue_slider));
+		Platform.runLater(() ->this.scaleSlider.setValue(arg_detectionScale));
+    	Platform.runLater(() ->zoomLabel.setText(String.format("%.2f",zoomValue_slider.getValue())));
+    	Platform.runLater(() ->this.scaleValue.setText(String.format("%.2f",scaleSlider.getValue())));
+
 
 		Platform.runLater(() ->gauusianCheck.setSelected(arg_gauusianCheck));
 		Platform.runLater(() ->gauusianSliderX.setValue(arg_gauusianSliderX));
@@ -676,6 +654,7 @@ public class PtmView {
 
 		Platform.runLater(() ->ptmThreshSliderN.setValue(arg_ptmThreshSliderN));
 		Platform.runLater(() ->threshLabel.setText(String.valueOf(arg_ptmThreshSliderN)));
+    	Platform.runLater(() ->threshLabel.setText(String.format("%.1f",this.ptmThreshSliderN.getValue())));
 
 		Platform.runLater(() ->ptm_sp.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,
 				999,arg_detectionCnt,1)));
@@ -723,12 +702,19 @@ public class PtmView {
         assert ptmSubView != null : "fx:id=\"ptmSubView\" was not injected: check your FXML file 'ptmView.fxml'.";
         assert ptmSubViewDst != null : "fx:id=\"ptmSubViewDst\" was not injected: check your FXML file 'ptmView.fxml'.";
         assert ptmMainViewDst != null : "fx:id=\"ptmMainViewDst\" was not injected: check your FXML file 'ptmView.fxml'.";
+        assert detectCntLabel != null : "fx:id=\"detectCntLabel\" was not injected: check your FXML file 'ptmView.fxml'.";
+        assert detectRationMax != null : "fx:id=\"detectRationMax\" was not injected: check your FXML file 'ptmView.fxml'.";
+        assert detectRationMin != null : "fx:id=\"detectRationMin\" was not injected: check your FXML file 'ptmView.fxml'.";
+        assert detectRationAve != null : "fx:id=\"detectRationAve\" was not injected: check your FXML file 'ptmView.fxml'.";
+        assert scaleSlider != null : "fx:id=\"scaleSlider\" was not injected: check your FXML file 'ptmView.fxml'.";
+        assert scaleValue != null : "fx:id=\"scaleValue\" was not injected: check your FXML file 'ptmView.fxml'.";
 
         moveDraggingPoint[0] = new Point();//ドラッグ移動始点
         moveDraggingPoint[1] = new Point();//ドラッグ移動終点
         moveDragingFlg = false;
 
         viewOrgZoom = arg_zoomValue_slider;
+        if( viewOrgZoom == 0.0 ) viewOrgZoom = 0.3;
         vRect = new Rectangle2D( 0,0,ptmMainView.getFitWidth()/viewOrgZoom,
         										ptmMainView.getFitHeight()/viewOrgZoom);
     	ptmMainView.setViewport(vRect);
@@ -744,9 +730,7 @@ public class PtmView {
         	tmp_rectsDetection = new Rectangle();
         }
 
-
         setSlider();
-
 
     }
 }

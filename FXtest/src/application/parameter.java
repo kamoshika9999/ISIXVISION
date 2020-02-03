@@ -22,6 +22,7 @@ public class parameter implements Serializable {
 	String[] ptmFileName;//パターンマッチングの登録Mat
 	boolean[] ptmEnable;//パターンマッチング有効無効フラグ
 	int[] ptmDetectCnt;
+	double[] detectionScale;//パターンマッチングの検出に使用するスケール倍率の逆数
 
 	//[4]はドラッグ中の枠用
 	double[]	circlePara4, //投票分解能
@@ -97,6 +98,8 @@ public class parameter implements Serializable {
 
 		detectionCnt = new int[arrySize];
 
+		detectionScale = new double[arrySize];
+
 		para_gauusianCheck = new boolean[arrySize];
 		para_gauusianSliderX = new double[arrySize];
 		para_gauusianSliderY = new double[arrySize];
@@ -146,6 +149,7 @@ public class parameter implements Serializable {
 			ptmDetectCnt[i] = 0;
 			whiteAreaMax[i] = 3000;
 			whiteAreaMin[i] = 3000;
+			detectionScale[i] = 2;
 
 			para_rectsDetection[i] = new Rectangle();
 		}

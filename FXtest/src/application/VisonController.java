@@ -2274,6 +2274,8 @@ public class VisonController{
 		PtmView.arg_ptmThreshSliderN = para.para_ptmThreshSliderN[selectBtn];//閾値
 		PtmView.arg_zoomValue_slider = para.para_zoomValue_slider[selectBtn];
 		PtmView.arg_rectsDetection = para.para_rectsDetection[selectBtn];//検出範囲
+		
+		PtmView.arg_detectionScale = para.detectionScale[selectBtn];//検出倍率の逆数
 
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("PtmView.fxml"));
 		AnchorPane root = null;
@@ -2318,6 +2320,7 @@ public class VisonController{
 			para.para_ptmThreshSliderN[selectBtn] = PtmView.arg_ptmThreshSliderN;//閾値
 			para.para_zoomValue_slider[selectBtn] = PtmView.arg_zoomValue_slider;
 			para.para_rectsDetection[selectBtn] = PtmView.arg_rectsDetection;//検出範囲
+			para.detectionScale[selectBtn] = PtmView.arg_detectionScale;//検出倍率の逆数
 		}
 
     }
