@@ -248,7 +248,7 @@ public class PtmView {
 		if( width > imgWidth ) {
 			xMin = 0;
 		}
-		
+
 
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
@@ -302,7 +302,7 @@ public class PtmView {
 		if( width > imgWidth ) {
 			xMin = 0;
 		}
-		
+
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
     	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect));
@@ -616,7 +616,7 @@ public class PtmView {
 	    	    		    	rtStr = rtStr + String.format("%.2f", rt)+" : ";
 	    	    		    	Imgproc.rectangle(orgroi,new Point(j,i),
 	    	    		    			new Point(j+tmpMatPT.width(),i+tmpMatPT.height()),
-	    	    		    			new Scalar(255,255,255),3);
+	    	    		    			new Scalar(0,255,255),3);
 	    	    		    	j = (int) (j + tmpMatPT.cols() + tmpPtWidth);
 	    	    		    	flg = true;
 	    	    		    	break;
@@ -628,7 +628,7 @@ public class PtmView {
     	    		    	rtStr = rtStr + String.format("%.2f", rt)+" : ";
     	    		    	Imgproc.rectangle(orgroi,new Point(j,i),
     	    		    			new Point(j+tmpMatPT.width(),i+tmpMatPT.height()),
-    	    		    			new Scalar(255,255,255),3);
+    	    		    			new Scalar(0,255,255),3);
     	    		    	j = (int) (j + tmpMatPT.cols() + tmpPtWidth);
     	    		    	flg = true;
 	    				}

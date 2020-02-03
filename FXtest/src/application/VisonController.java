@@ -496,7 +496,7 @@ public class VisonController{
 		if( width > imgWidth ) {
 			xMin = 0;
 		}
-		
+
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->imgORG.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
@@ -521,7 +521,7 @@ public class VisonController{
 
     	double minX = rect.getMinX();
     	double minY = rect.getMinY();
-    	
+
 		if( vRect.getHeight() > imgHeight ) {
 			minY= 0;
 		}
@@ -888,7 +888,7 @@ public class VisonController{
     	height = vRect.getHeight();
     	imgWidth = imgORG.getImage().getWidth();//メインビューに格納されているイメージのサイズ取得
     	imgHeight = imgORG.getImage().getHeight();
-    	
+
     	yMin = moveDraggingPointView.y+ (moveDraggingPoint[0].y - moveDraggingPoint[1].y)/viewOrgZoom;
     	xMin = moveDraggingPointView.x+ (moveDraggingPoint[0].x - moveDraggingPoint[1].x)/viewOrgZoom;
 
@@ -908,7 +908,7 @@ public class VisonController{
 		if( width > imgWidth ) {
 			xMin = 0;
 		}
-		
+
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->imgORG.setViewport(vRect));
     	Platform.runLater(() ->imgGLAY1.setViewport(vRect));
@@ -1138,16 +1138,16 @@ public class VisonController{
 							if( ratioFlg ) {
 								Imgproc.putText(orgMat,
 										"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
-												"Max=" + String.format("%d",whiteAreaMax) +
-												"Min=" + String.format("%d",whiteAreaMin),
-										new Point(draggingRect.x+10,draggingRect.y-6),
+												" Max=" + String.format("%d",whiteAreaMax) +
+												" Min=" + String.format("%d",whiteAreaMin),
+										new Point(draggingRect.x+20,draggingRect.y-6),
 										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
 							}else {
 								Imgproc.putText(orgMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
-										"Max=" + String.format("%d",whiteAreaMax) +
-										"Min=" + String.format("%d",whiteAreaMin),
-										new Point(draggingRect.x+10,draggingRect.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),2);
+										" Max=" + String.format("%d",whiteAreaMax) +
+										" Min=" + String.format("%d",whiteAreaMin),
+										new Point(draggingRect.x+20,draggingRect.y-6),
+										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),2);
 							}
 						}
 		        	}
@@ -1204,27 +1204,27 @@ public class VisonController{
 							(int)para.circlePara8[i],
 							(int)para.circlePara9[i]);
 
-					boolean ratioFlg = true;
+					boolean areaFlg = true;
 					if( circles.cols() > 0 && !settingMode.isSelected()) {
 						fncDrwCircles(roi,circles, orgMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
 						Imgproc.putText(orgMat, String.valueOf(circles.cols()),
 								new Point(r.x-25,r.y-6),
 								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),3);
 						//面積判定
-						ratioFlg = holeWhiteAreaCheck(
+						areaFlg = holeWhiteAreaCheck(
 								roi,circles,para.whiteAreaMax[i],para.whiteAreaMin[i]);
-						if( ratioFlg ) {
+						if( areaFlg ) {
 							Imgproc.putText(orgMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
-									"Max=" + String.format("%d",whiteAreaMax) +
-									"Min=" + String.format("%d",whiteAreaMin),
-									new Point(r.x+10,r.y-6),
+									" Max=" + String.format("%d",whiteAreaMax) +
+									" Min=" + String.format("%d",whiteAreaMin),
+									new Point(r.x+20,r.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
 						}else {
 							Imgproc.putText(orgMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
-									"Max=" + String.format("%d",whiteAreaMax) +
-									"Min=" + String.format("%d",whiteAreaMin),
-									new Point(r.x+10,r.y-6),
-									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),2);
+									" Max=" + String.format("%d",whiteAreaMax) +
+									" Min=" + String.format("%d",whiteAreaMin),
+									new Point(r.x+20,r.y-6),
+									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),2);
 						}
 					}
 
@@ -1232,7 +1232,7 @@ public class VisonController{
 		            switch(i) {
 		            	case 0:
 		            		Platform.runLater( () ->okuri1_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && ratioFlg ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && areaFlg ) {
 		            			Platform.runLater( () ->okuri1_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.GREEN));
 		            			hanteCnt++;
@@ -1245,7 +1245,7 @@ public class VisonController{
 		            		break;
 		            	case 1:
 		            		Platform.runLater( () ->okuri2_n.setText(String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && ratioFlg ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && areaFlg ) {
 		            			Platform.runLater( () ->okuri2_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.GREEN));
 		            			hanteCnt++;
@@ -1258,7 +1258,7 @@ public class VisonController{
 		            		break;
 		            	case 2:
 		            		Platform.runLater( () ->okuri3_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && ratioFlg ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && areaFlg ) {
 		            			Platform.runLater( () ->okuri3_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.GREEN));
 		            			hanteCnt++;
@@ -1270,7 +1270,7 @@ public class VisonController{
 		            		break;
 		            	case 3:
 		            		Platform.runLater( () ->okuri4_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && ratioFlg ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && areaFlg ) {
 		            			Platform.runLater( () ->okuri4_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.GREEN));
 		            			hanteCnt++;
