@@ -410,6 +410,8 @@ public class VisonController{
     @FXML
     private Spinner<Integer> whiteRatioMinSp;
 
+	private templateMatching tm;
+
 
 
     @FXML
@@ -942,8 +944,8 @@ public class VisonController{
         	mY = srcMat.height()-1;
         }
         draggingRect.width = (int)(imgORG.getViewport().getMinX() + mX - x);
-        draggingRect.height =(int)(imgORG.getViewport().getMinY() + mY - y);        
-        
+        draggingRect.height =(int)(imgORG.getViewport().getMinY() + mY - y);
+
         eventTrigger = true;
     }
 
@@ -1321,8 +1323,7 @@ public class VisonController{
 	        }
 
 	        //パターンマッチング
-	        templateMatching tm = new templateMatching(srcMat,orgMat,tmpara);
-
+	        tm.detectPattern(srcMat,orgMat);
 
 	        //最終判定
 	        if( !saveImgUseFlg && !settingModeFlg) {
@@ -2026,13 +2027,13 @@ public class VisonController{
     	parameter para = pObj.para[pObj.select];
         for(int i=0;i<tmpara.arrayCnt;i++) {
         	tmpara.matchCnt[i] = para.matchCnt[i];
-        	tmpara.matchThreshValue[i] = para.matchThreshValue[i];
-        	tmpara.ptmMat[i] = ptmImgMat[pObj.select][i];
+        	tmpara.thresh[i] = para.matchThreshValue[i];
+        	tmpara.ptnMat[i] = ptmImgMat[pObj.select][i];
         	tmpara.ptmEnable[i] = para.ptmEnable[i];
         	tmpara.para_rectsDetection[i] = para.para_rectsDetection[i];
-        	tmpara.detectionScale[i] = para.detectionScale[i];
+        	tmpara.scale[i] = para.detectionScale[i];
         }
-
+        tm = new templateMatching(tmpara);
     }
 
     /**

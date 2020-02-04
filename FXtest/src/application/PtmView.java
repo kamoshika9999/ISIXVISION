@@ -169,7 +169,25 @@ public class PtmView {
     private Slider scaleSlider;
     @FXML
     private Label scaleValue;
+	private templateMatching tm;
 
+    private void patternMatchParaSet() {
+    	TMpara tmpara = new TMpara( 1 );
+
+    	if( ptm_sp.getValue() == null ) {
+    		tmpara.matchCnt[0] = 0;
+    	}else {
+    		tmpara.matchCnt[0] = ptm_sp.getValue();
+    	}
+
+    	tmpara.thresh[0] = threshholdSlider.getValue();
+    	tmpara.ptnMat[0] = tmp_ptmMat;
+    	tmpara.ptmEnable[0] = true;
+    	tmpara.para_rectsDetection[0] = tmp_rectsDetection;
+    	tmpara.scale[0] = scaleSlider.getValue();
+
+        tm = new templateMatching(tmpara);
+    }
 
     @FXML
     void onCheckBtn(ActionEvent event) {
@@ -536,6 +554,8 @@ public class PtmView {
 	}
 
 	private void rePaint() {
+		patternMatchParaSet();
+
 		Mat tmpMat = ptmSrcMat.clone();
 		Mat orgMat = ptmSrcMat.clone();
 
@@ -602,9 +622,9 @@ public class PtmView {
     				tmp_rectsDetection.width,tmp_rectsDetection.height);
     		//閾値
     		threshhold[0] = ptmThreshSliderN.getValue();
-    		//テンプレートマッチング　クラスのインスタンス作成
-    		templateMatching tm = new templateMatching(tmpMat,rect,ptnMat,orgMat,threshhold);
-    		orgMat = tm.detectPattern2(scaleSlider.getValue());//実行し結果を表示用Matに上書き
+
+    		//テンプレートマッチング
+    		boolean flg = tm.detectPattern(tmpMat,orgMat);//実行し結果を表示用Matに上書き
 
 	    	final int tmp_cnt = tm.resultValue[0].cnt;
 	    	final double tmp_detectMax = tm.resultValue[0].detectMax;
@@ -614,6 +634,7 @@ public class PtmView {
 	    	Platform.runLater(() ->detectRationMax.setText(String.format("%.3f",tmp_detectMax)));
 	    	Platform.runLater(() ->detectRationMin.setText(String.format("%.3f",tmp_detectMin)));
 	    	Platform.runLater(() ->detectRationAve.setText(String.format("%.3f",tmp_detectAve)));
+
     	}
 
 

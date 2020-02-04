@@ -4,41 +4,57 @@ import java.awt.Rectangle;
 
 import org.opencv.core.Mat;
 
-/*
-int[] matchCnt;
-double[] matchThreshValue;
-String[] ptmFileName;//パターンマッチングの登録Mat
-boolean[] ptmEnable;//パターンマッチング有効無効フラグ
-int[] ptmDetectCnt;
-public Rectangle[] para_rectsDetection;
-double[] detectionScale;//パターンマッチングの検出に使用するスケール倍率の逆数
-
-public templateMatching(
-		Mat arg_areaMat,
-		Rect[] arg_detectRect,
-		Mat[] arg_ptnMat,
-		Mat arg_resultMat,
-		double[] arg_threshhold
-		)
-*/
-public class TMpara {
-	public final int arrayCnt = 4;
+public class TMpara implements Cloneable{
+	public int arrayCnt = 4;
 	public int[] matchCnt;
-	public double[] matchThreshValue;
-	public Mat[] ptmMat;//パターンマッチングの登録Mat
+	public double[] thresh;
+	public Mat[] ptnMat;//パターンマッチングの登録Mat
 	public boolean[] ptmEnable;//パターンマッチング有効無効フラグ
 	public int[] ptmDetectCnt;
-	public Rectangle[] para_rectsDetection;
-	public double[] detectionScale;//パターンマッチングの検出に使用するスケール倍率の逆数
+	public Rectangle[] para_rectsDetection;//パターンマッチング検出エリア
+	public double[] scale;//パターンマッチングの検出に使用するスケール倍率の逆数
 
 	public TMpara() {
 		matchCnt = new int[arrayCnt];
-		matchThreshValue = new double[arrayCnt];
-		ptmMat = new Mat[arrayCnt];
+		thresh = new double[arrayCnt];
+		ptnMat = new Mat[arrayCnt];
 		ptmEnable = new boolean[arrayCnt];
 		ptmDetectCnt = new int[arrayCnt];
 		para_rectsDetection = new Rectangle[arrayCnt];
-		detectionScale = new double[arrayCnt];
+		scale = new double[arrayCnt];
 	}
+
+	public TMpara(int arg_arrayCnt) {
+		arrayCnt = arg_arrayCnt;
+
+		matchCnt = new int[arrayCnt];
+		thresh = new double[arrayCnt];
+		ptnMat = new Mat[arrayCnt];
+		ptmEnable = new boolean[arrayCnt];
+		ptmDetectCnt = new int[arrayCnt];
+		para_rectsDetection = new Rectangle[arrayCnt];
+		scale = new double[arrayCnt];
+	}
+    @Override
+    public TMpara clone() { //基本的にはpublic修飾子を付け、自分自身の型を返り値とする
+    	TMpara b=null;
+
+        /*ObjectクラスのcloneメソッドはCloneNotSupportedExceptionを投げる可能性があるので、try-catch文で記述(呼び出し元に投げても良い)*/
+        try {
+            b=(TMpara)super.clone(); //親クラスのcloneメソッドを呼び出す(親クラスの型で返ってくるので、自分自身の型でのキャストを忘れないようにする)
+
+            b.matchCnt = this.matchCnt;
+            b.thresh = this.thresh;
+            b.ptnMat = this.ptnMat;
+            b.ptmEnable = this.ptmEnable;
+            b.ptmDetectCnt = this.ptmDetectCnt;
+            b.para_rectsDetection = this.para_rectsDetection;
+            b.scale = this.scale;
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return b;
+    }
 
 }
