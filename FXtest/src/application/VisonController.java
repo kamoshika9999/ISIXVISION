@@ -76,8 +76,8 @@ public class VisonController{
 
 	public static Mat srcMat = new Mat();//保存画像を使用した設定に使用する為publicにしておく
 	private Mat glayMat;
-    List<Rect> rects;
-    Rect draggingRect;
+    List<Rectangle> rects;
+    Rectangle draggingRect;
     volatile boolean dragging;
 	boolean moveDragingFlg;
 	Point[] moveDraggingPoint = new Point[2];
@@ -932,8 +932,18 @@ public class VisonController{
     	if( !settingModeFlg ) return;
     	int x = draggingRect.x;
         int y = draggingRect.y;
-        draggingRect.width = (int)(imgORG.getViewport().getMinX() + e.getX()/(zoom)) - x;
-        draggingRect.height =(int)(imgORG.getViewport().getMinY() + e.getY()/(zoom)) - y;
+        double mX = e.getX()/zoom;
+        double mY = e.getY()/zoom;
+
+        if( mX > srcMat.width() ) {
+        	mX = srcMat.width()-1;
+        }
+        if( mY > srcMat.height() ) {
+        	mY = srcMat.height()-1;
+        }
+        draggingRect.width = (int)(imgORG.getViewport().getMinX() + mX - x);
+        draggingRect.height =(int)(imgORG.getViewport().getMinY() + mY - y);        
+        
         eventTrigger = true;
     }
 
@@ -1099,7 +1109,11 @@ public class VisonController{
 	            		new Scalar(0,255,0),3);
 	        }else{
 	        	if(draggingRect.width >0 && draggingRect.height > 0 && settingModeFlg){
-		        	Mat roi = glayMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height));
+		        	Mat roi = glayMat.submat(
+		        			draggingRect.y,
+		        			draggingRect.y + draggingRect.height,
+		        			draggingRect.x,
+		        			draggingRect.x+draggingRect.width);
 		        	if( gauusianCheck.isSelected() ) {
 		        		double sigmaX = gauusianSliderX.getValue();
 		        		double sigmaY = gauusianSliderY.getValue();
@@ -1129,8 +1143,13 @@ public class VisonController{
 								(int)sliderDetecPara9.getValue());
 						if( circles.cols() > 0) {
 							fncDrwCircles(roi,circles,
-									orgMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height)),
-									true);
+									orgMat.submat(
+						        			draggingRect.y,
+						        			draggingRect.y + draggingRect.height,
+						        			draggingRect.x,
+						        			draggingRect.x+draggingRect.width),
+											true);
+
 							Imgproc.putText(orgMat, String.valueOf(circles.cols()),
 									new Point(draggingRect.x-25,draggingRect.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,0,255),2);
@@ -1663,7 +1682,7 @@ public class VisonController{
     	para.circlePara8[i] = sliderDetecPara8.getValue();
     	para.circlePara9[i] = sliderDetecPara9.getValue();
 
-    	para.rects[i] = rectToRectangle(draggingRect.clone());
+    	para.rects[i] = (Rectangle)draggingRect.clone();
 
     	para.setFlg[i] = true;
     	para.gauusianCheck[i] = gauusianCheck.isSelected();
@@ -1680,7 +1699,7 @@ public class VisonController{
     	para.whiteAreaMin[i] = whiteRatioMinSp.getValue().intValue();
 
     	settingMode.setSelected(false);//セッティングモードから抜ける
-    	draggingRect = new Rect(0,0,1,1);
+    	draggingRect = new Rectangle(0,0,1,1);
     }
     private void setBtnPara() {
     	parameter para = pObj.para[pObj.select];
@@ -1726,7 +1745,7 @@ public class VisonController{
 
 		}
 
-		para.rects[4] = rectToRectangle(draggingRect);
+		para.rects[4] = (Rectangle)draggingRect.clone();
 		para.viewRect[0] = imgORG.getViewport().getMinX();
 		para.viewRect[1] = imgORG.getViewport().getMinY();
 		para.viewRect[2] = imgORG.getViewport().getWidth();
@@ -1864,7 +1883,7 @@ public class VisonController{
 		ObjectOutputStream objOut = new ObjectOutputStream(fo);
 
     	parameter para = pObj.para[pObj.select];
-		para.rects[4] =  rectToRectangle(draggingRect);
+		para.rects[4] =  (Rectangle)draggingRect.clone();
 		para.viewRect[0] = imgORG.getViewport().getMinX();
 		para.viewRect[1] = imgORG.getViewport().getMinY();
 		para.viewRect[2] = imgORG.getViewport().getWidth();
@@ -1957,7 +1976,7 @@ public class VisonController{
     	}
 
     	parameter para = pObj.para[pObj.select];
-    	draggingRect =   rectangleToRect( (Rectangle)para.rects[4].clone() );
+    	draggingRect = (Rectangle)para.rects[4].clone();
 
     	viewOrgZoom = para.zoom;
     	zoomValue_slider.setValue(viewOrgZoom);
@@ -2055,7 +2074,7 @@ public class VisonController{
     		pObj.select = 3;
     		Platform.runLater(() ->preset4.setTextFill( Color.BLUE ));
     	}
-    	draggingRect = rectangleToRect((Rectangle) pObj.para[pObj.select].rects[4].clone());
+    	draggingRect = (Rectangle)pObj.para[pObj.select].rects[4].clone();
 
     	setBtnPara();
     }
@@ -2138,7 +2157,7 @@ public class VisonController{
         	settingModeFlg = false;
         	Platform.runLater(() ->settingMode.setSelected(false));
         	Platform.runLater(() ->info1.setText(""));
-        	draggingRect = new Rect(1,1,1,1);
+        	draggingRect = new Rectangle(1,1,1,1);
         	saveImgUseFlg = false;
         	updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	}else {
@@ -2242,17 +2261,6 @@ public class VisonController{
     	System.out.println("open_ptm");
 
     }
-    private Rect[] rectangleToRectM(Rectangle[] rectangle) {
-    	Rect[] rc = new Rect[rectangle.length];
-    	for(int i=0;i<rectangle.length;i++) {
-    		rc[i] = new Rect(rectangle[i].x,rectangle[i].y,rectangle[i].width,rectangle[i].height);
-    	}
-    	return rc;
-    }
-    private Rect rectangleToRect(Rectangle rectangle) {
-    	Rect rc = new Rect(rectangle.x,rectangle.y,rectangle.width,rectangle.height);
-    	return rc;
-    }
 
     /**
      * パターンマッチングのパラメーター設定
@@ -2310,7 +2318,7 @@ public class VisonController{
 
 		PtmView.arg_ptmThreshSliderN = para.para_ptmThreshSliderN[selectBtn];//閾値
 		PtmView.arg_zoomValue_slider = para.para_zoomValue_slider[selectBtn];
-		PtmView.arg_rectsDetection =  rectangleToRect(para.para_rectsDetection[selectBtn]);//検出範囲
+		PtmView.arg_rectsDetection =  para.para_rectsDetection[selectBtn];//検出範囲
 
 		PtmView.arg_detectionScale = para.detectionScale[selectBtn];//検出倍率の逆数
 
@@ -2356,7 +2364,7 @@ public class VisonController{
 
 			para.para_ptmThreshSliderN[selectBtn] = PtmView.arg_ptmThreshSliderN;//閾値
 			para.para_zoomValue_slider[selectBtn] = PtmView.arg_zoomValue_slider;
-			para.para_rectsDetection[selectBtn] =  rectToRectangle(PtmView.arg_rectsDetection);//検出範囲
+			para.para_rectsDetection[selectBtn] =  PtmView.arg_rectsDetection;//検出範囲
 			para.detectionScale[selectBtn] = PtmView.arg_detectionScale;//検出倍率の逆数
 		}
         //パターンマッチング用パラメータ設定
@@ -2532,7 +2540,7 @@ public class VisonController{
 
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());
-        draggingRect = new Rect(0, 0,1,1);
+        draggingRect = new Rectangle(0, 0,1,1);
         moveDraggingPoint[0] = new Point();//ドラッグ移動始点
         moveDraggingPoint[1] = new Point();//ドラッグ移動終点
         dragging = false;

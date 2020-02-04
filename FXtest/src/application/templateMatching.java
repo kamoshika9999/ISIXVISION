@@ -7,14 +7,13 @@ import java.util.List;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 public class templateMatching {
 	private Mat areaMat;
-	private Rect[] detectRect;
+	private Rectangle[] detectRect;
 	private Mat[] ptnMat;
 	private Mat resultMat;
 	private double[] threshhold;
@@ -31,7 +30,7 @@ public class templateMatching {
 	 */
 	public templateMatching(
 			Mat arg_areaMat,
-			Rect[] arg_detectRect,
+			Rectangle[] arg_detectRect,
 			Mat[] arg_ptnMat,
 			Mat arg_resultMat,
 			double[] arg_threshhold
@@ -50,7 +49,7 @@ public class templateMatching {
 
 	public templateMatching(Mat srcMat, Mat dstMat, TMpara tmpara) {
 		areaMat = srcMat;
-		detectRect = rectangleToRect(tmpara.para_rectsDetection);
+		detectRect = tmpara.para_rectsDetection;
 		ptnMat = tmpara.ptmMat;
 		resultMat = dstMat;
 		threshhold = tmpara.matchThreshValue;
@@ -59,15 +58,6 @@ public class templateMatching {
 		for(int i=0;i<detectRect.length;i++)
 			resultValue[i] = new TMResult();
 	}
-    private Rect[] rectangleToRect(Rectangle[] rectangle) {
-    	Rect[] rc = new Rect[rectangle.length];
-    	for(int i=0;i<rectangle.length;i++) {
-    		rc[i] = new Rect(rectangle[i].x,rectangle[i].y,rectangle[i].width,rectangle[i].height);
-    	}
-    	return rc;
-    }
-
-
 
 
 	/**
@@ -77,9 +67,18 @@ public class templateMatching {
 	public Mat detectPattern() {
 		for(int n=0;n<detectRect.length;n++) {
 			//比較結果を格納するMatを生成
-			Mat roi = areaMat.submat(detectRect[n]);
-			Mat orgroi = resultMat.submat(detectRect[n]);
-
+			Mat roi = areaMat.submat(
+					detectRect[n].y,
+					detectRect[n].y+detectRect[n].height,
+					detectRect[n].x,
+					detectRect[n].x+detectRect[n].width
+					);
+			Mat orgroi = resultMat.submat(
+					detectRect[n].y,
+					detectRect[n].y+detectRect[n].height,
+					detectRect[n].x,
+					detectRect[n].x+detectRect[n].width
+					);
 			boolean flg2;
 			double rt;
 			List<Point> finedPoint = new ArrayList<>();
@@ -163,13 +162,23 @@ public class templateMatching {
 			Imgproc.resize(ptnMat[n], ptnMat[n], new Size(),1/scale,1/scale,Imgproc.INTER_AREA );
 
 			//比較結果を格納するMatを生成
-			Mat orgroi = resultMat.submat(detectRect[n]);//scale適用前に生成
+			Mat orgroi = resultMat.submat(
+					detectRect[n].y,
+					detectRect[n].y+detectRect[n].height,
+					detectRect[n].x,
+					detectRect[n].x+detectRect[n].width
+					);//scale適用前に生成
 
 			detectRect[n].x /= scale;
 			detectRect[n].y /= scale;
 			detectRect[n].width /= scale;
 			detectRect[n].height /= scale;
-			Mat roi = areaMat.submat(detectRect[n]);
+			Mat roi = areaMat.submat(
+					detectRect[n].y,
+					detectRect[n].y+detectRect[n].height,
+					detectRect[n].x,
+					detectRect[n].x+detectRect[n].width
+					);
 
 			boolean flg2;
 			double rt;

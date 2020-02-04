@@ -1,11 +1,11 @@
 package application;
 
+import java.awt.Rectangle;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -35,14 +35,14 @@ public class PtmView {
 	boolean moveDragingFlg;
 	Point[] moveDraggingPoint = new Point[2];
 	Point moveDraggingPointView = new Point();
-	private Rect draggingRect = new Rect(0,0,1,1);
+	private Rectangle draggingRect = new Rectangle(0,0,1,1);
 	private Rectangle2D vRect;
 	private double viewOrgZoom;
 	private int fpsCnt;
 	private long fpsEnd;
 	private long fpsFirst;
 	double rt;
-	Rect[] rect = new Rect[1];
+	Rectangle[] rect = new Rectangle[1];
 	Mat[] ptnMat = new Mat[1];
 	double[] threshhold = new double[1];
 
@@ -75,8 +75,8 @@ public class PtmView {
 
 	public static double arg_ptmThreshSliderN;//マッチングの閾値
 	public static double arg_zoomValue_slider;
-	public static Rect arg_rectsDetection;
-	private Rect tmp_rectsDetection;
+	public static Rectangle arg_rectsDetection;
+	private Rectangle tmp_rectsDetection;
 	public static boolean confimFlg = false;
 
     @FXML
@@ -179,7 +179,7 @@ public class PtmView {
     @FXML
     void onDetectionAreaSet(ActionEvent event) {
     	if( draggingRect.width > 10 ) {
-    		tmp_rectsDetection = draggingRect.clone();
+    		tmp_rectsDetection = (Rectangle)draggingRect.clone();
     	}
 
     	draggingRect.width =0;
@@ -300,7 +300,11 @@ public class PtmView {
     @FXML
     void onPatternSet(ActionEvent event) {
     	if( this.draggingRect.width > 10 ) {
-    		Mat roi = ptmSrcMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height));
+    		Mat roi = ptmSrcMat.submat(
+    				draggingRect.y,
+    				draggingRect.y+draggingRect.height,
+    				draggingRect.x,
+    				draggingRect.x+draggingRect.width);
     		tmp_ptmMat = roi.clone();
             updateImageView(ptmSubView,Utils.mat2Image(tmp_ptmMat));
         	Platform.runLater(() ->ptmInfo.appendText("登録画像が更新されました\n"));
@@ -346,7 +350,7 @@ public class PtmView {
     	arg_zoomValue_slider = zoomValue_slider.getValue();
 
     	arg_ptmMat = tmp_ptmMat.clone();
-    	arg_rectsDetection = tmp_rectsDetection.clone();
+    	arg_rectsDetection = (Rectangle)tmp_rectsDetection.clone();
 
     	arg_detectionScale = scaleSlider.getValue();
 
@@ -515,7 +519,7 @@ public class PtmView {
     		return;
     	}
     	if(draggingRect.width < 0 || draggingRect.height < 0)
-    		draggingRect = new Rect(1,1,1,1);
+    		draggingRect = new Rectangle(1,1,1,1);
     	dragingFlg = false;
     	rePaint();
     }
@@ -593,7 +597,7 @@ public class PtmView {
     		//テンプレート画像
     		ptnMat[0] = tmpMatPT;
     		//検出エリア
-    		rect[0] = new Rect(
+    		rect[0] = new Rectangle(
     				tmp_rectsDetection.x,tmp_rectsDetection.y,
     				tmp_rectsDetection.width,tmp_rectsDetection.height);
     		//閾値
@@ -718,9 +722,9 @@ public class PtmView {
         updateImageView(ptmSubView,Utils.mat2Image(tmp_ptmMat));
 
         if( arg_rectsDetection != null ) {
-        	tmp_rectsDetection = arg_rectsDetection.clone();
+        	tmp_rectsDetection = (Rectangle)arg_rectsDetection.clone();
         }else {
-        	tmp_rectsDetection = new Rect();
+        	tmp_rectsDetection = new Rectangle();
         }
 
         setSlider();
