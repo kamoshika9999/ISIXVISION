@@ -24,7 +24,7 @@ public class templateMatching {
  */
 
 	public TMResult[] resultValue;//検出結果が保存される
-	private TMpara tmpara;
+	public TMpara tmpara;
 
 	/**
 	 * コンストラクタ
@@ -57,7 +57,7 @@ public class templateMatching {
 						1/tmpara.scale[n],1/tmpara.scale[n],Imgproc.INTER_AREA );
 				Imgproc.resize(tmpara.ptnMat[n],tmpara.ptnMat[n], new Size(),
 						1/tmpara.scale[n],1/tmpara.scale[n],Imgproc.INTER_AREA );
-	
+
 				//比較結果を格納するMatを生成
 				Mat orgroi = null;
 				orgroi = dstMat.submat(
@@ -66,7 +66,7 @@ public class templateMatching {
 						tmpara.para_rectsDetection[n].x,
 						tmpara.para_rectsDetection[n].x+tmpara.para_rectsDetection[n].width
 						);//tmpara.detectionScale[n]適用前に生成
-	
+
 				tmpara.para_rectsDetection[n].x /= tmpara.scale[n];
 				tmpara.para_rectsDetection[n].y /= tmpara.scale[n];
 				tmpara.para_rectsDetection[n].width /= tmpara.scale[n];
@@ -77,19 +77,19 @@ public class templateMatching {
 						tmpara.para_rectsDetection[n].x,
 						tmpara.para_rectsDetection[n].x+tmpara.para_rectsDetection[n].width
 						);
-	
+
 				boolean flg2;
 				double rt;
 				List<Point> finedPoint = new ArrayList<>();
 				if( roi.width() > tmpara.ptnMat[n].width() && roi.height() > tmpara.ptnMat[n].height() ) {
-	
+
 			    	Mat result = new Mat(roi.rows() - tmpara.ptnMat[n].rows() + 1, roi.cols() - tmpara.ptnMat[n].cols() + 1, CvType.CV_32FC1);
 				    	//テンプレートマッチ実行（TM_CCOEFF_NORMED：相関係数＋正規化）
 			    	Imgproc.matchTemplate(roi, tmpara.ptnMat[n], result, Imgproc.TM_CCOEFF_NORMED);
 			    	//結果から相関係数がしきい値以下を削除（０にする）
 			    	Imgproc.threshold(result, result,tmpara.thresh[n],1.0, Imgproc.THRESH_TOZERO);
-	
-	
+
+
 			    	int tmpPtWidth =  tmpara.ptnMat[n].width()/2;//テンプレート画像の1/2近傍チェック用
 			    	int tmpPtHeight = tmpara.ptnMat[n].height()/2;
 			    	for (int i=0;i<result.rows();i++) {

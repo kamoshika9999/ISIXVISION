@@ -328,7 +328,7 @@ public class PtmView {
         	Platform.runLater(() ->ptmInfo.appendText("登録画像が更新されました\n"));
         	draggingRect.width =0;
         	draggingRect.height =0;
-
+        	patternMatchParaSet();
         	rePaint();
     	}
     }
@@ -555,11 +555,12 @@ public class PtmView {
 
 	private void rePaint() {
 		patternMatchParaSet();
+		
+		tm.tmpara.thresh[0] = this.ptmThreshSliderN.getValue();
 
 		Mat tmpMat = ptmSrcMat.clone();
 		Mat orgMat = ptmSrcMat.clone();
-
-		Mat tmpMatPT = tmp_ptmMat.clone();
+		Mat tmpMatPT = tm.tmpara.ptnMat[0];
 
 		Imgproc.rectangle(orgMat,
         		new Point(draggingRect.x,draggingRect.y),

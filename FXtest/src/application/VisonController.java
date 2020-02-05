@@ -1880,7 +1880,7 @@ public class VisonController{
      * @throws IOException
      */
     public void saveAllPara() throws IOException{
-		FileOutputStream fo = new FileOutputStream("./conf4.txt");
+		FileOutputStream fo = new FileOutputStream("./conf5.txt");
 		ObjectOutputStream objOut = new ObjectOutputStream(fo);
 
     	parameter para = pObj.para[pObj.select];
@@ -1966,7 +1966,7 @@ public class VisonController{
      */
     public void loadAllPara(){
     	try {
-	    	FileInputStream fi = new FileInputStream("./conf4.txt");
+	    	FileInputStream fi = new FileInputStream("./conf5.txt");
 	    	ObjectInputStream objIn = new ObjectInputStream(fi);
 
 	    	pObj = (preSet)objIn.readObject();

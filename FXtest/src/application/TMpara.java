@@ -45,11 +45,15 @@ public class TMpara implements Cloneable{
 
             b.matchCnt = this.matchCnt;
             b.thresh = this.thresh;
-            b.ptnMat = this.ptnMat;
             b.ptmEnable = this.ptmEnable;
             b.ptmDetectCnt = this.ptmDetectCnt;
-            b.para_rectsDetection = this.para_rectsDetection;
             b.scale = this.scale;
+
+            for(int i=0;i<this.arrayCnt;i++ ) {
+                b.ptnMat[i] = (Mat)this.ptnMat[i].clone();
+                b.para_rectsDetection[i] = (Rectangle)this.para_rectsDetection[i].clone();
+
+            }
 
         }catch (Exception e){
             e.printStackTrace();
