@@ -42,27 +42,23 @@ public class templateMatching {
 	}
 
 	/**
-	 * パターン検出処理
-	 * @param srcMat
-	 * @param dstMat
-	 * @return
+	 *  パターン検出処理
+	 * @param areaMat 8UC1
+	 * @param dstMat  8UC3
+	 * @return  true:合格  false:不合格
 	 */
-	public boolean detectPattern(Mat arg_srcMat, Mat dstMat) {
-		//if( tmpara == null) return false;
-		/*
-		 * dstMat 結果が書き込まれる
-		 */
+	public boolean detectPattern(Mat areaMat, Mat dstMat) {
+
 		boolean resultFlg = true;
 		TMpara ctmpara = tmpara.clone();//毎回引数からクローンする
 
 		for(int n=0;n<ctmpara.arrayCnt;n++) {
 			if( ctmpara.ptmEnable[n] ) {
-				Mat areaMat = arg_srcMat.clone();//毎回引数からクローンする
-				
+
 				//エリア画像と登録画像を縮小
 				Imgproc.resize(areaMat, areaMat, new Size(),
 						1/ctmpara.scale[n],1/ctmpara.scale[n],Imgproc.INTER_AREA );
-				Imgproc.resize(ctmpara.ptnMat[n],ctmpara.ptnMat[n], new Size(),
+				Imgproc.resize(ctmpara.paternMat[n],ctmpara.paternMat[n], new Size(),
 						1/ctmpara.scale[n],1/ctmpara.scale[n],Imgproc.INTER_AREA );
 
 				//比較結果を格納するMatを生成
@@ -88,17 +84,20 @@ public class templateMatching {
 				boolean flg2;
 				double rt;
 				List<Point> finedPoint = new ArrayList<>();
-				if( roi.width() > ctmpara.ptnMat[n].width() && roi.height() > ctmpara.ptnMat[n].height() ) {
+				if( roi.width() > ctmpara.paternMat[n].width() && roi.height() > ctmpara.paternMat[n].height() ) {
 
-			    	Mat result = new Mat(roi.rows() - ctmpara.ptnMat[n].rows() + 1, roi.cols() - ctmpara.ptnMat[n].cols() + 1, CvType.CV_32FC1);
-				    	//テンプレートマッチ実行（TM_CCOEFF_NORMED：相関係数＋正規化）
-			    	Imgproc.matchTemplate(roi, ctmpara.ptnMat[n], result, Imgproc.TM_CCOEFF_NORMED);
+			    	Mat result = new Mat(roi.rows() - ctmpara.paternMat[n].rows() + 1, roi.cols() - ctmpara.paternMat[n].cols() + 1, CvType.CV_32FC1);
+				    //テンプレートマッチ実行（TM_CCOEFF_NORMED：相関係数＋正規化）
+			    	if(ctmpara.paternMat[n].type() == CvType.CV_8UC3) {
+			        	Imgproc.cvtColor(ctmpara.paternMat[n], ctmpara.paternMat[n], Imgproc.COLOR_BGR2GRAY);//グレースケール化
+			    	}
+			    	Imgproc.matchTemplate(roi, ctmpara.paternMat[n], result, Imgproc.TM_CCOEFF_NORMED);
 			    	//結果から相関係数がしきい値以下を削除（０にする）
 			    	Imgproc.threshold(result, result,ctmpara.thresh[n],1.0, Imgproc.THRESH_TOZERO);
 
 
-			    	int tmpPtWidth =  ctmpara.ptnMat[n].width()/2;//テンプレート画像の1/2近傍チェック用
-			    	int tmpPtHeight = ctmpara.ptnMat[n].height()/2;
+			    	int tmpPtWidth =  ctmpara.paternMat[n].width()/2;//テンプレート画像の1/2近傍チェック用
+			    	int tmpPtHeight = ctmpara.paternMat[n].height()/2;
 			    	for (int i=0;i<result.rows();i++) {
 			    		for (int j=0;j<result.cols();j++) {
 			    			rt = result.get(i, j)[0];
@@ -117,13 +116,13 @@ public class templateMatching {
 			    						resultValue[n].cnt++;
 			    						finedPoint.add(new Point(j,i));
 			    	    		    	Imgproc.rectangle(orgroi,new Point(j*ctmpara.scale[n],i*ctmpara.scale[n]),
-			    	    		    			new Point((j+ctmpara.ptnMat[n].width())*ctmpara.scale[n],(i+ctmpara.ptnMat[n].height())*ctmpara.scale[n]),
+			    	    		    			new Point((j+ctmpara.paternMat[n].width())*ctmpara.scale[n],(i+ctmpara.paternMat[n].height())*ctmpara.scale[n]),
 			    	    		    			new Scalar(0,255,255),3);
 										Imgproc.putText(orgroi,
 												String.format("%.3f", rt),
 												new Point(j*ctmpara.scale[n],i*ctmpara.scale[n]),
 												Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),2);
-			    	    		    	j = (int) (j + ctmpara.ptnMat[n].cols() + tmpPtWidth);
+			    	    		    	j = (int) (j + ctmpara.paternMat[n].cols() + tmpPtWidth);
 			    	    		    	resultValue[n].detectMax = resultValue[n].detectMax<rt?rt:resultValue[n].detectMax;
 			    	    		    	resultValue[n].detectMin = resultValue[n].detectMin>rt?rt:resultValue[n].detectMin;
 			    	    		    	resultValue[n].detectAve += rt;
@@ -133,13 +132,13 @@ public class templateMatching {
 			    					resultValue[n].cnt++;
 									finedPoint.add(new Point(j,i));
 				    		    	Imgproc.rectangle(orgroi,new Point(j*ctmpara.scale[n],i*ctmpara.scale[n]),
-				    		    			new Point((j+ctmpara.ptnMat[n].width())*ctmpara.scale[n],(i+ctmpara.ptnMat[n].height())*ctmpara.scale[n]),
+				    		    			new Point((j+ctmpara.paternMat[n].width())*ctmpara.scale[n],(i+ctmpara.paternMat[n].height())*ctmpara.scale[n]),
 				    		    			new Scalar(0,255,255),3);
 									Imgproc.putText(orgroi,
 											String.format("%.3f", rt),
 											new Point(j*ctmpara.scale[n],i*ctmpara.scale[n]),
 											Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),2);
-				    		    	j = (int) (j + ctmpara.ptnMat[n].cols() + tmpPtWidth);
+				    		    	j = (int) (j + ctmpara.paternMat[n].cols() + tmpPtWidth);
 				    		    	resultValue[n].detectMax = resultValue[n].detectMax<rt?rt:resultValue[n].detectMax;
 				    		    	resultValue[n].detectMin = resultValue[n].detectMin>rt?rt:resultValue[n].detectMin;
 				    		    	resultValue[n].detectAve += rt;

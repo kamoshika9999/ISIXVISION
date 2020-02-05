@@ -8,7 +8,7 @@ public class TMpara implements Cloneable{
 	public int arrayCnt = 4;
 	public int[] matchCnt;
 	public double[] thresh;
-	public Mat[] ptnMat;//パターンマッチングの登録Mat
+	public Mat[] paternMat;//パターンマッチングの登録Mat
 	public boolean[] ptmEnable;//パターンマッチング有効無効フラグ
 	public int[] ptmDetectCnt;
 	public Rectangle[] detectionRects;//パターンマッチング検出エリア
@@ -17,7 +17,7 @@ public class TMpara implements Cloneable{
 	public TMpara() {
 		matchCnt = new int[arrayCnt];
 		thresh = new double[arrayCnt];
-		ptnMat = new Mat[arrayCnt];
+		paternMat = new Mat[arrayCnt];
 		ptmEnable = new boolean[arrayCnt];
 		ptmDetectCnt = new int[arrayCnt];
 		detectionRects = new Rectangle[arrayCnt];
@@ -29,7 +29,7 @@ public class TMpara implements Cloneable{
 
 		matchCnt = new int[arrayCnt];
 		thresh = new double[arrayCnt];
-		ptnMat = new Mat[arrayCnt];
+		paternMat = new Mat[arrayCnt];
 		ptmEnable = new boolean[arrayCnt];
 		ptmDetectCnt = new int[arrayCnt];
 		detectionRects = new Rectangle[arrayCnt];
@@ -37,11 +37,10 @@ public class TMpara implements Cloneable{
 	}
     @Override
     public TMpara clone() { //基本的にはpublic修飾子を付け、自分自身の型を返り値とする
-    	TMpara b=null;
+    	TMpara b = new TMpara();
 
         /*ObjectクラスのcloneメソッドはCloneNotSupportedExceptionを投げる可能性があるので、try-catch文で記述(呼び出し元に投げても良い)*/
         try {
-            b=(TMpara)super.clone(); //親クラスのcloneメソッドを呼び出す(親クラスの型で返ってくるので、自分自身の型でのキャストを忘れないようにする)
 
             b.matchCnt = this.matchCnt;
             b.thresh = this.thresh;
@@ -50,7 +49,7 @@ public class TMpara implements Cloneable{
             b.scale = this.scale;
 
             for(int i=0;i<this.arrayCnt;i++ ) {
-                b.ptnMat[i] = (Mat)this.ptnMat[i].clone();
+                b.paternMat[i] = (Mat)this.paternMat[i].clone();
                 b.detectionRects[i] = (Rectangle)this.detectionRects[i].clone();
 
             }

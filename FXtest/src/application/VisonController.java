@@ -2034,7 +2034,7 @@ public class VisonController{
         for(int i=0;i<tmpara.arrayCnt;i++) {
         	tmpara.matchCnt[i] = para.matchCnt[i];
         	tmpara.thresh[i] = para.matchThreshValue[i];
-        	tmpara.ptnMat[i] = ptmImgMat[pObj.select][i];
+        	tmpara.paternMat[i] = ptmImgMat[pObj.select][i];
         	tmpara.ptmEnable[i] = para.ptmEnable[i];
         	tmpara.detectionRects[i] = para.para_rectsDetection[i];
         	tmpara.scale[i] = para.detectionScale[i];
@@ -2051,10 +2051,10 @@ public class VisonController{
     	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/ptm"+String.format("_%d_%d", i,j)+".jpeg");
     	    	if( tmpMat.width() > 0 ) {
     	    		 ptmImgMat[i][j] = new Mat();
-    	    		 Imgproc.cvtColor(tmpMat, ptmImgMat[i][j], Imgproc.COLOR_BGR2GRAY);
+    	    		 ptmImgMat[i][j] = tmpMat.clone();
 
     	    	}else {
-    	    		ptmImgMat[i][j] = new Mat(1,1,CvType.CV_8U);
+    	    		ptmImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3);
     	    	}
 
     		}
@@ -2330,7 +2330,7 @@ public class VisonController{
 
 		PtmView.arg_detectionScale = para.detectionScale[selectBtn];//検出倍率の逆数
 
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("PtmView.fxml"));
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("ptmView.fxml"));
 		AnchorPane root = null;
 		try {
 			root = (AnchorPane) loader.load();

@@ -181,7 +181,7 @@ public class PtmView {
     	}
 
     	tmpara.thresh[0] = threshholdSlider.getValue();
-    	tmpara.ptnMat[0] = tmp_ptmMat;
+    	tmpara.paternMat[0] = tmp_ptmMat.clone();
     	tmpara.ptmEnable[0] = true;
     	tmpara.detectionRects[0] = tmp_rectsDetection;
     	tmpara.scale[0] = scaleSlider.getValue();
@@ -438,10 +438,12 @@ public class PtmView {
     			ptmMainView.getFitWidth() /viewOrgZoom,
     			ptmMainView.getFitHeight() /viewOrgZoom);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
+    	
     	Rectangle2D vRect2 = new Rectangle2D( minX / scaleSlider.getValue(),minY / scaleSlider.getValue(),
-    			ptmMainView.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
-    			ptmMainView.getFitHeight() /viewOrgZoom /scaleSlider.getValue());
+    			ptmMainViewDst.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
+    			ptmMainViewDst.getFitHeight() /viewOrgZoom /scaleSlider.getValue());
     	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
+    	
     	Platform.runLater(() ->zoomLabel.setText(String.format("%.2f",viewOrgZoom)));
     	Platform.runLater(() ->this.scaleValue.setText(String.format("%.2f",scaleSlider.getValue())));
 
@@ -475,8 +477,8 @@ public class PtmView {
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
 
     	Rectangle2D vRect2 = new Rectangle2D( minX / scaleSlider.getValue(),minY / scaleSlider.getValue(),
-    			ptmMainView.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
-    			ptmMainView.getFitHeight() /viewOrgZoom /scaleSlider.getValue());
+    			ptmMainViewDst.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
+    			ptmMainViewDst.getFitHeight() /viewOrgZoom /scaleSlider.getValue());
     	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
 
     	Platform.runLater(() ->zoomValue_slider.setValue( viewOrgZoom));
@@ -558,9 +560,9 @@ public class PtmView {
 	
 		tm.tmpara.thresh[0] = this.ptmThreshSliderN.getValue();
 
-		Mat tmpMat = ptmSrcMat.clone();
+		Mat areaMat = ptmSrcMat.clone();
 		Mat orgMat = ptmSrcMat.clone();
-		Mat tmpMatPT = tm.tmpara.ptnMat[0];
+		Mat ptarnMat = tm.tmpara.paternMat[0];
 
 		Imgproc.rectangle(orgMat,
         		new Point(draggingRect.x,draggingRect.y),
@@ -575,8 +577,8 @@ public class PtmView {
 		}
 
 		//フィルタ処理
-    	Imgproc.cvtColor(tmpMat, tmpMat, Imgproc.COLOR_BGR2GRAY);//グレースケール化
-    	Imgproc.cvtColor(tmpMatPT, tmpMatPT, Imgproc.COLOR_BGR2GRAY);//グレースケール化
+    	Imgproc.cvtColor(areaMat, areaMat, Imgproc.COLOR_BGR2GRAY);//グレースケール化
+    	Imgproc.cvtColor(ptarnMat, ptarnMat, Imgproc.COLOR_BGR2GRAY);//グレースケール化
 
 
     	if( gauusianCheck.isSelected() ) {//ガウシアン
@@ -587,36 +589,36 @@ public class PtmView {
     			tmpValue++;
     		}
     		Size sz = new Size(tmpValue,tmpValue);
-    		Imgproc.GaussianBlur(tmpMat, tmpMat, sz, sigmaX,sigmaY);
-    		Imgproc.GaussianBlur(tmpMatPT, tmpMatPT, sz, sigmaX,sigmaY);
+    		Imgproc.GaussianBlur(areaMat, areaMat, sz, sigmaX,sigmaY);
+    		Imgproc.GaussianBlur(ptarnMat, ptarnMat, sz, sigmaX,sigmaY);
     	}
     	if( threshholdCheck.isSelected()) {//２値化
     		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
-    		Imgproc.threshold(tmpMat, tmpMat, this.threshholdSlider.getValue(),255,type);
-    		Imgproc.threshold(tmpMatPT, tmpMatPT, this.threshholdSlider.getValue(),255,type);
+    		Imgproc.threshold(areaMat, areaMat, this.threshholdSlider.getValue(),255,type);
+    		Imgproc.threshold(ptarnMat, ptarnMat, this.threshholdSlider.getValue(),255,type);
     	}
     	if( dilateCheck.isSelected() ) {//膨張
     		int n = (int)dilateSliderN.getValue();
-    		Imgproc.dilate(tmpMat, tmpMat, new Mat(),new Point(-1,-1),n);
-    		Imgproc.dilate(tmpMatPT, tmpMatPT, new Mat(),new Point(-1,-1),n);
+    		Imgproc.dilate(areaMat, areaMat, new Mat(),new Point(-1,-1),n);
+    		Imgproc.dilate(ptarnMat, ptarnMat, new Mat(),new Point(-1,-1),n);
     	}
     	if( erodeCheck.isSelected() ) {//収縮
     		int n = (int)this.erodeSliderN.getValue();
-    		Imgproc.erode(tmpMat, tmpMat, new Mat(),new Point(-1,-1),n);
-    		Imgproc.erode(tmpMatPT, tmpMatPT, new Mat(),new Point(-1,-1),n);
+    		Imgproc.erode(areaMat, areaMat, new Mat(),new Point(-1,-1),n);
+    		Imgproc.erode(ptarnMat, ptarnMat, new Mat(),new Point(-1,-1),n);
 
     	}
     	if( cannyCheck.isSelected() ) {//Canny
     		double thresh1 = cannyThresh1.getValue();
     		double thresh2 = cannyThresh2.getValue();
-    		Imgproc.Canny(tmpMat,tmpMat,thresh1,thresh2);
-    		Imgproc.Canny(tmpMatPT,tmpMatPT,thresh1,thresh2);
+    		Imgproc.Canny(areaMat,areaMat,thresh1,thresh2);
+    		Imgproc.Canny(ptarnMat,ptarnMat,thresh1,thresh2);
     	}
 
     	if( !dragingFlg ) {
 
     		//テンプレート画像
-    		ptnMat[0] = tmpMatPT;
+    		ptnMat[0] = ptarnMat;
     		//検出エリア
     		rect[0] = new Rectangle(
     				tmp_rectsDetection.x,tmp_rectsDetection.y,
@@ -625,7 +627,7 @@ public class PtmView {
     		threshhold[0] = ptmThreshSliderN.getValue();
 
     		//テンプレートマッチング
-    		boolean flg = tm.detectPattern(tmpMat,orgMat);//実行し結果を表示用Matに上書き
+    		boolean flg = tm.detectPattern(areaMat,orgMat);//実行し結果を表示用Matに上書き
 
 	    	final int tmp_cnt = tm.resultValue[0].cnt;
 	    	final double tmp_detectMax = tm.resultValue[0].detectMax;
@@ -640,8 +642,8 @@ public class PtmView {
 
 
 		updateImageView(ptmMainView,Utils.mat2Image(orgMat));
-		updateImageView(ptmMainViewDst,Utils.mat2Image(tmpMat));
-		updateImageView(ptmSubViewDst,Utils.mat2Image(tmpMatPT));
+		updateImageView(ptmMainViewDst,Utils.mat2Image(areaMat));
+		updateImageView(ptmSubViewDst,Utils.mat2Image(ptarnMat));
 
 	}
 
