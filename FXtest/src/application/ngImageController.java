@@ -38,7 +38,7 @@ public class ngImageController {
     private Label info1;
     @FXML
     private Button useImgSettingBtn;
-    
+
 
     @FXML
     void onClose(ActionEvent event) {
@@ -87,7 +87,7 @@ public class ngImageController {
 
         //NGイメージの保存先 ./ng_image
         files = FileClass.getFiles(new File("./ng_image"));
-        if( files.length == 0 ) {
+        if( files == null ) {
         	return;
         }
 

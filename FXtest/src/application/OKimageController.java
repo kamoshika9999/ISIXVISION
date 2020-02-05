@@ -91,7 +91,7 @@ public class OKimageController {
 
         //NGイメージの保存先 ./ng_image
         files = FileClass.getFiles(new File("./ok_image"));
-        if( files.length == 0 ) {
+        if( files == null ) {
         	return;
         }
 

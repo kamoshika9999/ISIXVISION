@@ -183,7 +183,7 @@ public class PtmView {
     	tmpara.thresh[0] = threshholdSlider.getValue();
     	tmpara.ptnMat[0] = tmp_ptmMat;
     	tmpara.ptmEnable[0] = true;
-    	tmpara.para_rectsDetection[0] = tmp_rectsDetection;
+    	tmpara.detectionRects[0] = tmp_rectsDetection;
     	tmpara.scale[0] = scaleSlider.getValue();
 
         tm = new templateMatching(tmpara);
@@ -555,7 +555,7 @@ public class PtmView {
 
 	private void rePaint() {
 		patternMatchParaSet();
-		
+	
 		tm.tmpara.thresh[0] = this.ptmThreshSliderN.getValue();
 
 		Mat tmpMat = ptmSrcMat.clone();

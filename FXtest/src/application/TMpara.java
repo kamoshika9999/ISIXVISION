@@ -11,7 +11,7 @@ public class TMpara implements Cloneable{
 	public Mat[] ptnMat;//パターンマッチングの登録Mat
 	public boolean[] ptmEnable;//パターンマッチング有効無効フラグ
 	public int[] ptmDetectCnt;
-	public Rectangle[] para_rectsDetection;//パターンマッチング検出エリア
+	public Rectangle[] detectionRects;//パターンマッチング検出エリア
 	public double[] scale;//パターンマッチングの検出に使用するスケール倍率の逆数
 
 	public TMpara() {
@@ -20,7 +20,7 @@ public class TMpara implements Cloneable{
 		ptnMat = new Mat[arrayCnt];
 		ptmEnable = new boolean[arrayCnt];
 		ptmDetectCnt = new int[arrayCnt];
-		para_rectsDetection = new Rectangle[arrayCnt];
+		detectionRects = new Rectangle[arrayCnt];
 		scale = new double[arrayCnt];
 	}
 
@@ -32,7 +32,7 @@ public class TMpara implements Cloneable{
 		ptnMat = new Mat[arrayCnt];
 		ptmEnable = new boolean[arrayCnt];
 		ptmDetectCnt = new int[arrayCnt];
-		para_rectsDetection = new Rectangle[arrayCnt];
+		detectionRects = new Rectangle[arrayCnt];
 		scale = new double[arrayCnt];
 	}
     @Override
@@ -51,7 +51,7 @@ public class TMpara implements Cloneable{
 
             for(int i=0;i<this.arrayCnt;i++ ) {
                 b.ptnMat[i] = (Mat)this.ptnMat[i].clone();
-                b.para_rectsDetection[i] = (Rectangle)this.para_rectsDetection[i].clone();
+                b.detectionRects[i] = (Rectangle)this.detectionRects[i].clone();
 
             }
 

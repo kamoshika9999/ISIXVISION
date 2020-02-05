@@ -704,6 +704,8 @@ public class VisonController{
 				    				framCnt=0;
 				    			}
 				    			source_video.read(srcMat);
+
+
 				    			if( srcMat == null) {
 				    				Platform.runLater( () ->info2.appendText(( "demo動画が再生できません\n")));
 				    			}else {
@@ -830,8 +832,11 @@ public class VisonController{
 				Platform.runLater( () ->info2.appendText("Exception during the image elaboration: " + e +"\n"));
 			}
 		}
-		if( cameraCalibFlg )
-			Calib3d.undistort(frame, frame, cameraMatrix, distortionCoefficients);
+		if( cameraCalibFlg ) {
+			Mat dstframe = new Mat();
+			Calib3d.undistort(frame, dstframe, cameraMatrix, distortionCoefficients);
+			return dstframe;
+		}
 		return frame;
 	}
 
@@ -1008,8 +1013,11 @@ public class VisonController{
 	    	parameter para = pObj.para[pObj.select];
 	    	Mat	orgMat = srcMat.clone();//srcMatは不変にしておく
 	    	Mat saveSrcMat = srcMat.clone();
+
 	    	glayMat = new Mat();
 	    	Imgproc.cvtColor(orgMat, glayMat, Imgproc.COLOR_BGR2GRAY);
+	    	Mat ptnAreaMat = glayMat.clone();
+
 	    	Mat tmp0Mat = glayMat.clone();
 			if( settingMode.isSelected()) {
 		    	Mat tmp1Mat = glayMat.clone();
@@ -1323,11 +1331,12 @@ public class VisonController{
 	        }
 
 	        //パターンマッチング
-	        tm.detectPattern(srcMat,orgMat);
+	        boolean tmFlg = tm.detectPattern(ptnAreaMat,orgMat);
+	        //boolean tmFlg = true;
 
 	        //最終判定
 	        if( !saveImgUseFlg && !settingModeFlg) {
-		        if(hanteCnt==4) {
+		        if(hanteCnt==4 && tmFlg ) {
 		        	Platform.runLater( () ->judg.setText("OK"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
 		        	//画像保存
@@ -1670,9 +1679,6 @@ public class VisonController{
 
     }
 
-    private Rectangle rectToRectangle(Rect rect) {
-    	return new Rectangle(rect.x,rect.y,rect.width,rect.height);
-    }
 
     private void setPara(int i) {
     	parameter para = pObj.para[pObj.select];
@@ -2030,7 +2036,7 @@ public class VisonController{
         	tmpara.thresh[i] = para.matchThreshValue[i];
         	tmpara.ptnMat[i] = ptmImgMat[pObj.select][i];
         	tmpara.ptmEnable[i] = para.ptmEnable[i];
-        	tmpara.para_rectsDetection[i] = para.para_rectsDetection[i];
+        	tmpara.detectionRects[i] = para.para_rectsDetection[i];
         	tmpara.scale[i] = para.detectionScale[i];
         }
         tm = new templateMatching(tmpara);
@@ -2044,7 +2050,9 @@ public class VisonController{
     		for( int j=0;j<4;j++) {
     	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/ptm"+String.format("_%d_%d", i,j)+".jpeg");
     	    	if( tmpMat.width() > 0 ) {
-    	    		ptmImgMat[i][j] = tmpMat;
+    	    		 ptmImgMat[i][j] = new Mat();
+    	    		 Imgproc.cvtColor(tmpMat, ptmImgMat[i][j], Imgproc.COLOR_BGR2GRAY);
+
     	    	}else {
     	    		ptmImgMat[i][j] = new Mat(1,1,CvType.CV_8U);
     	    	}
@@ -2210,7 +2218,6 @@ public class VisonController{
 		}
     	Platform.runLater(() ->info2.appendText("キャリブレーションデーター削除\n"));
     }
-
 
     /**
      * カメラキャリブレーション実行
