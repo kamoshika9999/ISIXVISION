@@ -37,11 +37,10 @@ public class TMpara implements Cloneable{
 	}
     @Override
     public TMpara clone() { //基本的にはpublic修飾子を付け、自分自身の型を返り値とする
-    	TMpara b = new TMpara();
+    	TMpara b = new TMpara(this.arrayCnt);
 
         /*ObjectクラスのcloneメソッドはCloneNotSupportedExceptionを投げる可能性があるので、try-catch文で記述(呼び出し元に投げても良い)*/
         try {
-
             b.matchCnt = this.matchCnt;
             b.thresh = this.thresh;
             b.ptmEnable = this.ptmEnable;

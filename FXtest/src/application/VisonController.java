@@ -2416,6 +2416,14 @@ public class VisonController{
     }
 
     @FXML
+    void onPtmEnabeChk(MouseEvent event) {
+    	tm.tmpara.ptmEnable[0] = this.ptm_pt1_enable.isSelected();
+    	tm.tmpara.ptmEnable[1] = this.ptm_pt2_enable.isSelected();
+    	tm.tmpara.ptmEnable[2] = this.ptm_pt3_enable.isSelected();
+    	tm.tmpara.ptmEnable[3] = this.ptm_pt4_enable.isSelected();
+    }
+
+    @FXML
     void initialize() {
         assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert getInfoBtn != null : "fx:id=\"getInfoBtn\" was not injected: check your FXML file 'Sample2.fxml'.";

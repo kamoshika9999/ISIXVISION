@@ -47,13 +47,14 @@ public class templateMatching {
 	 * @param dstMat  8UC3
 	 * @return  true:合格  false:不合格
 	 */
-	public boolean detectPattern(Mat areaMat, Mat dstMat) {
+	public boolean detectPattern(Mat arg_areaMat, Mat dstMat) {
 
 		boolean resultFlg = true;
 		TMpara ctmpara = tmpara.clone();//毎回引数からクローンする
 
 		for(int n=0;n<ctmpara.arrayCnt;n++) {
 			if( ctmpara.ptmEnable[n] ) {
+				Mat areaMat = arg_areaMat.clone();
 
 				//エリア画像と登録画像を縮小
 				Imgproc.resize(areaMat, areaMat, new Size(),

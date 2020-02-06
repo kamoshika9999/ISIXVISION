@@ -263,10 +263,10 @@
                         <Button fx:id="ptm_set_para2" layoutX="169.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
                         <Button fx:id="ptm_set_para3" layoutX="345.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
                         <Button fx:id="ptm_set_para4" layoutX="515.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <CheckBox fx:id="ptm_pt1_enable" layoutX="14.0" layoutY="231.0" mnemonicParsing="false" text="有効化" />
-                        <CheckBox fx:id="ptm_pt2_enable" layoutX="173.0" layoutY="231.0" mnemonicParsing="false" text="有効化" />
-                        <CheckBox fx:id="ptm_pt3_enable" layoutX="346.0" layoutY="231.0" mnemonicParsing="false" text="有効化" />
-                        <CheckBox fx:id="ptm_pt4_enable" layoutX="519.0" layoutY="231.0" mnemonicParsing="false" text="有効化" />
+                        <CheckBox fx:id="ptm_pt1_enable" layoutX="14.0" layoutY="231.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <CheckBox fx:id="ptm_pt2_enable" layoutX="173.0" layoutY="231.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <CheckBox fx:id="ptm_pt3_enable" layoutX="346.0" layoutY="231.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <CheckBox fx:id="ptm_pt4_enable" layoutX="519.0" layoutY="231.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
                      </children></AnchorPane>
             </content>
           </TitledPane>
