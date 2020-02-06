@@ -169,7 +169,7 @@ public class PtmView {
     private Slider scaleSlider;
     @FXML
     private Label scaleValue;
-	private templateMatching tm;
+	private templateMatching templateMatchingInstance;
 
     private void patternMatchParaSet() {
     	TMpara tmpara = new TMpara( 1 );
@@ -186,7 +186,7 @@ public class PtmView {
     	tmpara.detectionRects[0] = tmp_rectsDetection;
     	tmpara.scale[0] = scaleSlider.getValue();
 
-        tm = new templateMatching(tmpara);
+        templateMatchingInstance = new templateMatching(tmpara);
     }
 
     @FXML
@@ -247,12 +247,17 @@ public class PtmView {
 
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
-
+    	/*
     	Rectangle2D vRect2 = new Rectangle2D(
     			xMin / scaleSlider.getValue(),
     			yMin / scaleSlider.getValue(),
     			width / scaleSlider.getValue(),
     			height / scaleSlider.getValue());
+    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
+    	*/
+    	Rectangle2D vRect2 = new Rectangle2D( xMin / scaleSlider.getValue(),yMin / scaleSlider.getValue(),
+    			ptmMainViewDst.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
+    			ptmMainViewDst.getFitHeight() /viewOrgZoom /scaleSlider.getValue());
     	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
 	}
 
@@ -306,12 +311,17 @@ public class PtmView {
 
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
-
+    	/*
     	Rectangle2D vRect2 = new Rectangle2D(
     			xMin / scaleSlider.getValue(),
     			yMin / scaleSlider.getValue(),
     			width / scaleSlider.getValue(),
     			height / scaleSlider.getValue());
+    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
+    	*/
+    	Rectangle2D vRect2 = new Rectangle2D( xMin / scaleSlider.getValue(),yMin / scaleSlider.getValue(),
+    			ptmMainViewDst.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
+    			ptmMainViewDst.getFitHeight() /viewOrgZoom /scaleSlider.getValue());
     	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
     }
 
@@ -438,12 +448,12 @@ public class PtmView {
     			ptmMainView.getFitWidth() /viewOrgZoom,
     			ptmMainView.getFitHeight() /viewOrgZoom);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
-    	
+
     	Rectangle2D vRect2 = new Rectangle2D( minX / scaleSlider.getValue(),minY / scaleSlider.getValue(),
     			ptmMainViewDst.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
     			ptmMainViewDst.getFitHeight() /viewOrgZoom /scaleSlider.getValue());
     	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
-    	
+
     	Platform.runLater(() ->zoomLabel.setText(String.format("%.2f",viewOrgZoom)));
     	Platform.runLater(() ->this.scaleValue.setText(String.format("%.2f",scaleSlider.getValue())));
 
@@ -473,7 +483,6 @@ public class PtmView {
     	vRect = new Rectangle2D( minX,minY,
     			ptmMainView.getFitWidth() /viewOrgZoom,
     			ptmMainView.getFitHeight() /viewOrgZoom);
-
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
 
     	Rectangle2D vRect2 = new Rectangle2D( minX / scaleSlider.getValue(),minY / scaleSlider.getValue(),
@@ -557,12 +566,12 @@ public class PtmView {
 
 	private void rePaint() {
 		patternMatchParaSet();
-	
-		tm.tmpara.thresh[0] = this.ptmThreshSliderN.getValue();
+
+		templateMatchingInstance.tmpara.thresh[0] = this.ptmThreshSliderN.getValue();
 
 		Mat areaMat = ptmSrcMat.clone();
 		Mat orgMat = ptmSrcMat.clone();
-		Mat ptarnMat = tm.tmpara.paternMat[0];
+		Mat ptarnMat = templateMatchingInstance.tmpara.paternMat[0];//登録パターンMatの参照を入れる
 
 		Imgproc.rectangle(orgMat,
         		new Point(draggingRect.x,draggingRect.y),
@@ -627,12 +636,13 @@ public class PtmView {
     		threshhold[0] = ptmThreshSliderN.getValue();
 
     		//テンプレートマッチング
-    		boolean flg = tm.detectPattern(areaMat,orgMat);//実行し結果を表示用Matに上書き
+    		boolean flg = templateMatchingInstance.detectPattern(areaMat,orgMat,true);//実行し結果を表示用Matに上書き
 
-	    	final int tmp_cnt = tm.resultValue[0].cnt;
-	    	final double tmp_detectMax = tm.resultValue[0].detectMax;
-	    	final double tmp_detectMin = tm.resultValue[0].detectMin;
-	    	final double tmp_detectAve = tm.resultValue[0].detectAve;
+
+	    	final int tmp_cnt = templateMatchingInstance.resultValue[0].cnt;
+	    	final double tmp_detectMax = templateMatchingInstance.resultValue[0].detectMax;
+	    	final double tmp_detectMin = templateMatchingInstance.resultValue[0].detectMin;
+	    	final double tmp_detectAve = templateMatchingInstance.resultValue[0].detectAve;
 	    	Platform.runLater(() ->detectCntLabel.setText(String.valueOf(tmp_cnt)));
 	    	Platform.runLater(() ->detectRationMax.setText(String.format("%.3f",tmp_detectMax)));
 	    	Platform.runLater(() ->detectRationMin.setText(String.format("%.3f",tmp_detectMin)));
@@ -752,6 +762,13 @@ public class PtmView {
         }
 
         setSlider();
+
+        try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+        rePaint();
 
     }
 }

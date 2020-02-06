@@ -75,6 +75,7 @@ public class VisonController{
 	int allSaveCnt = 0;
 
 	public static Mat srcMat = new Mat();//保存画像を使用した設定に使用する為publicにしておく
+	Mat dstframe = new Mat();//srcMatをカメラキャリブレーションデーターから変換したオブジェクトが入る
 	private Mat glayMat;
     List<Rectangle> rects;
     Rectangle draggingRect;
@@ -833,7 +834,6 @@ public class VisonController{
 			}
 		}
 		if( cameraCalibFlg ) {
-			Mat dstframe = new Mat();
 			Calib3d.undistort(frame, dstframe, cameraMatrix, distortionCoefficients);
 			return dstframe;
 		}
@@ -1330,13 +1330,13 @@ public class VisonController{
 
 	        }
 
-	        //パターンマッチング
-	        boolean tmFlg = tm.detectPattern(ptnAreaMat,orgMat);
-	        //boolean tmFlg = true;
 
 	        //最終判定
 	        if( !saveImgUseFlg && !settingModeFlg) {
-		        if(hanteCnt==4 && tmFlg ) {
+		        //パターンマッチング
+		        boolean tmFlg = tm.detectPattern(ptnAreaMat,orgMat,false);
+
+	        	if(hanteCnt==4 && tmFlg ) {
 		        	Platform.runLater( () ->judg.setText("OK"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
 		        	//画像保存
@@ -2605,6 +2605,7 @@ public class VisonController{
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+
         onAllClear(null);
 
 

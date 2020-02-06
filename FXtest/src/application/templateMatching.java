@@ -47,29 +47,39 @@ public class templateMatching {
 	 * @param dstMat  8UC3
 	 * @return  true:合格  false:不合格
 	 */
-	public boolean detectPattern(Mat arg_areaMat, Mat dstMat) {
+	public boolean detectPattern(Mat arg_areaMat, Mat dstMat,boolean settingFlg) {
 
 		boolean resultFlg = true;
-		TMpara ctmpara = tmpara.clone();//毎回引数からクローンする
+		TMpara ctmpara;
+		if( !settingFlg ) {
+			ctmpara = tmpara.clone();//毎回引数からクローンする
+		}else {
+			ctmpara = tmpara;
+		}
+		Mat areaMat;
 
 		for(int n=0;n<ctmpara.arrayCnt;n++) {
 			if( ctmpara.ptmEnable[n] ) {
-				Mat areaMat = arg_areaMat.clone();
+				if( !settingFlg) {
+					areaMat = arg_areaMat.clone();
+				}else {
+					areaMat = arg_areaMat;
+				}
 
-				//エリア画像と登録画像を縮小
-				Imgproc.resize(areaMat, areaMat, new Size(),
-						1/ctmpara.scale[n],1/ctmpara.scale[n],Imgproc.INTER_AREA );
-				Imgproc.resize(ctmpara.paternMat[n],ctmpara.paternMat[n], new Size(),
-						1/ctmpara.scale[n],1/ctmpara.scale[n],Imgproc.INTER_AREA );
 
-				//比較結果を格納するMatを生成
-				Mat orgroi = null;
-				orgroi = dstMat.submat(
+				//比較結果を格納するMatを生成 ※ctmpara.scale[n]適用前に生成
+				Mat orgroi = dstMat.submat(
 						ctmpara.detectionRects[n].y,
 						ctmpara.detectionRects[n].y+ctmpara.detectionRects[n].height,
 						ctmpara.detectionRects[n].x,
 						ctmpara.detectionRects[n].x+ctmpara.detectionRects[n].width
-						);//ctmpara.scale[n]適用前に生成
+						);
+
+				//検出エリア画像と登録画像を縮小
+				Imgproc.resize(areaMat, areaMat, new Size(),
+						1/ctmpara.scale[n],1/ctmpara.scale[n],Imgproc.INTER_AREA );
+				Imgproc.resize(ctmpara.paternMat[n],ctmpara.paternMat[n], new Size(),
+						1/ctmpara.scale[n],1/ctmpara.scale[n],Imgproc.INTER_AREA );
 
 				ctmpara.detectionRects[n].x /= ctmpara.scale[n];
 				ctmpara.detectionRects[n].y /= ctmpara.scale[n];
