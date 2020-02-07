@@ -119,7 +119,7 @@ public class cameraCalibration {
 	}
 
 	public Point3 getPoint(int row, int col) {
-		final double REAL_HEIGHT = 4.0, REAL_WIDTH = 4.0;
+		final double REAL_HEIGHT = 4.0, REAL_WIDTH = 6.0;
 		return new Point3(col * REAL_WIDTH, row * REAL_HEIGHT, 0.0); // 多分x, y, zはこういう感じ。
 	}
 
