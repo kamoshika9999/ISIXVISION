@@ -752,13 +752,9 @@ public class VisonController{
 			Runnable triggerLoop = new Runnable() {
 				String rt = "-1";//nullを避ける為-1をいれておく
 				long debugCnt = 0;
-				String readIO ="";
-				long loopcnt = 0;
 
 				@Override
 				public void run() {
-					//if( loopcnt > 10000 ) loopcnt = 0;
-					//loopcnt++;
 
 					try {
 						//readIO ="nothing";
@@ -767,8 +763,6 @@ public class VisonController{
 							debugCnt++;
 						}
 						//オールクリア信号受信
-						//readIO ="clearSignal";
-						//System.out.println("GPIO useFlg="+Gpio.useFlg);
 						rt = Gpio.clearSignal();
 						if( rt == "1" ) {
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
@@ -1347,9 +1341,7 @@ public class VisonController{
 		        	Platform.runLater( () ->judg.setText("NG"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.RED));
 		        	//画像保存
-		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng &&
-		        			!outTrigDisableChk.isSelected()
-		        			&& !settingModeFlg) {
+		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( orgMat,fileString);
 		        	}else if( fileString != ""){
