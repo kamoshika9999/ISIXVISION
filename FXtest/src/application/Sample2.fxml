@@ -15,12 +15,13 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Line?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
 <AnchorPane fx:id="aPane" accessibleRole="TEXT_FIELD" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeypressed" pickOnBounds="false" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.VisonController">
    <children>
-      <ImageView fx:id="imgNG" fitHeight="293.0" fitWidth="430.0" layoutX="754.0" layoutY="400.0" pickOnBounds="true" preserveRatio="true" smooth="false">
+      <ImageView fx:id="imgNG" fitHeight="278.0" fitWidth="408.0" layoutX="776.0" layoutY="415.0" pickOnBounds="true" preserveRatio="true" smooth="false">
          <effect>
             <DropShadow color="#da0606" />
          </effect>
@@ -71,8 +72,8 @@
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Button fx:id="saveBtn" layoutX="13.0" layoutY="228.0" mnemonicParsing="false" onAction="#saveAllPara" text="SAVE" />
-                        <Button fx:id="loadBtn" layoutX="62.0" layoutY="228.0" mnemonicParsing="false" onAction="#loadAllPara" text="LOAD" />
+                        <Button fx:id="saveBtn" layoutX="19.0" layoutY="203.0" mnemonicParsing="false" onAction="#saveAllPara" text="SAVE" />
+                        <Button fx:id="loadBtn" layoutX="68.0" layoutY="203.0" mnemonicParsing="false" onAction="#loadAllPara" text="LOAD" />
                         <Button fx:id="triggerBtn" layoutX="95.0" layoutY="134.0" mnemonicParsing="false" onAction="#onTrigger" text="ManualTrigger">
                            <font>
                               <Font size="11.0" />
@@ -155,7 +156,7 @@
                         <Slider fx:id="threshholdSlider" layoutX="329.0" layoutY="155.0" majorTickUnit="50.0" max="255.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" value="128.0" />
                         <Label fx:id="threshholdLabel" layoutX="469.0" layoutY="153.0" text="Label" />
                         <CheckBox fx:id="threshhold_Inverse" layoutX="245.0" layoutY="173.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Inverse" />
-                        <Button fx:id="okuri1_btn" layoutX="16.0" layoutY="197.0" mnemonicParsing="false" onAction="#onSetValue" prefHeight="23.0" prefWidth="57.0" text="①送り穴">
+                        <Button fx:id="okuri1_btn" layoutX="16.0" layoutY="195.0" mnemonicParsing="false" onAction="#onSetValue" prefHeight="23.0" prefWidth="57.0" text="①送り穴">
                            <font>
                               <Font size="10.0" />
                            </font>
@@ -175,30 +176,26 @@
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Label fx:id="okuri1_label" layoutX="21.0" layoutY="217.0" prefHeight="23.0" prefWidth="48.0" text="Label" />
-                        <Button fx:id="setVeriBtn1" layoutX="16.0" layoutY="236.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
+                        <Button fx:id="setVeriBtn1" layoutX="16.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
                            <font>
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Label fx:id="okuri2_label" layoutX="84.0" layoutY="218.0" prefHeight="23.0" prefWidth="47.0" text="Label" />
-                        <Button fx:id="setVeriBtn2" layoutX="78.0" layoutY="237.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
+                        <Button fx:id="setVeriBtn2" layoutX="78.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
                            <font>
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Button fx:id="setVeriBtn3" layoutX="139.0" layoutY="238.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
+                        <Button fx:id="setVeriBtn3" layoutX="139.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
                            <font>
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Label fx:id="okuri3_label" layoutX="145.0" layoutY="218.0" prefHeight="23.0" prefWidth="48.0" text="Label" />
-                        <Button fx:id="setVeriBtn4" layoutX="200.0" layoutY="239.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
+                        <Button fx:id="setVeriBtn4" layoutX="200.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
                            <font>
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Label fx:id="okuri4_label" layoutX="206.0" layoutY="218.0" prefHeight="23.0" prefWidth="48.0" text="Label" />
                         <Button fx:id="preset1" layoutX="272.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="PreSet 1">
                            <font>
                               <Font size="11.0" />
@@ -255,21 +252,58 @@
                         <Button fx:id="ptm_set_pt2" layoutX="173.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン②登録" />
                         <Button fx:id="ptm_set_pt3" layoutX="346.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン③登録" />
                         <Button fx:id="ptm_set_pt4" layoutX="519.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン④登録" />
-                        <ImageView fx:id="ptm_img1" fitHeight="120.0" fitWidth="120.0" layoutX="14.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
-                        <ImageView fx:id="ptm_img2" fitHeight="120.0" fitWidth="120.0" layoutX="173.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
-                        <ImageView fx:id="ptm_img3" fitHeight="120.0" fitWidth="120.0" layoutX="346.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true" />
-                        <ImageView fx:id="ptm_img4" fitHeight="120.0" fitWidth="120.0" layoutX="504.0" layoutY="69.0" pickOnBounds="true" preserveRatio="true" />
-                        <Button fx:id="ptm_set_para1" layoutX="14.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <Button fx:id="ptm_set_para2" layoutX="169.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <Button fx:id="ptm_set_para3" layoutX="345.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <Button fx:id="ptm_set_para4" layoutX="515.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <CheckBox fx:id="ptm_pt1_enable" layoutX="14.0" layoutY="231.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
-                        <CheckBox fx:id="ptm_pt2_enable" layoutX="173.0" layoutY="231.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
-                        <CheckBox fx:id="ptm_pt3_enable" layoutX="346.0" layoutY="231.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
-                        <CheckBox fx:id="ptm_pt4_enable" layoutX="519.0" layoutY="231.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <ImageView fx:id="ptm_img1" fitHeight="90.0" fitWidth="90.0" layoutX="14.0" layoutY="60.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="ptm_img2" fitHeight="90.0" fitWidth="90.0" layoutX="173.0" layoutY="60.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="ptm_img3" fitHeight="90.0" fitWidth="90.0" layoutX="346.0" layoutY="60.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="ptm_img4" fitHeight="90.0" fitWidth="90.0" layoutX="504.0" layoutY="56.0" pickOnBounds="true" preserveRatio="true" />
+                        <Button fx:id="ptm_set_para1" layoutX="14.0" layoutY="166.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <Button fx:id="ptm_set_para2" layoutX="169.0" layoutY="166.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <Button fx:id="ptm_set_para3" layoutX="345.0" layoutY="166.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <Button fx:id="ptm_set_para4" layoutX="515.0" layoutY="166.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <CheckBox fx:id="ptm_pt1_enable" layoutX="14.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <CheckBox fx:id="ptm_pt2_enable" layoutX="173.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <CheckBox fx:id="ptm_pt3_enable" layoutX="346.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <CheckBox fx:id="ptm_pt4_enable" layoutX="519.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
                      </children></AnchorPane>
             </content>
           </TitledPane>
+            <TitledPane animated="false" text="Dimension measurement">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <ImageView fx:id="dim_okuriImg_1" fitHeight="90.0" fitWidth="90.0" layoutX="60.0" layoutY="31.0" pickOnBounds="true" preserveRatio="true" />
+                        <Button fx:id="dim_set_para1" layoutX="60.0" layoutY="122.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <CheckBox fx:id="dim_1_enable" layoutX="61.0" layoutY="156.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <ImageView fx:id="dim_poke_1" fitHeight="90.0" fitWidth="90.0" layoutX="165.0" layoutY="32.0" pickOnBounds="true" preserveRatio="true" />
+                        <Button fx:id="dim_set_para2" layoutX="165.0" layoutY="123.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <Label layoutX="72.0" layoutY="6.0" text="1列目 送り穴" />
+                        <Label layoutX="175.0" layoutY="6.0" text="1列目 ポケット" />
+                        <TextField fx:id="dim_offset_F_1" layoutX="114.0" layoutY="203.0" prefHeight="25.0" prefWidth="48.0" />
+                        <TextField fx:id="dim_offset_P2_1" layoutX="60.0" layoutY="203.0" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="22.0" layoutY="207.0" text="offset" />
+                        <Label layoutX="70.0" layoutY="184.0" text="P2" />
+                        <Label layoutX="131.0" layoutY="184.0" text="F" />
+                        <TextField fx:id="dim_offset_E_1" layoutX="167.0" layoutY="204.0" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="184.0" layoutY="185.0" text="E" />
+                        <Line endX="-101.0" endY="200.0" layoutX="373.0" layoutY="31.0" startX="-101.0" startY="-14.0" />
+                        <Label layoutX="292.0" layoutY="6.0" text="2列目 送り穴" />
+                        <Label layoutX="405.0" layoutY="6.0" text="2列目 ポケット" />
+                        <ImageView fx:id="dim_okuriImg_2" fitHeight="90.0" fitWidth="90.0" layoutX="292.0" layoutY="31.0" pickOnBounds="true" preserveRatio="true" />
+                        <Button fx:id="dim_set_para3" layoutX="292.0" layoutY="123.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <Button fx:id="dim_set_para4" layoutX="395.0" layoutY="122.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <ImageView fx:id="dim_poke_2" fitHeight="90.0" fitWidth="90.0" layoutX="395.0" layoutY="31.0" pickOnBounds="true" preserveRatio="true" />
+                        <CheckBox fx:id="dim_2_enable" layoutX="292.0" layoutY="157.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <TextField fx:id="dim_offset_F_2" layoutX="345.0" layoutY="204.0" prefHeight="25.0" prefWidth="48.0" />
+                        <TextField fx:id="dim_offset_P2_2" layoutX="291.0" layoutY="204.0" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="301.0" layoutY="185.0" text="P2" />
+                        <Label layoutX="362.0" layoutY="185.0" text="F" />
+                        <TextField fx:id="dim_offset_E_2" layoutX="398.0" layoutY="205.0" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="415.0" layoutY="186.0" text="E" />
+                        <Line endX="-101.0" endY="200.0" layoutX="597.0" layoutY="28.0" startX="-101.0" startY="-14.0" />
+                        <Button fx:id="dimSettingBtn" layoutX="512.0" layoutY="203.0" mnemonicParsing="false" onAction="#onDimSetting" text="設定" />
+                     </children></AnchorPane>
+              </content>
+            </TitledPane>
         </panes>
       </Accordion>
       <Label fx:id="info1" layoutX="124.0" prefHeight="38.0" prefWidth="459.0" text="infomation" wrapText="true" />
@@ -434,6 +468,14 @@
       <Button fx:id="shotImgBtn" layoutX="1097.0" layoutY="344.0" mnemonicParsing="false" onAction="#onShotImg" prefHeight="25.0" prefWidth="90.0" text="ショット撮影" />
       <CheckBox fx:id="imgSaveFlg_all" layoutX="743.0" layoutY="360.0" mnemonicParsing="false" text="OK SAVE" />
       <Button fx:id="OKImageBtn" layoutX="670.0" layoutY="350.0" mnemonicParsing="false" onAction="#onOKImageBtn" prefHeight="39.0" prefWidth="63.0" text="OK Image Viewer" wrapText="true">
+         <effect>
+            <DropShadow color="#3000f0" />
+         </effect>
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Button>
+      <Button fx:id="dimensionBtn" layoutX="670.0" layoutY="395.0" mnemonicParsing="false" onAction="#onDimensionBtn" prefHeight="39.0" prefWidth="63.0" text="Dimension Viewer" wrapText="true">
          <effect>
             <DropShadow color="#3000f0" />
          </effect>

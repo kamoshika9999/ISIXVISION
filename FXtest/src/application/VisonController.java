@@ -129,6 +129,7 @@ public class VisonController{
 	private boolean ptmSetStartFlg = false;
 	public Mat[][] ptmImgMat = new Mat[4][4];//[presetNo][ptm1～ptm4]
 	private TMpara tmpara = new TMpara();
+	private templateMatching tm;
 
 	//保存画像を使用した設定用
 	public static boolean saveImgUseFlg;//保存画像を使用した設定に使うフラグ   保存画像使用中はＰＬＣシャッタートリガ強制無効
@@ -411,7 +412,44 @@ public class VisonController{
     @FXML
     private Spinner<Integer> whiteRatioMinSp;
 
-	private templateMatching tm;
+    //寸法測定用
+    @FXML
+    private ImageView dim_okuriImg_1;
+    @FXML
+    private Button dim_set_para1;
+    @FXML
+    private CheckBox dim_1_enable;
+    @FXML
+    private ImageView dim_poke_1;
+    @FXML
+    private Button dim_set_para2;
+    @FXML
+    private TextField dim_offset_F_1;
+    @FXML
+    private TextField dim_offset_P2_1;
+    @FXML
+    private TextField dim_offset_E_1;
+    @FXML
+    private ImageView dim_okuriImg_2;
+    @FXML
+    private Button dim_set_para3;
+    @FXML
+    private Button dim_set_para4;
+    @FXML
+    private ImageView dim_poke_2;
+    @FXML
+    private CheckBox dim_2_enable;
+    @FXML
+    private TextField dim_offset_F_2;
+    @FXML
+    private TextField dim_offset_P2_2;
+    @FXML
+    private TextField dim_offset_E_2;
+    @FXML
+    private Button dimSettingBtn;
+    @FXML
+    private Button dimensionBtn;
+
 
 
 
@@ -986,7 +1024,7 @@ public class VisonController{
     		srcMat = saveImgMat.clone();
     		autoTrigger = false;
     	}
-    	//if( srcMat.width() < 1) return;
+    	if( srcMat.width() < 1) return;
     	try {
 	    	if( this.triggerCCircle.getFill() != Color.YELLOW) {
 	    		Platform.runLater( () ->this.triggerCCircle.setFill(Color.YELLOW));
@@ -1709,43 +1747,34 @@ public class VisonController{
 		if( !para.setFlg[0] ) {
 			Platform.runLater(() ->okuri1_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
 			Platform.runLater(() ->okuri1_btn.setTextFill( Color.BLACK));
-			Platform.runLater(() ->okuri1_label.setText("未設定"));
 			Platform.runLater(() ->okuri1_n.setText("-"));
 		}else {
 			Platform.runLater(() ->okuri1_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
 			Platform.runLater(() ->okuri1_btn.setTextFill( Color.WHITE));
-			Platform.runLater(() ->okuri1_label.setText("設定済"));
 		}
 		if(!para.setFlg[1] ){
 			Platform.runLater(() ->okuri2_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
 			Platform.runLater(() ->okuri2_btn.setTextFill( Color.BLACK));
-			Platform.runLater(() ->okuri2_label.setText("未設定"));
 			Platform.runLater(() ->okuri2_n.setText("-"));
 		}else {
 			Platform.runLater(() ->okuri2_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
 			Platform.runLater(() ->okuri2_btn.setTextFill( Color.WHITE));
-			Platform.runLater(() ->okuri2_label.setText("設定済"));
 		}
 		if(!para.setFlg[2]){
 			Platform.runLater(() ->okuri3_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
 			Platform.runLater(() ->okuri3_btn.setTextFill( Color.BLACK));
-			Platform.runLater(() ->okuri3_label.setText("未設定"));
 			Platform.runLater(() ->okuri3_n.setText("-"));
 		}else {
 			Platform.runLater(() ->okuri3_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
 			Platform.runLater(() ->okuri3_btn.setTextFill( Color.WHITE));
-			Platform.runLater(() ->okuri3_label.setText("設定済"));
 		}
 		if(!para.setFlg[3]){
 			Platform.runLater(() ->okuri4_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
 			Platform.runLater(() ->okuri4_btn.setTextFill( Color.BLACK));
-			Platform.runLater(() ->okuri4_label.setText("未設定"));
 			Platform.runLater(() ->okuri4_n.setText("-"));
 		}else {
 			Platform.runLater(() ->okuri4_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
 			Platform.runLater(() ->okuri4_btn.setTextFill( Color.WHITE));
-			Platform.runLater(() ->okuri4_label.setText("設定済"));
-
 		}
 
 		para.rects[4] = (Rectangle)draggingRect.clone();
@@ -2167,11 +2196,14 @@ public class VisonController{
         	saveImgUseFlg = false;
         	updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	}else {
-
+            //パターンマッチング用パラメータ設定
+        	patternMatchParaSet();
+        	
     		Platform.runLater(() ->this.accordion_1.setDisable(false));
         	settingModeFlg = true;
         	lockedTimer = System.currentTimeMillis();
         	Platform.runLater(() ->settingMode.setSelected(true));
+        	
     	}
     	eventTrigger = true;
     }
@@ -2421,6 +2453,28 @@ public class VisonController{
     	tm.tmpara.ptmEnable[3] = this.ptm_pt4_enable.isSelected();
     }
 
+    //寸法測定メソッド群
+    //登録パターンなどの詳細設定
+    @FXML
+    void onDimSetPara(ActionEvent event) {
+
+    }
+    //測定設定
+    @FXML
+    void onDimSetting(ActionEvent event) {
+
+    }
+    
+    /**
+     * グラフ表示
+     * @param event
+     */
+    @FXML
+    void onDimensionBtn(ActionEvent event) {
+
+    }
+    
+    
     @FXML
     void initialize() {
         assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'Sample2.fxml'.";
@@ -2551,6 +2605,24 @@ public class VisonController{
         assert blackRatioLabel != null : "fx:id=\"blackRatioLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert whiteRatioMaxSp != null : "fx:id=\"whiteRatioMaxSp\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert whiteRatioMinSp != null : "fx:id=\"whiteRatioMinSp\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dimensionBtn != null : "fx:id=\"dimensionBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_okuriImg_1 != null : "fx:id=\"dim_okuriImg_1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_set_para1 != null : "fx:id=\"dim_set_para1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_1_enable != null : "fx:id=\"dim_1_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_poke_1 != null : "fx:id=\"dim_poke_1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_set_para2 != null : "fx:id=\"dim_set_para2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_offset_F_1 != null : "fx:id=\"dim_offset_F_1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_offset_P2_1 != null : "fx:id=\"dim_offset_P2_1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_offset_E_1 != null : "fx:id=\"dim_offset_E_1\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_okuriImg_2 != null : "fx:id=\"dim_okuriImg_2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_set_para3 != null : "fx:id=\"dim_set_para3\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_set_para4 != null : "fx:id=\"dim_set_para4\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_poke_2 != null : "fx:id=\"dim_poke_2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_2_enable != null : "fx:id=\"dim_2_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_offset_F_2 != null : "fx:id=\"dim_offset_F_2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_offset_P2_2 != null : "fx:id=\"dim_offset_P2_2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dim_offset_E_2 != null : "fx:id=\"dim_offset_E_2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dimSettingBtn != null : "fx:id=\"dimSettingBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());
@@ -2571,6 +2643,7 @@ public class VisonController{
         updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
         updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	Platform.runLater(() ->info1.setText(""));
+
 
         accordion_1.expandedPaneProperty().addListener(new
                 ChangeListener<TitledPane>() {
