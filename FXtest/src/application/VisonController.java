@@ -76,7 +76,7 @@ public class VisonController{
 
 	public static Mat srcMat = new Mat();//保存画像を使用した設定に使用する為publicにしておく
 	Mat dstframe = new Mat();//srcMatをカメラキャリブレーションデーターから変換したオブジェクトが入る
-	private Mat glayMat;
+	private Mat mainViewGlayMat;
     List<Rectangle> rects;
     Rectangle draggingRect;
     volatile boolean dragging;
@@ -258,7 +258,7 @@ public class VisonController{
     @FXML
     private Slider gauusianSliderY;//sigmaY
     @FXML
-    private Slider gauusianSliderA;//アパーチャサイズ
+    private Slider gauusianSliderK;//アパーチャサイズ
     @FXML
     private CheckBox dilateCheck;
     @FXML
@@ -962,6 +962,8 @@ public class VisonController{
     	if( !settingModeFlg ) return;
         draggingRect.x = (int)(imgORG.getViewport().getMinX() + e.getX()/(zoom));
         draggingRect.y = (int)(imgORG.getViewport().getMinY() + e.getY()/(zoom));
+        draggingRect.width = 1;
+        draggingRect.height = 1;
         dragging = true;
 
         eventTrigger = true;
@@ -984,7 +986,7 @@ public class VisonController{
     		srcMat = saveImgMat.clone();
     		autoTrigger = false;
     	}
-    	if( srcMat.width() < 1) return;
+    	//if( srcMat.width() < 1) return;
     	try {
 	    	if( this.triggerCCircle.getFill() != Color.YELLOW) {
 	    		Platform.runLater( () ->this.triggerCCircle.setFill(Color.YELLOW));
@@ -997,56 +999,57 @@ public class VisonController{
 	    		fpsEnd = System.currentTimeMillis();
 
 	    		fps = fpsCnt/((fpsEnd - fpsFirst)/1000.0);
-	    		Platform.runLater( () ->fpsLabel.setText(String.format("FPS=%.1f", fps)));
+	    		Platform.runLater( () ->fpsLabel.setText(String.format("FPS=%.3f", fps)));
 
 	    		fpsFirst = System.currentTimeMillis();
 	    		fpsCnt=0;
 	    	}
 
-
 	    	parameter para = pObj.para[pObj.select];
-	    	Mat	orgMat = srcMat.clone();//srcMatは不変にしておく
+	    	Mat	mainViewMat = srcMat.clone();//srcMatは不変にしておく
 	    	Mat saveSrcMat = srcMat.clone();
 
-	    	glayMat = new Mat();
-	    	Imgproc.cvtColor(orgMat, glayMat, Imgproc.COLOR_BGR2GRAY);
-	    	Mat ptnAreaMat = glayMat.clone();
+	    	mainViewGlayMat = new Mat();
+	    	Imgproc.cvtColor(mainViewMat, mainViewGlayMat, Imgproc.COLOR_BGR2GRAY);
+	    	Mat ptnAreaMat = mainViewGlayMat.clone();
+	    	Mat tmp0Mat = mainViewGlayMat.clone();
 
-	    	Mat tmp0Mat = glayMat.clone();
-			if( settingMode.isSelected()) {
-		    	Mat tmp1Mat = glayMat.clone();
-		    	Mat tmp2Mat = glayMat.clone();
-		    	Mat tmp3Mat = glayMat.clone();
-		    	Mat fillterAftterMat = glayMat.clone();
-		    	int selFlg = 0;
+	    	if( settingMode.isSelected()) {
+		    	Mat tmp1Mat = mainViewGlayMat.clone();
+		    	Mat tmp2Mat = new Mat();
+		    	Mat tmp3Mat = new Mat();
+		    	Mat fillterAftterMat = mainViewGlayMat.clone();
+		    	int filterUselFlg = 0;
+
 		    	//ガウシアン→２値化→膨張の順番
 		    	if( gauusianCheck.isSelected() ) {
 		    		double sigmaX = gauusianSliderX.getValue();
 		    		double sigmaY = gauusianSliderY.getValue();
-		    		int tmpValue =(int)gauusianSliderA.getValue();
+		    		int tmpValue =(int)gauusianSliderK.getValue();
 		    		if( tmpValue % 2 == 0 ) {
 		    			tmpValue++;
 		    		}
 		    		Size sz = new Size(tmpValue,tmpValue);
 		    		Imgproc.GaussianBlur(tmp1Mat, tmp1Mat, sz, sigmaX,sigmaY);
-		    		selFlg+=1;
+		    		filterUselFlg+=1;
 		    	}
 		    	if( threshholdCheck.isSelected()) {
 		    		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
 		    		Imgproc.threshold(tmp1Mat, tmp2Mat, this.threshholdSlider.getValue(),255,type);
-		    		selFlg+=2;
+		    		filterUselFlg+=2;
 		    	}
 		    	if( dilateCheck.isSelected() ) {
 		    		int n = (int)dilateSliderN.getValue();
 
 		    		if(threshholdCheck.isSelected()) {
+		    			tmp3Mat = mainViewGlayMat.clone();
 			    		Imgproc.dilate(tmp2Mat, tmp3Mat, new Mat(),new Point(-1,-1),n);
 			    	}else {
 			    		Imgproc.dilate(tmp1Mat, tmp3Mat, new Mat(),new Point(-1,-1),n);
 			    	}
-		    		selFlg+=4;
+		    		filterUselFlg+=4;
 		    	}
-		    	switch(selFlg) {
+		    	switch(filterUselFlg) {
 		    	case 0://全てなし
 		    		Imgproc.Canny(tmp1Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
@@ -1107,68 +1110,69 @@ public class VisonController{
 			}
 
 	        if (dragging && settingModeFlg) {
-	            Imgproc.rectangle(orgMat,
+	            Imgproc.rectangle(mainViewMat,
 	            		new Point(draggingRect.x,draggingRect.y),
 	            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
 	            		new Scalar(0,255,0),3);
 	        }else{
 	        	if(draggingRect.width >0 && draggingRect.height > 0 && settingModeFlg){
-		        	Mat roi = glayMat.submat(
+		        	Mat mainViewGlayRoi = mainViewGlayMat.submat(
 		        			draggingRect.y,
 		        			draggingRect.y + draggingRect.height,
 		        			draggingRect.x,
 		        			draggingRect.x+draggingRect.width);
 		        	if( gauusianCheck.isSelected() ) {
-		        		double sigmaX = gauusianSliderX.getValue();
-		        		double sigmaY = gauusianSliderY.getValue();
-		        		int tmpValue =(int)gauusianSliderA.getValue();
-		        		if( tmpValue % 2 == 0 ) {
-		        			tmpValue++;
+		        		double gauusianSigmaX = gauusianSliderX.getValue();
+		        		double gauusianSigmaY = gauusianSliderY.getValue();
+		        		int gauusianKsize_tmp =(int)gauusianSliderK.getValue();
+		        		if( gauusianKsize_tmp % 2 == 0 ) {
+		        			gauusianKsize_tmp++;
 		        		}
-		        		Size sz = new Size(tmpValue,tmpValue);
-		        		Imgproc.GaussianBlur(roi, roi, sz, sigmaX,sigmaY);
+		        		Size gauusianKsize = new Size(gauusianKsize_tmp,gauusianKsize_tmp);
+		        		Imgproc.GaussianBlur(mainViewGlayRoi, mainViewGlayRoi, gauusianKsize, gauusianSigmaX,gauusianSigmaY);
 		        	}
 		        	if( threshholdCheck.isSelected()) {
 		        		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
-		        		Imgproc.threshold(roi, roi, this.threshholdSlider.getValue(),255,type);
+		        		Imgproc.threshold(mainViewGlayRoi, mainViewGlayRoi, this.threshholdSlider.getValue(),255,type);
 		        	}
 		        	if( dilateCheck.isSelected()) {
-		        		Imgproc.dilate(roi, roi, new Mat(),new Point(-1,-1),(int)dilateSliderN.getValue());
+		        		Imgproc.dilate(mainViewGlayRoi, mainViewGlayRoi, new Mat(),new Point(-1,-1),(int)dilateSliderN.getValue());
 		        	}
 		        	//穴検出
 		        	if( !ptmSetStartFlg ) {
-			            Mat circles = new Mat();
-						Imgproc.HoughCircles(roi, circles, Imgproc.CV_HOUGH_GRADIENT,
+			            Mat resultCircles = new Mat();
+						Imgproc.HoughCircles(mainViewGlayRoi, resultCircles, Imgproc.CV_HOUGH_GRADIENT,
 								sliderDetecPara4.getValue(),
 								sliderDetecPara5.getValue(),
 								sliderDetecPara6.getValue(),
 								sliderDetecPara7.getValue(),
 								(int)sliderDetecPara8.getValue(),
 								(int)sliderDetecPara9.getValue());
-						if( circles.cols() > 0) {
-							fncDrwCircles(roi,circles,
-									orgMat.submat(
+						if( resultCircles.cols() > 0) {
+							fncDrwCircles(mainViewGlayRoi,resultCircles,
+									mainViewMat.submat(
 						        			draggingRect.y,
 						        			draggingRect.y + draggingRect.height,
 						        			draggingRect.x,
 						        			draggingRect.x+draggingRect.width),
 											true);
 
-							Imgproc.putText(orgMat, String.valueOf(circles.cols()),
+							Imgproc.putText(mainViewMat, String.valueOf(resultCircles.cols()),
 									new Point(draggingRect.x-25,draggingRect.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,0,255),2);
+
 							//面積判定
-							boolean ratioFlg = holeWhiteAreaCheck(
-									roi,circles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
-							if( ratioFlg ) {
-								Imgproc.putText(orgMat,
+							boolean holeAreaJudgFlg = holeWhiteAreaCheck(
+									mainViewGlayRoi,resultCircles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
+							if( holeAreaJudgFlg ) {
+								Imgproc.putText(mainViewMat,
 										"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
 												" Max=" + String.format("%d",whiteAreaMax) +
 												" Min=" + String.format("%d",whiteAreaMin),
 										new Point(draggingRect.x+20,draggingRect.y-6),
 										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
 							}else {
-								Imgproc.putText(orgMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
+								Imgproc.putText(mainViewMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
 										" Max=" + String.format("%d",whiteAreaMax) +
 										" Min=" + String.format("%d",whiteAreaMin),
 										new Point(draggingRect.x+20,draggingRect.y-6),
@@ -1176,14 +1180,14 @@ public class VisonController{
 							}
 						}
 		        	}
-		            Imgproc.rectangle(orgMat,
+		            Imgproc.rectangle(mainViewMat,
 		            		new Point(draggingRect.x,draggingRect.y),
 		            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
 		            		new Scalar(0,255,0),4);
 	        	}
 	        }
 
-	    	int hanteCnt=0;
+	    	int judgCnt=0;
 	    	String fileString ="";
 	    	boolean ngFlg;
 			Scalar color;
@@ -1229,23 +1233,23 @@ public class VisonController{
 							(int)para.circlePara8[i],
 							(int)para.circlePara9[i]);
 
-					boolean areaFlg = true;
+					boolean holeAreaFlg = true;
 					if( circles.cols() > 0 && !settingMode.isSelected()) {
-						fncDrwCircles(roi,circles, orgMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
-						Imgproc.putText(orgMat, String.valueOf(circles.cols()),
+						fncDrwCircles(roi,circles, mainViewMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
+						Imgproc.putText(mainViewMat, String.valueOf(circles.cols()),
 								new Point(r.x-25,r.y-6),
 								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),3);
 						//面積判定
-						areaFlg = holeWhiteAreaCheck(
+						holeAreaFlg = holeWhiteAreaCheck(
 								roi,circles,para.whiteAreaMax[i],para.whiteAreaMin[i]);
-						if( areaFlg ) {
-							Imgproc.putText(orgMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
+						if( holeAreaFlg ) {
+							Imgproc.putText(mainViewMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
 									" Max=" + String.format("%d",whiteAreaMax) +
 									" Min=" + String.format("%d",whiteAreaMin),
 									new Point(r.x+20,r.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
 						}else {
-							Imgproc.putText(orgMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
+							Imgproc.putText(mainViewMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
 									" Max=" + String.format("%d",whiteAreaMax) +
 									" Min=" + String.format("%d",whiteAreaMin),
 									new Point(r.x+20,r.y-6),
@@ -1257,10 +1261,10 @@ public class VisonController{
 		            switch(i) {
 		            	case 0:
 		            		Platform.runLater( () ->okuri1_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && areaFlg ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && holeAreaFlg ) {
 		            			Platform.runLater( () ->okuri1_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.GREEN));
-		            			hanteCnt++;
+		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri1_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.RED));
@@ -1270,10 +1274,10 @@ public class VisonController{
 		            		break;
 		            	case 1:
 		            		Platform.runLater( () ->okuri2_n.setText(String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && areaFlg ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && holeAreaFlg ) {
 		            			Platform.runLater( () ->okuri2_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.GREEN));
-		            			hanteCnt++;
+		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri2_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.RED));
@@ -1283,10 +1287,10 @@ public class VisonController{
 		            		break;
 		            	case 2:
 		            		Platform.runLater( () ->okuri3_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && areaFlg ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && holeAreaFlg ) {
 		            			Platform.runLater( () ->okuri3_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.GREEN));
-		            			hanteCnt++;
+		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri3_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.RED));
@@ -1295,10 +1299,10 @@ public class VisonController{
 		            		break;
 		            	case 3:
 		            		Platform.runLater( () ->okuri4_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && areaFlg ) {
+		            		if( circles.cols() == para.cntHoleTh[i] && holeAreaFlg ) {
 		            			Platform.runLater( () ->okuri4_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.GREEN));
-		            			hanteCnt++;
+		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri4_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.RED));
@@ -1314,12 +1318,12 @@ public class VisonController{
 						color = new Scalar(255,0,0);
 					}
 					if( !settingMode.isSelected()) {
-			            Imgproc.rectangle(orgMat,new Point(r.x, r.y),
+			            Imgproc.rectangle(mainViewMat,new Point(r.x, r.y),
 			            		new Point(r.x+r.width, r.y+r.height),
 			            		color,4);
 					}
 		        }else {
-		        	hanteCnt++;
+		        	judgCnt++;
 		        }
 
 	        }
@@ -1328,9 +1332,9 @@ public class VisonController{
 	        //最終判定
 	        if( !saveImgUseFlg && !settingModeFlg) {
 		        //パターンマッチング
-		        boolean tmFlg = tm.detectPattern(ptnAreaMat,orgMat,false);
+		        boolean tmFlg = tm.detectPattern(ptnAreaMat,mainViewMat,false);
 
-	        	if(hanteCnt==4 && tmFlg ) {
+	        	if(judgCnt==4 && tmFlg ) {
 		        	Platform.runLater( () ->judg.setText("OK"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
 		        	//画像保存
@@ -1343,7 +1347,7 @@ public class VisonController{
 		        	//画像保存
 		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
 		        		saveImgNG( saveSrcMat,fileString);
-		        		saveImgNG( orgMat,fileString);
+		        		saveImgNG( mainViewMat,fileString);
 		        	}else if( fileString != ""){
 		        		final String infoText = fileString +"\n";
 		        		Platform.runLater( () ->info2.appendText(infoText));
@@ -1366,10 +1370,10 @@ public class VisonController{
 		        	}
 
 		        	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
-		        	updateImageView(imgNG, Utils.mat2Image(orgMat));
+		        	updateImageView(imgNG, Utils.mat2Image(mainViewMat));
 		        }
 	        }
-	        updateImageView(imgORG, Utils.mat2Image(orgMat));
+	        updateImageView(imgORG, Utils.mat2Image(mainViewMat));
     	}catch(Exception e) {
     		Platform.runLater(() ->info2.appendText(e+"\n:検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n"));
     	}
@@ -1687,7 +1691,7 @@ public class VisonController{
     	para.gauusianCheck[i] = gauusianCheck.isSelected();
     	para.gauusianSliderX[i] = gauusianSliderX.getValue();
     	para.gauusianSliderY[i] = gauusianSliderY.getValue();
-    	para.gauusianSliderA[i] = gauusianSliderA.getValue();
+    	para.gauusianSliderA[i] = gauusianSliderK.getValue();
     	para.dilateCheck[i] = dilateCheck.isSelected();
     	para.dilateSliderN[i] = (int)dilateSliderN.getValue();
     	//para.zoom = this.zoomValue_slider.getValue();
@@ -1758,7 +1762,7 @@ public class VisonController{
 		para.gauusianCheck[4] = gauusianCheck.isSelected();
 		para.gauusianSliderX[4] = gauusianSliderX.getValue();
 		para.gauusianSliderY[4] = gauusianSliderY.getValue();
-		para.gauusianSliderA[4] = gauusianSliderA.getValue();
+		para.gauusianSliderA[4] = gauusianSliderK.getValue();
 		para.dilateCheck[4] = dilateCheck.isSelected();
 		para.dilateSliderN[4] = (int)dilateSliderN.getValue();
 		para.zoom = zoomValue_slider.getValue();
@@ -1782,7 +1786,7 @@ public class VisonController{
 		Platform.runLater(() ->gauusianCheck.setSelected(para.gauusianCheck[4]));
 		Platform.runLater(() ->gauusianSliderX.setValue(para.gauusianSliderX[4]));
 		Platform.runLater(() ->gauusianSliderY.setValue(para.gauusianSliderY[4]));
-		Platform.runLater(() ->gauusianSliderA.setValue(para.gauusianSliderA[4]));
+		Platform.runLater(() ->gauusianSliderK.setValue(para.gauusianSliderA[4]));
 		Platform.runLater(() ->dilateCheck.setSelected(para.dilateCheck[4]));
 		Platform.runLater(() ->dilateSliderN.setValue(para.dilateSliderN[4]));
 		Platform.runLater(() ->zoomValue_slider.setValue(para.zoom));
@@ -1828,7 +1832,7 @@ public class VisonController{
 		Platform.runLater(() ->gauusianCheck.setSelected(para.gauusianCheck[onSetVeri_n]));
 		Platform.runLater(() ->gauusianSliderX.setValue(para.gauusianSliderX[onSetVeri_n]));
 		Platform.runLater(() ->gauusianSliderY.setValue(para.gauusianSliderY[onSetVeri_n]));
-		Platform.runLater(() ->gauusianSliderA.setValue(para.gauusianSliderA[onSetVeri_n]));
+		Platform.runLater(() ->gauusianSliderK.setValue(para.gauusianSliderA[onSetVeri_n]));
 		Platform.runLater(() ->dilateCheck.setSelected(para.dilateCheck[onSetVeri_n]));
 		Platform.runLater(() ->dilateSliderN.setValue(para.dilateSliderN[onSetVeri_n]));
 		Platform.runLater(() ->threshholdCheck.setSelected(para.threshholdCheck[onSetVeri_n]));
@@ -1896,7 +1900,7 @@ public class VisonController{
 		para.gauusianCheck[4] = gauusianCheck.isSelected();
 		para.gauusianSliderX[4] = gauusianSliderX.getValue();
 		para.gauusianSliderY[4] = gauusianSliderY.getValue();
-		para.gauusianSliderA[4] = gauusianSliderA.getValue();
+		para.gauusianSliderA[4] = gauusianSliderK.getValue();
 		para.dilateCheck[4] = dilateCheck.isSelected();
 		para.dilateSliderN[4] = (int)dilateSliderN.getValue();
 		para.zoom = zoomValue_slider.getValue();
@@ -2024,8 +2028,8 @@ public class VisonController{
     private void patternMatchParaSet() {
     	parameter para = pObj.para[pObj.select];
         for(int i=0;i<tmpara.arrayCnt;i++) {
-        	tmpara.matchCnt[i] = para.matchCnt[i];
-        	tmpara.thresh[i] = para.matchThreshValue[i];
+        	tmpara.matchingTreshDetectCnt[i] = para.matchCnt[i];
+        	tmpara.matchingThresh[i] = para.matchThreshValue[i];
         	tmpara.paternMat[i] = ptmImgMat[pObj.select][i];
         	tmpara.ptmEnable[i] = para.ptmEnable[i];
         	tmpara.detectionRects[i] = para.para_rectsDetection[i];
@@ -2129,17 +2133,19 @@ public class VisonController{
     	Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094;"));
 
     	Platform.runLater( () ->FileClass.fileClass(new File("./ng_image/")) );
-    	Platform.runLater( () ->FileClass.fileClass(new File("./ok_image/")) );
+    	//Platform.runLater( () ->FileClass.fileClass(new File("./ok_image/")) );
 
     	Platform.runLater(() ->this.imgNG.setImage(null));
 
     	Platform.runLater(() ->info2.clear());
     	Platform.runLater(() ->info2.setText(initInfo2));
-    	Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
+    	//Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
+    	Platform.runLater(() ->info2.appendText("NG画像ファイルを全て削除しました。\n"));
 
 		while( Gpio.useFlg ) {
 			System.out.println("onAllClear() Gpio.useFlg=true");
 		}
+
 		Gpio.OkSignalON();
 		if( !Gpio.openFlg ) {
 			Platform.runLater( () ->info2.appendText("\n---------------\n- GPIO異常 -\n----------------\n"));
@@ -2147,7 +2153,6 @@ public class VisonController{
 		}else {
 			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
 		}
-
     }
 
     @FXML
@@ -2168,6 +2173,7 @@ public class VisonController{
         	lockedTimer = System.currentTimeMillis();
         	Platform.runLater(() ->settingMode.setSelected(true));
     	}
+    	eventTrigger = true;
     }
     @FXML
     void onOutTrigDisableChk(ActionEvent event) {
@@ -2470,7 +2476,7 @@ public class VisonController{
         assert gauusianSliderX != null : "fx:id=\"gauusianSliderX\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dilateSliderN != null : "fx:id=\"dilateSliderN\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert gauusianSliderY != null : "fx:id=\"gauusianSliderY\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert gauusianSliderA != null : "fx:id=\"gauusianSliderA\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert gauusianSliderK != null : "fx:id=\"gauusianSliderA\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert threshholdCheck != null : "fx:id=\"threshholdCheck\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert threshholdSlider != null : "fx:id=\"threshholdSlider\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert threshholdLabel != null : "fx:id=\"threshholdLabel\" was not injected: check your FXML file 'Sample2.fxml'.";

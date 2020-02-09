@@ -150,7 +150,7 @@
                         <CheckBox fx:id="dilateCheck" layoutX="21.0" layoutY="154.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Dilate" />
                         <Slider fx:id="dilateSliderN" layoutX="94.0" layoutY="156.0" majorTickUnit="1.0" max="5.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0" />
                         <Slider fx:id="gauusianSliderY" layoutX="237.0" layoutY="113.0" majorTickUnit="10.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" value="10.0" />
-                        <Slider fx:id="gauusianSliderA" layoutX="379.0" layoutY="113.0" majorTickUnit="10.0" max="30.0" min="1.0" minorTickCount="9" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="5.0" />
+                        <Slider fx:id="gauusianSliderK" layoutX="379.0" layoutY="113.0" majorTickUnit="10.0" max="30.0" min="1.0" minorTickCount="9" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="5.0" />
                         <CheckBox fx:id="threshholdCheck" layoutX="245.0" layoutY="153.0" mnemonicParsing="false" onAction="#onCheckBtn" text="threshhold" />
                         <Slider fx:id="threshholdSlider" layoutX="329.0" layoutY="155.0" majorTickUnit="50.0" max="255.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" value="128.0" />
                         <Label fx:id="threshholdLabel" layoutX="469.0" layoutY="153.0" text="Label" />
@@ -233,7 +233,7 @@
                         </Button>
                         <CheckBox fx:id="gauusianCheck" layoutX="18.0" layoutY="113.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Gauusian" />
                         <Label layoutX="525.0" layoutY="113.0" text="Label" />
-                        <ImageView fx:id="debugImg" fitHeight="91.0" fitWidth="102.0" layoutX="666.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="debugImg" fitHeight="102.0" fitWidth="102.0" layoutX="653.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
                         <Label layoutX="656.0" layoutY="105.0" text="白面積" />
                         <Label layoutX="656.0" layoutY="123.0" text="黒面積" />
                         <Label fx:id="blackRatioLabel" layoutX="695.0" layoutY="123.0" prefHeight="17.0" prefWidth="57.0" text="0" />
@@ -423,9 +423,9 @@
             <Font size="9.0" />
          </font>
       </Label>
-      <Circle fx:id="GPIO_STATUS_PIN0" fill="#c8c8c8" layoutX="860.0" layoutY="342.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-      <Circle fx:id="GPIO_STATUS_PIN3" fill="#c8c8c8" layoutX="860.0" layoutY="357.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-      <Circle fx:id="GPIO_STATUS_PIN1" fill="#c8c8c8" layoutX="860.0" layoutY="370.0" radius="5.0" stroke="#393636" strokeType="INSIDE" />
+      <Circle fx:id="GPIO_STATUS_PIN0" fill="#c8c8c8" layoutX="860.0" layoutY="342.0" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+      <Circle fx:id="GPIO_STATUS_PIN3" fill="#c8c8c8" layoutX="860.0" layoutY="356.0" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+      <Circle fx:id="GPIO_STATUS_PIN1" fill="#c8c8c8" layoutX="860.0" layoutY="370.0" radius="7.0" stroke="#393636" strokeType="INSIDE" />
       <CheckBox fx:id="throughImageChk" layoutX="958.0" layoutY="338.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="137.0" text="スルー画像表示">
          <font>
             <Font size="14.0" />

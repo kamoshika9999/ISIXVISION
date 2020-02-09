@@ -175,12 +175,12 @@ public class PtmView {
     	TMpara tmpara = new TMpara( 1 );
 
     	if( ptm_sp.getValue() == null ) {
-    		tmpara.matchCnt[0] = 0;
+    		tmpara.matchingTreshDetectCnt[0] = 0;
     	}else {
-    		tmpara.matchCnt[0] = ptm_sp.getValue();
+    		tmpara.matchingTreshDetectCnt[0] = ptm_sp.getValue();
     	}
 
-    	tmpara.thresh[0] = threshholdSlider.getValue();
+    	tmpara.matchingThresh[0] = threshholdSlider.getValue();
     	tmpara.paternMat[0] = tmp_ptmMat.clone();
     	tmpara.ptmEnable[0] = true;
     	tmpara.detectionRects[0] = tmp_rectsDetection;
@@ -400,7 +400,10 @@ public class PtmView {
     	fpsFirst = System.currentTimeMillis();
     	double fps = 0;
     	for(int i=0; i <= 29;i++) {
-	    	fpsCnt++;
+    		patternMatchParaSet();
+    		templateMatchingInstance.tmpara.matchingThresh[0] = this.ptmThreshSliderN.getValue();
+
+    		fpsCnt++;
 	    	if( fpsCnt == 30) {
 	    		fpsEnd = System.currentTimeMillis();
 
@@ -567,7 +570,7 @@ public class PtmView {
 	private void rePaint() {
 		patternMatchParaSet();
 
-		templateMatchingInstance.tmpara.thresh[0] = this.ptmThreshSliderN.getValue();
+		templateMatchingInstance.tmpara.matchingThresh[0] = this.ptmThreshSliderN.getValue();
 
 		Mat areaMat = ptmSrcMat.clone();
 		Mat orgMat = ptmSrcMat.clone();
@@ -625,7 +628,6 @@ public class PtmView {
     	}
 
     	if( !dragingFlg ) {
-
     		//テンプレート画像
     		ptnMat[0] = ptarnMat;
     		//検出エリア
@@ -636,8 +638,7 @@ public class PtmView {
     		threshhold[0] = ptmThreshSliderN.getValue();
 
     		//テンプレートマッチング
-    		boolean flg = templateMatchingInstance.detectPattern(areaMat,orgMat,true);//実行し結果を表示用Matに上書き
-
+    		templateMatchingInstance.detectPattern(areaMat,orgMat,true);//実行し結果を表示用Matに上書き
 
 	    	final int tmp_cnt = templateMatchingInstance.resultValue[0].cnt;
 	    	final double tmp_detectMax = templateMatchingInstance.resultValue[0].detectMax;
@@ -647,9 +648,7 @@ public class PtmView {
 	    	Platform.runLater(() ->detectRationMax.setText(String.format("%.3f",tmp_detectMax)));
 	    	Platform.runLater(() ->detectRationMin.setText(String.format("%.3f",tmp_detectMin)));
 	    	Platform.runLater(() ->detectRationAve.setText(String.format("%.3f",tmp_detectAve)));
-
     	}
-
 
 		updateImageView(ptmMainView,Utils.mat2Image(orgMat));
 		updateImageView(ptmMainViewDst,Utils.mat2Image(areaMat));
