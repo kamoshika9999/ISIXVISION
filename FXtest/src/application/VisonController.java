@@ -490,8 +490,13 @@ public class VisonController{
     void onInfoBtnAction(ActionEvent event) {
 		double wset = capObj.get(Videoio.CAP_PROP_FRAME_WIDTH);
 		double hset = capObj.get(Videoio.CAP_PROP_FRAME_HEIGHT);
+		double exp = capObj.get(Videoio.CAP_PROP_EXPOSURE);
+		double gain = capObj.get(Videoio.CAP_PROP_GAIN);
 		Platform.runLater( () ->info2.appendText("\n"+ "カメラ解像度 WIDTH="+ wset+
-				"\n カメラ解像度 HEIGHT= " +hset +"\n"));
+				"\n カメラ解像度 HEIGHT= " +hset + "\n"+
+				"\n 露出="+exp+"\n"+
+				"\n ゲイン="+gain+"\n"
+				));
     }
     @FXML
     /**
@@ -1048,12 +1053,15 @@ public class VisonController{
 	    		fpsCnt=0;
 	    	}
 
+
 	    	parameter para = pObj.para[pObj.select];
 	    	Mat	mainViewMat = srcMat.clone();//srcMatは不変にしておく
 	    	Mat saveSrcMat = srcMat.clone();
 
 	    	mainViewGlayMat = new Mat();
 	    	Imgproc.cvtColor(mainViewMat, mainViewGlayMat, Imgproc.COLOR_BGR2GRAY);
+	    	//Imgproc.equalizeHist(mainViewGlayMat, mainViewGlayMat);//コントラスト均等化
+
 	    	Mat ptnAreaMat = mainViewGlayMat.clone();
 	    	Mat tmp0Mat = mainViewGlayMat.clone();
 
@@ -1233,7 +1241,7 @@ public class VisonController{
 	    	int judgCnt=0;
 	    	shotCnt++;
 	    	String fileString = "x"+String.valueOf(shotCnt)+"x";//ショット数を入れる
-	    	
+
 	    	boolean ngFlg;
 			Scalar color;
 	        for (int i=0;i<4;i++) {
@@ -1418,6 +1426,8 @@ public class VisonController{
 		        	updateImageView(imgNG, Utils.mat2Image(mainViewMat));
 		        }
 	        }
+
+	        //Core.flip(mainViewMat, mainViewMat, 1);
 	        updateImageView(imgORG, Utils.mat2Image(mainViewMat));
     	}catch(Exception e) {
     		Platform.runLater(() ->info2.appendText(e+"\n:検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n"));
