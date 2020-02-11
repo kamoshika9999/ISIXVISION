@@ -39,7 +39,7 @@
                            </font>
                         </Label>
                         <Spinner fx:id="portNoSpin" initialValue="4" layoutX="294.0" layoutY="16.0" max="9" min="1" prefHeight="25.0" prefWidth="70.0" />
-                        <CheckBox fx:id="outTrigDisableChk" layoutX="14.0" layoutY="17.0" mnemonicParsing="false" onAction="#onOutTrigDisableChk" text="出力トリガ無効">
+                        <CheckBox fx:id="outTrigDisableChk" layoutX="14.0" layoutY="17.0" mnemonicParsing="false" onAction="#onOutTrigDisableChk" selected="true" text="出力トリガ無効">
                            <font>
                               <Font size="13.0" />
                            </font>
