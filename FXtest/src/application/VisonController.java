@@ -69,8 +69,10 @@ public class VisonController{
 	//クラス変数
 	public static boolean debugFlg = false;
 
+	public int shotCnt = 0; //オールクリアしてからのカウント数
+
 	final int saveMax_all = 255;
-	final int saveMax_ng = 200;
+	final int saveMax_ng = 400;
 	int ngCnt = 0;
 	int allSaveCnt = 0;
 
@@ -136,7 +138,7 @@ public class VisonController{
 	public static Mat saveImgMat;
 	//連続画像保存によるタイムラグ緩和のロジックに使用
 	private long savelockedTimer;
-	private long savelockedTimerThresh = 500;
+	private long savelockedTimerThresh = 1000;
 	private int NGsaveCnt = 0;
 
 	//カメラキャリブレーション用
@@ -365,6 +367,9 @@ public class VisonController{
     private TextField adc_thresh_value;
     @FXML
     private CheckBox adc_flg;
+    @FXML
+    private Button ReTestBtn;//retest_imageフォルダに入っている画像を再テストする
+
 
     //パターンマッチング関係
     @FXML
@@ -1226,7 +1231,9 @@ public class VisonController{
 	        }
 
 	    	int judgCnt=0;
-	    	String fileString ="";
+	    	shotCnt++;
+	    	String fileString = "x"+String.valueOf(shotCnt)+"x";//ショット数を入れる
+	    	
 	    	boolean ngFlg;
 			Scalar color;
 	        for (int i=0;i<4;i++) {
@@ -1306,7 +1313,7 @@ public class VisonController{
 		            		}else {
 		            			Platform.runLater( () ->okuri1_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.RED));
-		            			fileString += "1_okuri_";
+		            			//fileString += "1_okuri_";
 		            			ngFlg = true;
 		            		}
 		            		break;
@@ -1319,7 +1326,7 @@ public class VisonController{
 		            		}else {
 		            			Platform.runLater( () ->okuri2_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.RED));
-		            			fileString += "1_poke_";
+		            			//fileString += "1_poke_";
 		            			ngFlg = true;
 		            		}
 		            		break;
@@ -1332,7 +1339,7 @@ public class VisonController{
 		            		}else {
 		            			Platform.runLater( () ->okuri3_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.RED));
-		            			fileString += "2_okuri_";
+		            			//fileString += "2_okuri_";
 		            			ngFlg = true;			            		}
 		            		break;
 		            	case 3:
@@ -1344,7 +1351,7 @@ public class VisonController{
 		            		}else {
 		            			Platform.runLater( () ->okuri4_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.RED));
-		            			fileString += "2_poke_";
+		            			//fileString += "2_poke_";
 		            			ngFlg = true;
 		            		}
 		            		break;
@@ -1385,7 +1392,7 @@ public class VisonController{
 		        	//画像保存
 		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
 		        		saveImgNG( saveSrcMat,fileString);
-		        		saveImgNG( mainViewMat,fileString);
+		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
 		        		final String infoText = fileString +"\n";
 		        		Platform.runLater( () ->info2.appendText(infoText));
@@ -1442,7 +1449,7 @@ public class VisonController{
     		}
     	}
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSS");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH' h 'mm' m 'ss' s'");
         String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
         try {
         	Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat);
@@ -2154,6 +2161,28 @@ public class VisonController{
 		}
 		eventTrigger = true;
     }
+
+    //ReTestボタン
+    @FXML
+    void onRetestBtn(ActionEvent event) {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("ReTestImageViewer.fxml"));
+		AnchorPane root = null;
+		try {
+			root = (AnchorPane) loader.load();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+		Stage stage = new Stage();
+		stage.setScene(scene);
+		stage.setResizable(false);
+		stage.showAndWait();
+		if( saveImgUseFlg && !this.settingModeFlg) {
+			onSettingModeBtn(null);
+		}
+		eventTrigger = true;
+    }
+
 	@FXML
     void onAllClear(ActionEvent event) {
     	ngCnt = 0;
@@ -2182,6 +2211,8 @@ public class VisonController{
 		}else {
 			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
 		}
+
+		shotCnt= 0;
     }
 
     @FXML
@@ -2198,12 +2229,12 @@ public class VisonController{
     	}else {
             //パターンマッチング用パラメータ設定
         	patternMatchParaSet();
-        	
+
     		Platform.runLater(() ->this.accordion_1.setDisable(false));
         	settingModeFlg = true;
         	lockedTimer = System.currentTimeMillis();
         	Platform.runLater(() ->settingMode.setSelected(true));
-        	
+
     	}
     	eventTrigger = true;
     }
@@ -2464,7 +2495,7 @@ public class VisonController{
     void onDimSetting(ActionEvent event) {
 
     }
-    
+
     /**
      * グラフ表示
      * @param event
@@ -2473,8 +2504,8 @@ public class VisonController{
     void onDimensionBtn(ActionEvent event) {
 
     }
-    
-    
+
+
     @FXML
     void initialize() {
         assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'Sample2.fxml'.";
@@ -2623,6 +2654,7 @@ public class VisonController{
         assert dim_offset_P2_2 != null : "fx:id=\"dim_offset_P2_2\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dim_offset_E_2 != null : "fx:id=\"dim_offset_E_2\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dimSettingBtn != null : "fx:id=\"dimSettingBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ReTestBtn != null : "fx:id=\"ReTestBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());

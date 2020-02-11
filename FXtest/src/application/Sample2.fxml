@@ -483,5 +483,13 @@
             <Font size="10.0" />
          </font>
       </Button>
+      <Button fx:id="ReTestBtn" layoutX="670.0" layoutY="441.0" mnemonicParsing="false" onAction="#onRetestBtn" prefHeight="39.0" prefWidth="63.0" text="ReTest" wrapText="true">
+         <effect>
+            <DropShadow color="#84f000" />
+         </effect>
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>
