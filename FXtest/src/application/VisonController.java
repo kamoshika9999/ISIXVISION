@@ -454,8 +454,19 @@ public class VisonController{
     private Button dimSettingBtn;
     @FXML
     private Button dimensionBtn;
-
-
+    //カメラ関係
+    @FXML
+    private Button getExproBtn;
+    @FXML
+    private Button setExproBtn;
+    @FXML
+    private Button getGainBtn;
+    @FXML
+    private Button setGainBtn;
+    @FXML
+    private TextField cameraExpro;
+    @FXML
+    private TextField cameraGain;
 
 
     @FXML
@@ -678,6 +689,11 @@ public class VisonController{
 		}else {
 			// カメラが正常に開いている時
 			this.cameraActive = true;
+			//露出の取得
+			onGetExpro(null);
+			
+			//ゲインの取得
+			onGetGain(null);
 
 			//キャリブレーションデーター読み込み
 			File calibFile = new File("./CameraCalibration.xml");
@@ -2515,7 +2531,45 @@ public class VisonController{
 
     }
 
+    /**
+     * カメラ露出取得
+     * @param event
+     */
+    @FXML
+    void onGetExpro(ActionEvent event) {
+		double exp = capObj.get(Videoio.CAP_PROP_EXPOSURE);
+		double gain = capObj.get(Videoio.CAP_PROP_GAIN);
+		Platform.runLater( () ->this.cameraExpro.setText(String.valueOf(exp)));
+    }
+    /**
+     * カメラ露出設定
+     * @param event
+     */
+    @FXML
+    void onSetExpro(ActionEvent event) {
+    	double exp = Double.valueOf(cameraExpro.getText());
+    	capObj.set(Videoio.CAP_PROP_EXPOSURE,exp);
+    }
+    /**
+     * カメラゲイン取得
+     * @param event
+     */
+    @FXML
+    void onGetGain(ActionEvent event) {
+		double gain = capObj.get(Videoio.CAP_PROP_GAIN);
+		Platform.runLater( () ->this.cameraGain.setText(String.valueOf(gain)));
+    }
+    /**
+     * カメラゲイン設定
+     * @param event
+     */
+    @FXML
+    void onSetGain(ActionEvent event) {
+    	double gain = Double.valueOf(cameraGain.getText());
+    	capObj.set(Videoio.CAP_PROP_GAIN,gain);
 
+
+    }
     @FXML
     void initialize() {
         assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'Sample2.fxml'.";
@@ -2665,6 +2719,12 @@ public class VisonController{
         assert dim_offset_E_2 != null : "fx:id=\"dim_offset_E_2\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dimSettingBtn != null : "fx:id=\"dimSettingBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ReTestBtn != null : "fx:id=\"ReTestBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert getExproBtn != null : "fx:id=\"getExproBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert setExproBtn != null : "fx:id=\"setExproBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert cameraExpro != null : "fx:id=\"cameraExpro\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert getGainBtn != null : "fx:id=\"getGainBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert setGainBtn != null : "fx:id=\"setGainBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert cameraGain != null : "fx:id=\"cameraGain\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());
