@@ -92,7 +92,7 @@ public class VisonController{
 	public static ScheduledExecutorService timer;
 	public static ScheduledExecutorService timer2;
 
-	//穴面積判定用
+	//穴面積判定用   66
 	private long whiteAreaAverage;
 	private long whiteAreaMax;
 	private long whiteAreaMin;
@@ -691,7 +691,7 @@ public class VisonController{
 			this.cameraActive = true;
 			//露出の取得
 			onGetExpro(null);
-			
+
 			//ゲインの取得
 			onGetGain(null);
 
