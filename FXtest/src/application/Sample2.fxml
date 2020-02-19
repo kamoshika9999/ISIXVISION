@@ -314,7 +314,7 @@
             </TitledPane>
         </panes>
       </Accordion>
-      <Label fx:id="info1" layoutX="124.0" prefHeight="38.0" prefWidth="459.0" text="infomation" wrapText="true" />
+      <Label fx:id="info1" layoutX="124.0" prefHeight="38.0" prefWidth="343.0" text="infomation" wrapText="true" />
       <ImageView fx:id="imgORG" fitHeight="240.0" fitWidth="320.0" layoutX="4.0" layoutY="64.0" onMouseDragged="#mouseDragged" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" onScroll="#onWheel" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="64.0">
          <image>
             <Image url="file:./IMG_20191216_162108.jpg" />
@@ -499,5 +499,10 @@
             <Font size="10.0" />
          </font>
       </Button>
+      <Label fx:id="count_label" layoutX="499.0" layoutY="2.0" prefHeight="27.0" prefWidth="90.0" text="99999" textAlignment="RIGHT" textFill="#2c2f2d">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>

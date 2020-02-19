@@ -467,6 +467,9 @@ public class VisonController{
     private TextField cameraExpro;
     @FXML
     private TextField cameraGain;
+    //ショット数
+    @FXML
+    private Label count_label;
 
 
     @FXML
@@ -1257,6 +1260,7 @@ public class VisonController{
 	    	int judgCnt=0;
 	    	shotCnt++;
 	    	String fileString = "x"+String.valueOf(shotCnt)+"x";//ショット数を入れる
+	    	Platform.runLater( () ->this.count_label.setText(String.valueOf(shotCnt)));//ショット数を更新
 
 	    	boolean ngFlg;
 			Scalar color;
@@ -1883,6 +1887,10 @@ public class VisonController{
 			return;
 		}
 
+    	Rectangle r = para.rects[onSetVeri_n];
+    	draggingRect = (Rectangle)r.clone();
+
+    	
 		Platform.runLater(() ->sliderDetecPara4.setValue(para.circlePara4[onSetVeri_n]));
 		Platform.runLater(() ->sliderDetecPara5.setValue(para.circlePara5[onSetVeri_n]));
 		Platform.runLater(() ->sliderDetecPara6.setValue(para.circlePara6[onSetVeri_n]));
@@ -2723,6 +2731,7 @@ public class VisonController{
         assert getGainBtn != null : "fx:id=\"getGainBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert setGainBtn != null : "fx:id=\"setGainBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert cameraGain != null : "fx:id=\"cameraGain\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert count_label != null : "fx:id=\"count_label\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());
