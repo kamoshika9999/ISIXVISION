@@ -131,7 +131,7 @@ public class VisonController{
 	private boolean ptmSetStartFlg = false;
 	public Mat[][] ptmImgMat = new Mat[4][4];//[presetNo][ptm1～ptm4]
 	private TMpara tmpara = new TMpara();
-	private templateMatching tm;
+	private templateMatching templateMatchingObj;
 
 	//保存画像を使用した設定用
 	public static boolean saveImgUseFlg;//保存画像を使用した設定に使うフラグ   保存画像使用中はＰＬＣシャッタートリガ強制無効
@@ -406,6 +406,9 @@ public class VisonController{
     private ImageView ptm_img3;
     @FXML
     private ImageView ptm_img4;
+    @FXML
+    private CheckBox ptm_disableChk;
+    //穴判定関係
     @FXML
     private ImageView debugImg;//穴の面積判定用
     @FXML
@@ -1405,7 +1408,12 @@ public class VisonController{
 	        //最終判定
 	        if( !saveImgUseFlg && !settingModeFlg) {
 		        //パターンマッチング
-		        boolean tmFlg = tm.detectPattern(ptnAreaMat,mainViewMat,false);
+	        	boolean tmFlg;
+	        	if( !ptm_disableChk.isSelected() ) {//パターンマッチングが強制的に無効になっているか？
+	        		tmFlg = templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat,false);
+	        	}else {
+	        		tmFlg = true;
+	        	}
 
 	        	if(judgCnt==4 && tmFlg ) {
 		        	Platform.runLater( () ->judg.setText("OK"));
@@ -1656,7 +1664,7 @@ public class VisonController{
       boolean result = true;
 	  Mat roi = new Mat(1,1,CvType.CV_8U);
 	  int whiteArea = 0;
-	  final int offset = 1;
+	  final int offset = 0;
 
 	  whiteAreaAverage = 0;
 	  whiteAreaMax = 0;
@@ -1667,7 +1675,7 @@ public class VisonController{
 		int  x = (int)v[0];
 		int  y = (int)v[1];
 		int  r = (int)v[2];
-		if( x-r-offset < 0 || y-r-offset<0 || x-r+r+r>judgeAreaMat.width() || y-r+r+r>judgeAreaMat.height() ) {
+		if( x-r-offset < 0 || y-r-offset<0 || r+r+offset+offset>judgeAreaMat.width() || r+r+offset+offset>judgeAreaMat.height() ) {
 			result = false;
 		}else {
 	  		roi = judgeAreaMat.submat(new Rect( x-r-offset, y-r-offset, r+r+offset, r+r+offset));
@@ -1890,7 +1898,7 @@ public class VisonController{
     	Rectangle r = para.rects[onSetVeri_n];
     	draggingRect = (Rectangle)r.clone();
 
-    	
+
 		Platform.runLater(() ->sliderDetecPara4.setValue(para.circlePara4[onSetVeri_n]));
 		Platform.runLater(() ->sliderDetecPara5.setValue(para.circlePara5[onSetVeri_n]));
 		Platform.runLater(() ->sliderDetecPara6.setValue(para.circlePara6[onSetVeri_n]));
@@ -2096,14 +2104,14 @@ public class VisonController{
     private void patternMatchParaSet() {
     	parameter para = pObj.para[pObj.select];
         for(int i=0;i<tmpara.arrayCnt;i++) {
-        	tmpara.matchingTreshDetectCnt[i] = para.matchCnt[i];
+        	tmpara.matchingTreshDetectCnt[i] = para.detectionCnt[i];
         	tmpara.matchingThresh[i] = para.matchThreshValue[i];
         	tmpara.paternMat[i] = ptmImgMat[pObj.select][i];
         	tmpara.ptmEnable[i] = para.ptmEnable[i];
         	tmpara.detectionRects[i] = para.para_rectsDetection[i];
         	tmpara.scale[i] = para.detectionScale[i];
         }
-        tm = new templateMatching(tmpara);
+        templateMatchingObj = new templateMatching(tmpara);
     }
 
     /**
@@ -2510,10 +2518,10 @@ public class VisonController{
 
     @FXML
     void onPtmEnabeChk(MouseEvent event) {
-    	tm.tmpara.ptmEnable[0] = this.ptm_pt1_enable.isSelected();
-    	tm.tmpara.ptmEnable[1] = this.ptm_pt2_enable.isSelected();
-    	tm.tmpara.ptmEnable[2] = this.ptm_pt3_enable.isSelected();
-    	tm.tmpara.ptmEnable[3] = this.ptm_pt4_enable.isSelected();
+    	templateMatchingObj.tmpara.ptmEnable[0] = this.ptm_pt1_enable.isSelected();
+    	templateMatchingObj.tmpara.ptmEnable[1] = this.ptm_pt2_enable.isSelected();
+    	templateMatchingObj.tmpara.ptmEnable[2] = this.ptm_pt3_enable.isSelected();
+    	templateMatchingObj.tmpara.ptmEnable[3] = this.ptm_pt4_enable.isSelected();
     }
 
     //寸法測定メソッド群
@@ -2528,54 +2536,63 @@ public class VisonController{
 
     }
 
+    @FXML
     /**
      * グラフ表示
      * @param event
      */
-    @FXML
     void onDimensionBtn(ActionEvent event) {
 
     }
 
+    @FXML
     /**
      * カメラ露出取得
      * @param event
      */
-    @FXML
     void onGetExpro(ActionEvent event) {
 		double exp = capObj.get(Videoio.CAP_PROP_EXPOSURE);
-		double gain = capObj.get(Videoio.CAP_PROP_GAIN);
 		Platform.runLater( () ->this.cameraExpro.setText(String.valueOf(exp)));
     }
+
+    @FXML
     /**
      * カメラ露出設定
      * @param event
      */
-    @FXML
     void onSetExpro(ActionEvent event) {
     	double exp = Double.valueOf(cameraExpro.getText());
     	capObj.set(Videoio.CAP_PROP_EXPOSURE,exp);
     }
+    @FXML
     /**
      * カメラゲイン取得
      * @param event
      */
-    @FXML
     void onGetGain(ActionEvent event) {
 		double gain = capObj.get(Videoio.CAP_PROP_GAIN);
 		Platform.runLater( () ->this.cameraGain.setText(String.valueOf(gain)));
     }
+
+    @FXML
     /**
      * カメラゲイン設定
      * @param event
      */
-    @FXML
     void onSetGain(ActionEvent event) {
     	double gain = Double.valueOf(cameraGain.getText());
     	capObj.set(Videoio.CAP_PROP_GAIN,gain);
+    }
 
+    @FXML
+    /**
+     * パターンマッチング強制無効/有効
+     * @param event
+     */
+    void onPtm_disableChk(ActionEvent event) {
 
     }
+
     @FXML
     void initialize() {
         assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'Sample2.fxml'.";
@@ -2732,6 +2749,7 @@ public class VisonController{
         assert setGainBtn != null : "fx:id=\"setGainBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert cameraGain != null : "fx:id=\"cameraGain\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert count_label != null : "fx:id=\"count_label\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert ptm_disableChk != null : "fx:id=\"ptm_disableChk\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());

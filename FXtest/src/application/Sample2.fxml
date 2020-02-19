@@ -102,6 +102,14 @@
                         <Label layoutX="180.0" layoutY="196.0" text="ゲイン(%)" />
                         <Button fx:id="getGainBtn" layoutX="268.0" layoutY="192.0" mnemonicParsing="false" onAction="#onGetGain" text="取得" />
                         <Button fx:id="setGainBtn" layoutX="311.0" layoutY="192.0" mnemonicParsing="false" onAction="#onSetGain" text="設定" />
+                        <CheckBox fx:id="ptm_disableChk" layoutX="410.0" layoutY="166.0" mnemonicParsing="false" onAction="#onPtm_disableChk" selected="true" text="パターンマッチング強制無効">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                           <effect>
+                              <DropShadow />
+                           </effect>
+                        </CheckBox>
                      </children>
                   </AnchorPane>
             </content>

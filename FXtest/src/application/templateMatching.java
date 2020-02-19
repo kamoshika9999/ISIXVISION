@@ -49,6 +49,7 @@ public class templateMatching {
 		}
 
 		for(int n=0;n<c_tmpara.arrayCnt;n++) {
+			resultValue[n].cnt = 0;
 			if( c_tmpara.ptmEnable[n] ) {
 				if( !settingFlg) {
 					c_areaMat = areaMat.clone();
@@ -141,7 +142,7 @@ public class templateMatching {
 				}
 
 				resultValue[n].detectAve /= (double)resultValue[n].cnt;
-				if( resultValue[n].cnt < c_tmpara.matchingTreshDetectCnt[n] ) {
+				if( resultValue[n].cnt != c_tmpara.matchingTreshDetectCnt[n] ) {
 					resultFlg = false;
 				}
 			}
