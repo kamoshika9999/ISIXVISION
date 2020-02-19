@@ -239,14 +239,14 @@
                         <CheckBox fx:id="gauusianCheck" layoutX="18.0" layoutY="113.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Gauusian" />
                         <Label layoutX="525.0" layoutY="113.0" text="Label" />
                         <ImageView fx:id="debugImg" fitHeight="102.0" fitWidth="102.0" layoutX="653.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
-                        <Label layoutX="656.0" layoutY="105.0" text="白面積" />
-                        <Label layoutX="656.0" layoutY="123.0" text="黒面積" />
-                        <Label fx:id="blackRatioLabel" layoutX="695.0" layoutY="123.0" prefHeight="17.0" prefWidth="57.0" text="0" />
-                        <Label fx:id="whiteRatioLabel" layoutX="695.0" layoutY="105.0" onMouseClicked="#onWhiteAreaLabelClicked" prefHeight="17.0" prefWidth="57.0" text="0" />
-                        <Spinner fx:id="whiteRatioMaxSp" layoutX="688.0" layoutY="142.0" prefHeight="25.0" prefWidth="70.0" />
-                        <Label layoutX="623.0" layoutY="148.0" text="白面積上限" />
-                        <Spinner fx:id="whiteRatioMinSp" layoutX="688.0" layoutY="169.0" prefHeight="25.0" prefWidth="70.0" />
-                        <Label layoutX="623.0" layoutY="173.0" text="白面積下限" />
+                        <Label layoutX="656.0" layoutY="126.0" text="白MAX" />
+                        <Label layoutX="656.0" layoutY="144.0" text="白MIN" />
+                        <Label fx:id="blackRatioLabel" layoutX="695.0" layoutY="144.0" prefHeight="17.0" prefWidth="57.0" text="0" />
+                        <Label fx:id="whiteRatioLabel" layoutX="695.0" layoutY="126.0" onMouseClicked="#onWhiteAreaLabelClicked" prefHeight="17.0" prefWidth="57.0" text="0" />
+                        <Spinner fx:id="whiteRatioMaxSp" layoutX="688.0" layoutY="163.0" prefHeight="25.0" prefWidth="70.0" />
+                        <Label layoutX="623.0" layoutY="169.0" text="白面積上限" />
+                        <Spinner fx:id="whiteRatioMinSp" layoutX="688.0" layoutY="190.0" prefHeight="25.0" prefWidth="70.0" />
+                        <Label layoutX="623.0" layoutY="194.0" text="白面積下限" />
                      </children>
                   </AnchorPane>
             </content>
@@ -483,7 +483,7 @@
             <Font size="10.0" />
          </font>
       </Button>
-      <Button fx:id="dimensionBtn" layoutX="670.0" layoutY="395.0" mnemonicParsing="false" onAction="#onDimensionBtn" prefHeight="39.0" prefWidth="63.0" text="Dimension Viewer" wrapText="true">
+      <Button fx:id="dimensionBtn" layoutX="836.0" layoutY="396.0" mnemonicParsing="false" onAction="#onDimensionBtn" prefHeight="39.0" prefWidth="63.0" text="Dimension Viewer" wrapText="true">
          <effect>
             <DropShadow color="#3000f0" />
          </effect>
@@ -491,7 +491,7 @@
             <Font size="10.0" />
          </font>
       </Button>
-      <Button fx:id="ReTestBtn" layoutX="670.0" layoutY="441.0" mnemonicParsing="false" onAction="#onRetestBtn" prefHeight="39.0" prefWidth="63.0" text="ReTest" wrapText="true">
+      <Button fx:id="ReTestBtn" layoutX="767.0" layoutY="396.0" mnemonicParsing="false" onAction="#onRetestBtn" prefHeight="39.0" prefWidth="63.0" text="ReTest" wrapText="true">
          <effect>
             <DropShadow color="#84f000" />
          </effect>

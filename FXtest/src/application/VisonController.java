@@ -92,7 +92,7 @@ public class VisonController{
 	public static ScheduledExecutorService timer;
 	public static ScheduledExecutorService timer2;
 
-	//穴面積判定用   66
+	//穴面積判定用
 	private long whiteAreaAverage;
 	private long whiteAreaMax;
 	private long whiteAreaMin;
@@ -1652,7 +1652,7 @@ public class VisonController{
       boolean result = true;
 	  Mat roi = new Mat(1,1,CvType.CV_8U);
 	  int whiteArea = 0;
-	  final int offset = 5;
+	  final int offset = 1;
 
 	  whiteAreaAverage = 0;
 	  whiteAreaMax = 0;
@@ -1676,10 +1676,8 @@ public class VisonController{
 		}
 	  }
 	  if( settingModeFlg ) {
-	  	  int wa = whiteArea;
-	  	  int ba = (int) (roi.total() - wa);
-	  	  Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", wa)));
-	  	  Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", ba)));
+	  	  Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", whiteAreaMax)));
+	  	  Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", whiteAreaMin)));
 	  	  updateImageView(debugImg, Utils.mat2Image(roi));
 	  }
 
@@ -1699,7 +1697,7 @@ public class VisonController{
 				5)));
     	Platform.runLater( () ->whiteRatioMinSp.setValueFactory(
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,
-						Integer.valueOf(whiteRatioLabel.getText()),
+						Integer.valueOf(blackRatioLabel.getText()),
 				5)));
     }
     /**
