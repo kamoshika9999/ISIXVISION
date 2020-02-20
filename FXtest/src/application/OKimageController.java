@@ -96,8 +96,13 @@ public class OKimageController {
         }
 
         files_pointer = files.length-1;
-        img = Imgcodecs.imread( files[files_pointer].getPath());
-        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
-        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
+        if( files.length  >0 ) {
+	        img = Imgcodecs.imread( files[files_pointer].getPath());
+	        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
+	        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+
+	        																String.valueOf(files.length)));
+        }else {
+        	Platform.runLater(() ->this.info1.setText("画像がありません"));
+        }
     }
 }

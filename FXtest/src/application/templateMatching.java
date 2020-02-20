@@ -38,6 +38,9 @@ public class templateMatching {
 	 * @return  true:合格  false:不合格
 	 */
 	public boolean detectPattern(Mat areaMat, Mat dstMat,boolean settingFlg) {
+		preSet pObj = VisonController.pObj;
+		parameter para = pObj.para[pObj.select];
+
 		boolean resultFlg = true;
 		Mat c_areaMat;//検出エリアMatクローン用
 		TMpara c_tmpara;//検出用パラメータクローン用オブジェクト
@@ -57,6 +60,40 @@ public class templateMatching {
 					c_areaMat = areaMat;//セッティングモード時は画像確認の為クローンしない
 				}
 
+				//フィルタ処理
+		    	if( para.ptm_gauusianCheck[n] ) {//ガウシアン
+		    		double sigmaX = para.ptm_gauusianSliderX[n];
+		    		double sigmaY = para.ptm_gauusianSliderY[n];
+		    		int tmpValue = (int) para.ptm_gauusianSliderA[n];
+		    		if( tmpValue % 2 == 0 ) {
+		    			tmpValue++;
+		    		}
+		    		Size sz = new Size(tmpValue,tmpValue);
+		    		Imgproc.GaussianBlur(c_areaMat, c_areaMat, sz, sigmaX,sigmaY);
+		    		Imgproc.GaussianBlur(c_tmpara.paternMat[n], c_tmpara.paternMat[n], sz, sigmaX,sigmaY);
+		    	}
+		    	if( para.ptm_threshholdCheck[n]) {//２値化
+		    		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+		    		Imgproc.threshold(c_areaMat, c_areaMat, this.threshholdSlider.getValue(),255,type);
+		    		Imgproc.threshold(c_tmpara.paternMat[n], c_tmpara.paternMat[n], this.threshholdSlider.getValue(),255,type);
+		    	}
+		    	if( dilateCheck.isSelected() ) {//膨張
+		    		int n = (int)dilateSliderN.getValue();
+		    		Imgproc.dilate(c_areaMat, c_areaMat, new Mat(),new Point(-1,-1),n);
+		    		Imgproc.dilate(c_tmpara.paternMat[n], c_tmpara.paternMat[n], new Mat(),new Point(-1,-1),n);
+		    	}
+		    	if( erodeCheck.isSelected() ) {//収縮
+		    		int n = (int)this.erodeSliderN.getValue();
+		    		Imgproc.erode(c_areaMat, c_areaMat, new Mat(),new Point(-1,-1),n);
+		    		Imgproc.erode(c_tmpara.paternMat[n], c_tmpara.paternMat[n], new Mat(),new Point(-1,-1),n);
+
+		    	}
+		    	if( cannyCheck.isSelected() ) {//Canny
+		    		double thresh1 = cannyThresh1.getValue();
+		    		double thresh2 = cannyThresh2.getValue();
+		    		Imgproc.Canny(c_areaMat,c_areaMat,thresh1,thresh2);
+		    		Imgproc.Canny(c_tmpara.paternMat[n],c_tmpara.paternMat[n],thresh1,thresh2);
+		    	}
 
 				//比較結果を格納するMatを生成 ※ctmpara.scale[n]適用前に生成
 				Mat dstRoi = dstMat.submat(
@@ -106,7 +143,7 @@ public class templateMatching {
 			    		for (int j=0;j<result.cols();j++) {
 			    			rt = result.get(i, j)[0];
 			    			if ( rt > 0) {
-			    				//近傍に検出エリアが無いか確認 テンプレート画像の1/2近傍
+			    				//近傍に検出エリアが無いか確認 テンプレート画像の2/3近傍
 				    			flg2=false;
 			    				for(Point p:finedPoint) {
 			    					if( p.x  + tmpPtWidth > j && p.x - tmpPtWidth < j &&
@@ -124,7 +161,7 @@ public class templateMatching {
 									Imgproc.putText(dstRoi,
 											String.format("%.3f", rt),
 											new Point(j*c_tmpara.scale[n],i*c_tmpara.scale[n]),
-											Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),2);
+											Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),7);
 		    	    		    	j = (int) (j + c_tmpara.paternMat[n].cols() + tmpPtWidth);
 		    	    		    	resultValue[n].x.add(j);//X座標格納
 		    	    		    	resultValue[n].y.add(i);//y座標格納

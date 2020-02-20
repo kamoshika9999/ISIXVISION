@@ -140,6 +140,8 @@ public class ngImageController {
 		        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
 		        Platform.runLater(() ->this.shotCountLabele.setText( getShotCount(files[files_pointer])));
 		        Platform.runLater(() ->this.dateLabel.setText( getDate(files[files_pointer])));
+	        }else {
+	        	Platform.runLater(() ->this.info1.setText("画像がありません"));
 	        }
     }
 }

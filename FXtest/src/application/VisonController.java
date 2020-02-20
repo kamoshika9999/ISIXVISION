@@ -87,7 +87,7 @@ public class VisonController{
 	Point moveDraggingPointView = new Point();
 
 
-    preSet pObj;
+    public static preSet pObj;
     public static VideoCapture capObj = new VideoCapture();
 	public static ScheduledExecutorService timer;
 	public static ScheduledExecutorService timer2;
@@ -129,7 +129,7 @@ public class VisonController{
 	final long lockedTimerThresh = 1000 * 60 *5;
 	//パターンマッチング用
 	private boolean ptmSetStartFlg = false;
-	public Mat[][] ptmImgMat = new Mat[4][4];//[presetNo][ptm1～ptm4]
+	public Mat[][] ptm_ImgMat = new Mat[4][4];//[presetNo][ptm1～ptm4]
 	private TMpara tmpara = new TMpara();
 	private templateMatching templateMatchingObj;
 
@@ -1232,7 +1232,7 @@ public class VisonController{
 
 							Imgproc.putText(mainViewMat, String.valueOf(resultCircles.cols()),
 									new Point(draggingRect.x-25,draggingRect.y-6),
-									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,0,255),2);
+									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(128,255,128),7);
 
 							//面積判定
 							boolean holeAreaJudgFlg = holeWhiteAreaCheck(
@@ -1243,13 +1243,13 @@ public class VisonController{
 												" Max=" + String.format("%d",whiteAreaMax) +
 												" Min=" + String.format("%d",whiteAreaMin),
 										new Point(draggingRect.x+20,draggingRect.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
+										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(128,255,128),7);
 							}else {
 								Imgproc.putText(mainViewMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
 										" Max=" + String.format("%d",whiteAreaMax) +
 										" Min=" + String.format("%d",whiteAreaMin),
 										new Point(draggingRect.x+20,draggingRect.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),2);
+										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),7);
 							}
 						}
 		        	}
@@ -1282,8 +1282,8 @@ public class VisonController{
 		        		Size sz = new Size(tmpValue,tmpValue);
 		        		Imgproc.GaussianBlur(roi, roi, sz, sigmaX,sigmaY);
 		        	}
-		        	if( para.threshholdCheck[i]) {
-		        		int type = para.threshhold_Invers[i]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+		        	if( para.ptm_threshholdCheck[i]) {
+		        		int type = para.ptm_threshhold_Invers[i]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
 		        		Imgproc.threshold(roi, roi, para.threshhold[i],255,type);
 		        	}
 		        	if( para.dilateCheck[i]) {
@@ -1314,22 +1314,22 @@ public class VisonController{
 						fncDrwCircles(roi,circles, mainViewMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
 						Imgproc.putText(mainViewMat, String.valueOf(circles.cols()),
 								new Point(r.x-25,r.y-6),
-								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),3);
+								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),7);
 						//面積判定
 						holeAreaFlg = holeWhiteAreaCheck(
 								roi,circles,para.whiteAreaMax[i],para.whiteAreaMin[i]);
 						if( holeAreaFlg ) {
-							Imgproc.putText(mainViewMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
+								Imgproc.putText(mainViewMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
 									" Max=" + String.format("%d",whiteAreaMax) +
 									" Min=" + String.format("%d",whiteAreaMin),
 									new Point(r.x+20,r.y-6),
-									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),2);
+									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),7);
 						}else {
 							Imgproc.putText(mainViewMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
 									" Max=" + String.format("%d",whiteAreaMax) +
 									" Min=" + String.format("%d",whiteAreaMin),
 									new Point(r.x+20,r.y-6),
-									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),2);
+									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),7);
 						}
 					}
 
@@ -1639,9 +1639,9 @@ public class VisonController{
   	    pt.x = data[0];
   	    pt.y = data[1];
   	    rho = data[2];
-  	    Imgproc.circle(img, pt, (int) rho, new Scalar(0,255,0),5);
+  	    Imgproc.circle(img, pt, (int) rho, new Scalar(0,255,0),4);
   	    Imgproc.arrowedLine(img, new Point(pt.x-50,pt.y-50),
-  	    		new Point(pt.x-6,pt.y-6),new Scalar(0,255,0), 5);
+  	    		new Point(pt.x-6,pt.y-6),new Scalar(0,255,0), 4);
   	  }
 
   	  if(infoFlg) {
@@ -1776,9 +1776,9 @@ public class VisonController{
     	para.dilateCheck[i] = dilateCheck.isSelected();
     	para.dilateSliderN[i] = (int)dilateSliderN.getValue();
     	//para.zoom = this.zoomValue_slider.getValue();
-    	para.threshholdCheck[i] = threshholdCheck.isSelected();
+    	para.ptm_threshholdCheck[i] = threshholdCheck.isSelected();
     	para.threshhold[i] = threshholdSlider.getValue();
-    	para.threshhold_Invers[i] = threshhold_Inverse.isSelected();
+    	para.ptm_threshhold_Invers[i] = threshhold_Inverse.isSelected();
     	para.whiteAreaMax[i] = whiteRatioMaxSp.getValue().intValue();
     	para.whiteAreaMin[i] = whiteRatioMinSp.getValue().intValue();
 
@@ -1838,9 +1838,9 @@ public class VisonController{
 		para.dilateCheck[4] = dilateCheck.isSelected();
 		para.dilateSliderN[4] = (int)dilateSliderN.getValue();
 		para.zoom = zoomValue_slider.getValue();
-		para.threshholdCheck[4] = threshholdCheck.isSelected();
+		para.ptm_threshholdCheck[4] = threshholdCheck.isSelected();
 		para.threshhold[4] = threshholdSlider.getValue();
-		para.threshhold_Invers[4] = threshhold_Inverse.isSelected();
+		para.ptm_threshhold_Invers[4] = threshhold_Inverse.isSelected();
 		para.whiteAreaMax[4] = whiteRatioMaxSp.getValue();
 		para.whiteAreaMin[4] = whiteRatioMinSp.getValue();
 
@@ -1863,10 +1863,10 @@ public class VisonController{
 		Platform.runLater(() ->dilateSliderN.setValue(para.dilateSliderN[4]));
 		Platform.runLater(() ->zoomValue_slider.setValue(para.zoom));
 		Platform.runLater(() ->zoomLabel.setText(String.format("%.1f",para.zoom)));
-		Platform.runLater(() ->threshholdCheck.setSelected(para.threshholdCheck[4]));
+		Platform.runLater(() ->threshholdCheck.setSelected(para.ptm_threshholdCheck[4]));
 		Platform.runLater(() ->threshholdSlider.setValue(para.threshhold[4]));
     	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
-    	Platform.runLater(() ->threshhold_Inverse.setSelected(para.threshhold_Invers[4]));
+    	Platform.runLater(() ->threshhold_Inverse.setSelected(para.ptm_threshhold_Invers[4]));
     	Platform.runLater(() ->textFieldDetecPara4.setText(String.valueOf(String.format("%.1f",sliderDetecPara4.getValue()))));
     	Platform.runLater(() ->textFieldDetecPara5.setText(String.valueOf(String.format("%.1f",sliderDetecPara5.getValue()))));
     	Platform.runLater(() ->textFieldDetecPara6.setText(String.valueOf(String.format("%.1f",sliderDetecPara6.getValue()))));
@@ -1911,10 +1911,10 @@ public class VisonController{
 		Platform.runLater(() ->gauusianSliderK.setValue(para.gauusianSliderA[onSetVeri_n]));
 		Platform.runLater(() ->dilateCheck.setSelected(para.dilateCheck[onSetVeri_n]));
 		Platform.runLater(() ->dilateSliderN.setValue(para.dilateSliderN[onSetVeri_n]));
-		Platform.runLater(() ->threshholdCheck.setSelected(para.threshholdCheck[onSetVeri_n]));
+		Platform.runLater(() ->threshholdCheck.setSelected(para.ptm_threshholdCheck[onSetVeri_n]));
 		Platform.runLater(() ->threshholdSlider.setValue(para.threshhold[onSetVeri_n]));
     	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
-    	Platform.runLater(() ->threshhold_Inverse.setSelected(para.threshhold_Invers[onSetVeri_n]));
+    	Platform.runLater(() ->threshhold_Inverse.setSelected(para.ptm_threshhold_Invers[onSetVeri_n]));
     	Platform.runLater(() ->textFieldDetecPara4.setText(String.valueOf(String.format("%.1f",sliderDetecPara4.getValue()))));
     	Platform.runLater(() ->textFieldDetecPara5.setText(String.valueOf(String.format("%.1f",sliderDetecPara5.getValue()))));
     	Platform.runLater(() ->textFieldDetecPara6.setText(String.valueOf(String.format("%.1f",sliderDetecPara6.getValue()))));
@@ -1980,9 +1980,9 @@ public class VisonController{
 		para.dilateCheck[4] = dilateCheck.isSelected();
 		para.dilateSliderN[4] = (int)dilateSliderN.getValue();
 		para.zoom = zoomValue_slider.getValue();
-		para.threshholdCheck[4] = threshholdCheck.isSelected();
+		para.ptm_threshholdCheck[4] = threshholdCheck.isSelected();
 		para.threshhold[4] = threshholdSlider.getValue();
-		para.threshhold_Invers[4] = threshhold_Inverse.isSelected();
+		para.ptm_threshhold_Invers[4] = threshhold_Inverse.isSelected();
 
 		para.ptmEnable[0] = ptm_pt1_enable.isSelected();
 		para.ptmEnable[1] = ptm_pt2_enable.isSelected();
@@ -2005,8 +2005,8 @@ public class VisonController{
 		//パターンマッチング画像の保存 ptmImgMat[preSetNo][ptm1～ptm4]
 		for(int i=0;i<4;i++) {
 			for(int j=0;j<4;j++) {
-				if( ptmImgMat[i][j] != null ) {
-					savePtmImg(ptmImgMat[i][j],"ptm"+String.format("_%d_%d", i,j));
+				if( ptm_ImgMat[i][j] != null ) {
+					savePtmImg(ptm_ImgMat[i][j],"ptm"+String.format("_%d_%d", i,j));
 				}
 			}
 		}
@@ -2086,10 +2086,10 @@ public class VisonController{
 
     	//パターンマッチング部
     	loadPtmImg();
-    	updateImageView(ptm_img1, Utils.mat2Image(ptmImgMat[pObj.select][0]));
-    	updateImageView(ptm_img2, Utils.mat2Image(ptmImgMat[pObj.select][1]));
-    	updateImageView(ptm_img3, Utils.mat2Image(ptmImgMat[pObj.select][2]));
-    	updateImageView(ptm_img4, Utils.mat2Image(ptmImgMat[pObj.select][3]));
+    	updateImageView(ptm_img1, Utils.mat2Image(ptm_ImgMat[pObj.select][0]));
+    	updateImageView(ptm_img2, Utils.mat2Image(ptm_ImgMat[pObj.select][1]));
+    	updateImageView(ptm_img3, Utils.mat2Image(ptm_ImgMat[pObj.select][2]));
+    	updateImageView(ptm_img4, Utils.mat2Image(ptm_ImgMat[pObj.select][3]));
     	ptm_pt1_enable.setSelected(para.ptmEnable[0]);
     	ptm_pt2_enable.setSelected(para.ptmEnable[1]);
     	ptm_pt3_enable.setSelected(para.ptmEnable[2]);
@@ -2104,12 +2104,12 @@ public class VisonController{
     private void patternMatchParaSet() {
     	parameter para = pObj.para[pObj.select];
         for(int i=0;i<tmpara.arrayCnt;i++) {
-        	tmpara.matchingTreshDetectCnt[i] = para.detectionCnt[i];
+        	tmpara.matchingTreshDetectCnt[i] = para.ptm_detectionCnt[i];
         	tmpara.matchingThresh[i] = para.matchThreshValue[i];
-        	tmpara.paternMat[i] = ptmImgMat[pObj.select][i];
+        	tmpara.paternMat[i] = ptm_ImgMat[pObj.select][i];
         	tmpara.ptmEnable[i] = para.ptmEnable[i];
-        	tmpara.detectionRects[i] = para.para_rectsDetection[i];
-        	tmpara.scale[i] = para.detectionScale[i];
+        	tmpara.detectionRects[i] = para.ptm_rectsDetection[i];
+        	tmpara.scale[i] = para.ptm_detectionScale[i];
         }
         templateMatchingObj = new templateMatching(tmpara);
     }
@@ -2122,11 +2122,11 @@ public class VisonController{
     		for( int j=0;j<4;j++) {
     	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/ptm"+String.format("_%d_%d", i,j)+".jpeg");
     	    	if( tmpMat.width() > 0 ) {
-    	    		 ptmImgMat[i][j] = new Mat();
-    	    		 ptmImgMat[i][j] = tmpMat.clone();
+    	    		 ptm_ImgMat[i][j] = new Mat();
+    	    		 ptm_ImgMat[i][j] = tmpMat.clone();
 
     	    	}else {
-    	    		ptmImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3);
+    	    		ptm_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3);
     	    	}
 
     		}
@@ -2403,33 +2403,33 @@ public class VisonController{
 		//パラメーターを渡す
 		PtmView.ptmSrcMat = srcMat.clone();
 
-		PtmView.arg_ptmMat = ptmImgMat[pObj.select][selectBtn].clone();
-		PtmView.arg_detectionCnt = para.detectionCnt[selectBtn];
+		PtmView.arg_ptmMat = ptm_ImgMat[pObj.select][selectBtn].clone();
+		PtmView.arg_detectionCnt = para.ptm_detectionCnt[selectBtn];
 
-		PtmView.arg_gauusianCheck = para.para_gauusianCheck[selectBtn];
-		PtmView.arg_gauusianSliderX = para.para_gauusianSliderX[selectBtn];
-		PtmView.arg_gauusianSliderY = para.para_gauusianSliderY[selectBtn];
-		PtmView.arg_gauusianSliderA = para.para_gauusianSliderA[selectBtn];
+		PtmView.arg_gauusianCheck = para.ptm_gauusianCheck[selectBtn];
+		PtmView.arg_gauusianSliderX = para.ptm_gauusianSliderX[selectBtn];
+		PtmView.arg_gauusianSliderY = para.ptm_gauusianSliderY[selectBtn];
+		PtmView.arg_gauusianSliderA = para.ptm_gauusianSliderA[selectBtn];
 
-		PtmView.arg_dilateCheck = para.para_dilateCheck[selectBtn];
-		PtmView.arg_dilateSliderN = para.para_dilateSliderN[selectBtn];
+		PtmView.arg_dilateCheck = para.ptm_dilateCheck[selectBtn];
+		PtmView.arg_dilateSliderN = para.ptm_dilateSliderN[selectBtn];
 
-		PtmView.arg_erodeCheck = para.para_erodeCheck[selectBtn];
-		PtmView.arg_erodeSliderN = para.para_erodeSliderN[selectBtn];
+		PtmView.arg_erodeCheck = para.ptm_erodeCheck[selectBtn];
+		PtmView.arg_erodeSliderN = para.ptm_erodeSliderN[selectBtn];
 
-		PtmView.arg_threshholdCheck = para.threshholdCheck[selectBtn];
-		PtmView.arg_threshhold_Inverse = para.threshhold_Invers[selectBtn];
-		PtmView.arg_threshholdSlider = para.para_threshholdSlider[selectBtn];//2値化閾値
+		PtmView.arg_threshholdCheck = para.ptm_threshholdCheck[selectBtn];
+		PtmView.arg_threshhold_Inverse = para.ptm_threshhold_Invers[selectBtn];
+		PtmView.arg_threshholdSlider = para.ptm_threshholdSlider[selectBtn];//2値化閾値
 
-		PtmView.arg_cannyCheck = para.para_cannyCheck[selectBtn];
-		PtmView.arg_cannyThresh1 = para.para_cannyThresh1[selectBtn];
-		PtmView.arg_cannyThresh2 = para.para_cannyThresh2[selectBtn];
+		PtmView.arg_cannyCheck = para.ptm_cannyCheck[selectBtn];
+		PtmView.arg_cannyThresh1 = para.ptm_cannyThresh1[selectBtn];
+		PtmView.arg_cannyThresh2 = para.ptm_cannyThresh2[selectBtn];
 
-		PtmView.arg_ptmThreshSliderN = para.para_ptmThreshSliderN[selectBtn];//閾値
-		PtmView.arg_zoomValue_slider = para.para_zoomValue_slider[selectBtn];
-		PtmView.arg_rectsDetection =  para.para_rectsDetection[selectBtn];//検出範囲
+		PtmView.arg_ptmThreshSliderN = para.ptm_ptmThreshSliderN[selectBtn];//閾値
+		PtmView.arg_zoomValue_slider = para.ptm_zoomValue_slider[selectBtn];
+		PtmView.arg_rectsDetection =  para.ptm_rectsDetection[selectBtn];//検出範囲
 
-		PtmView.arg_detectionScale = para.detectionScale[selectBtn];//検出倍率の逆数
+		PtmView.arg_detectionScale = para.ptm_detectionScale[selectBtn];//検出倍率の逆数
 
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("ptmView.fxml"));
 		AnchorPane root = null;
@@ -2447,34 +2447,34 @@ public class VisonController{
 		stage.showAndWait();
 
 		if( PtmView.confimFlg ) {
-			ptmImgMat[pObj.select][selectBtn] = PtmView.arg_ptmMat;
-			updateImageView(iv, Utils.mat2Image(ptmImgMat[pObj.select][selectBtn]));
+			ptm_ImgMat[pObj.select][selectBtn] = PtmView.arg_ptmMat;
+			updateImageView(iv, Utils.mat2Image(ptm_ImgMat[pObj.select][selectBtn]));
 
-			para.detectionCnt[selectBtn] = PtmView.arg_detectionCnt;
+			para.ptm_detectionCnt[selectBtn] = PtmView.arg_detectionCnt;
 
-			para.para_gauusianCheck[selectBtn] = PtmView.arg_gauusianCheck;
-			para.para_gauusianSliderX[selectBtn] = PtmView.arg_gauusianSliderX;
-			para.para_gauusianSliderY[selectBtn]  = PtmView.arg_gauusianSliderY;
-			para.para_gauusianSliderA[selectBtn] = PtmView.arg_gauusianSliderA;
+			para.ptm_gauusianCheck[selectBtn] = PtmView.arg_gauusianCheck;
+			para.ptm_gauusianSliderX[selectBtn] = PtmView.arg_gauusianSliderX;
+			para.ptm_gauusianSliderY[selectBtn]  = PtmView.arg_gauusianSliderY;
+			para.ptm_gauusianSliderA[selectBtn] = PtmView.arg_gauusianSliderA;
 
-			para.para_dilateCheck[selectBtn] = PtmView.arg_dilateCheck;
-			para.para_dilateSliderN[selectBtn] = PtmView.arg_dilateSliderN;
+			para.ptm_dilateCheck[selectBtn] = PtmView.arg_dilateCheck;
+			para.ptm_dilateSliderN[selectBtn] = PtmView.arg_dilateSliderN;
 
-			para.para_erodeCheck[selectBtn] = PtmView.arg_erodeCheck;
-			para.para_erodeSliderN[selectBtn] = PtmView.arg_erodeSliderN;
+			para.ptm_erodeCheck[selectBtn] = PtmView.arg_erodeCheck;
+			para.ptm_erodeSliderN[selectBtn] = PtmView.arg_erodeSliderN;
 
-			para.threshholdCheck[selectBtn] = PtmView.arg_threshholdCheck;
-			para.threshhold_Invers[selectBtn] = PtmView.arg_threshhold_Inverse;
-			para.para_threshholdSlider[selectBtn] = PtmView.arg_threshholdSlider;//2値化閾値
+			para.ptm_threshholdCheck[selectBtn] = PtmView.arg_threshholdCheck;
+			para.ptm_threshhold_Invers[selectBtn] = PtmView.arg_threshhold_Inverse;
+			para.ptm_threshholdSlider[selectBtn] = PtmView.arg_threshholdSlider;//2値化閾値
 
-			para.para_cannyCheck[selectBtn] = PtmView.arg_cannyCheck;
-			para.para_cannyThresh1[selectBtn] = PtmView.arg_cannyThresh1;
-			para.para_cannyThresh2[selectBtn] = PtmView.arg_cannyThresh2;
+			para.ptm_cannyCheck[selectBtn] = PtmView.arg_cannyCheck;
+			para.ptm_cannyThresh1[selectBtn] = PtmView.arg_cannyThresh1;
+			para.ptm_cannyThresh2[selectBtn] = PtmView.arg_cannyThresh2;
 
-			para.para_ptmThreshSliderN[selectBtn] = PtmView.arg_ptmThreshSliderN;//閾値
-			para.para_zoomValue_slider[selectBtn] = PtmView.arg_zoomValue_slider;
-			para.para_rectsDetection[selectBtn] =  PtmView.arg_rectsDetection;//検出範囲
-			para.detectionScale[selectBtn] = PtmView.arg_detectionScale;//検出倍率の逆数
+			para.ptm_ptmThreshSliderN[selectBtn] = PtmView.arg_ptmThreshSliderN;//閾値
+			para.ptm_zoomValue_slider[selectBtn] = PtmView.arg_zoomValue_slider;
+			para.ptm_rectsDetection[selectBtn] =  PtmView.arg_rectsDetection;//検出範囲
+			para.ptm_detectionScale[selectBtn] = PtmView.arg_detectionScale;//検出倍率の逆数
 		}
         //パターンマッチング用パラメータ設定
     	patternMatchParaSet();
@@ -2500,16 +2500,16 @@ public class VisonController{
     	Object eObject = e.getSource();
     	if( eObject == this.ptm_set_pt1 ) {
     		updateImageView(ptm_img1, Utils.mat2Image(roi));
-    		ptmImgMat[pObj.select][0] = roi;
+    		ptm_ImgMat[pObj.select][0] = roi;
     	}else if( eObject == this.ptm_set_pt2 ) {
     		updateImageView(ptm_img2, Utils.mat2Image(roi));
-    		ptmImgMat[pObj.select][1] = roi;
+    		ptm_ImgMat[pObj.select][1] = roi;
     	}else if( eObject == this.ptm_set_pt3 ) {
     		updateImageView(ptm_img3, Utils.mat2Image(roi));
-    		ptmImgMat[pObj.select][2] = roi;
+    		ptm_ImgMat[pObj.select][2] = roi;
     	}else if( eObject == this.ptm_set_pt4 ) {
     		updateImageView(ptm_img4, Utils.mat2Image(roi));
-    		ptmImgMat[pObj.select][3] = roi;
+    		ptm_ImgMat[pObj.select][3] = roi;
     	}
         //パターンマッチング用パラメータ設定
     	patternMatchParaSet();

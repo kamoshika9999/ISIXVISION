@@ -90,14 +90,19 @@ public class ReTestImageController {
         assert useImgSettingBtn != null : "fx:id=\"useImgSettingBtn\" was not injected: check your FXML file 'OKImageViewer.fxml'.";
 
         //NGイメージの保存先 ./ng_image
-        files = FileClass.getFiles(new File("./ok_image"));
+        files = FileClass.getFiles(new File("./retest_image"));
         if( files == null ) {
         	return;
         }
 
         files_pointer = files.length-1;
-        img = Imgcodecs.imread( files[files_pointer].getPath());
-        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
-        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
+        if( files.length  >0 ) {
+	        img = Imgcodecs.imread( files[files_pointer].getPath());
+	        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
+	        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / " +
+	        															String.valueOf(files.length)));
+        }else {
+        	Platform.runLater(() ->this.info1.setText("画像がありません"));
+        }
     }
 }
