@@ -247,14 +247,7 @@ public class PtmView {
 
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
-    	/*
-    	Rectangle2D vRect2 = new Rectangle2D(
-    			xMin / scaleSlider.getValue(),
-    			yMin / scaleSlider.getValue(),
-    			width / scaleSlider.getValue(),
-    			height / scaleSlider.getValue());
-    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
-    	*/
+
     	Rectangle2D vRect2 = new Rectangle2D( xMin / scaleSlider.getValue(),yMin / scaleSlider.getValue(),
     			ptmMainViewDst.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
     			ptmMainViewDst.getFitHeight() /viewOrgZoom /scaleSlider.getValue());
@@ -311,14 +304,7 @@ public class PtmView {
 
     	vRect = new Rectangle2D( xMin,yMin,width,height);
     	Platform.runLater(() ->ptmMainView.setViewport(vRect));
-    	/*
-    	Rectangle2D vRect2 = new Rectangle2D(
-    			xMin / scaleSlider.getValue(),
-    			yMin / scaleSlider.getValue(),
-    			width / scaleSlider.getValue(),
-    			height / scaleSlider.getValue());
-    	Platform.runLater(() ->ptmMainViewDst.setViewport(vRect2));
-    	*/
+
     	Rectangle2D vRect2 = new Rectangle2D( xMin / scaleSlider.getValue(),yMin / scaleSlider.getValue(),
     			ptmMainViewDst.getFitWidth() /viewOrgZoom /scaleSlider.getValue(),
     			ptmMainViewDst.getFitHeight() /viewOrgZoom /scaleSlider.getValue());

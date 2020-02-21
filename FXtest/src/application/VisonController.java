@@ -2425,7 +2425,7 @@ public class VisonController{
 		PtmView.arg_cannyThresh1 = para.ptm_cannyThresh1[selectBtn];
 		PtmView.arg_cannyThresh2 = para.ptm_cannyThresh2[selectBtn];
 
-		PtmView.arg_ptmThreshSliderN = para.ptm_ptmThreshSliderN[selectBtn];//閾値
+		PtmView.arg_ptmThreshSliderN = para.ptm_threshValue[selectBtn];//閾値
 		PtmView.arg_zoomValue_slider = para.ptm_zoomValue_slider[selectBtn];
 		PtmView.arg_rectsDetection =  para.ptm_rectsDetection[selectBtn];//検出範囲
 
@@ -2471,7 +2471,7 @@ public class VisonController{
 			para.ptm_cannyThresh1[selectBtn] = PtmView.arg_cannyThresh1;
 			para.ptm_cannyThresh2[selectBtn] = PtmView.arg_cannyThresh2;
 
-			para.ptm_ptmThreshSliderN[selectBtn] = PtmView.arg_ptmThreshSliderN;//閾値
+			para.ptm_threshValue[selectBtn] = PtmView.arg_ptmThreshSliderN;//閾値
 			para.ptm_zoomValue_slider[selectBtn] = PtmView.arg_zoomValue_slider;
 			para.ptm_rectsDetection[selectBtn] =  PtmView.arg_rectsDetection;//検出範囲
 			para.ptm_detectionScale[selectBtn] = PtmView.arg_detectionScale;//検出倍率の逆数

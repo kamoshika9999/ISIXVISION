@@ -51,7 +51,7 @@ public class parameter implements Serializable {
 	public boolean[] ptm_cannyCheck;
 	public double[] ptm_cannyThresh1;
 	public double[] ptm_cannyThresh2;
-	public double[] ptm_ptmThreshSliderN;
+	public double[] ptm_threshValue;
 	public double[] ptm_zoomValue_slider;
 
 
@@ -109,7 +109,7 @@ public class parameter implements Serializable {
 		ptm_cannyThresh1 = new double[arrySize];
 		ptm_cannyThresh2 = new double[arrySize];
 
-		ptm_ptmThreshSliderN = new double[arrySize];
+		ptm_threshValue = new double[arrySize];
 		ptm_zoomValue_slider = new double[arrySize];
 		ptm_rectsDetection = new Rectangle[arrySize];
 

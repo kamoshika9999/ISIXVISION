@@ -61,39 +61,41 @@ public class templateMatching {
 				}
 
 				//フィルタ処理
-		    	if( para.ptm_gauusianCheck[n] ) {//ガウシアン
-		    		double sigmaX = para.ptm_gauusianSliderX[n];
-		    		double sigmaY = para.ptm_gauusianSliderY[n];
-		    		int tmpValue = (int) para.ptm_gauusianSliderA[n];
-		    		if( tmpValue % 2 == 0 ) {
-		    			tmpValue++;
-		    		}
-		    		Size sz = new Size(tmpValue,tmpValue);
-		    		Imgproc.GaussianBlur(c_areaMat, c_areaMat, sz, sigmaX,sigmaY);
-		    		Imgproc.GaussianBlur(c_tmpara.paternMat[n], c_tmpara.paternMat[n], sz, sigmaX,sigmaY);
-		    	}
-		    	if( para.ptm_threshholdCheck[n]) {//２値化
-		    		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
-		    		Imgproc.threshold(c_areaMat, c_areaMat, this.threshholdSlider.getValue(),255,type);
-		    		Imgproc.threshold(c_tmpara.paternMat[n], c_tmpara.paternMat[n], this.threshholdSlider.getValue(),255,type);
-		    	}
-		    	if( dilateCheck.isSelected() ) {//膨張
-		    		int n = (int)dilateSliderN.getValue();
-		    		Imgproc.dilate(c_areaMat, c_areaMat, new Mat(),new Point(-1,-1),n);
-		    		Imgproc.dilate(c_tmpara.paternMat[n], c_tmpara.paternMat[n], new Mat(),new Point(-1,-1),n);
-		    	}
-		    	if( erodeCheck.isSelected() ) {//収縮
-		    		int n = (int)this.erodeSliderN.getValue();
-		    		Imgproc.erode(c_areaMat, c_areaMat, new Mat(),new Point(-1,-1),n);
-		    		Imgproc.erode(c_tmpara.paternMat[n], c_tmpara.paternMat[n], new Mat(),new Point(-1,-1),n);
-
-		    	}
-		    	if( cannyCheck.isSelected() ) {//Canny
-		    		double thresh1 = cannyThresh1.getValue();
-		    		double thresh2 = cannyThresh2.getValue();
-		    		Imgproc.Canny(c_areaMat,c_areaMat,thresh1,thresh2);
-		    		Imgproc.Canny(c_tmpara.paternMat[n],c_tmpara.paternMat[n],thresh1,thresh2);
-		    	}
+				if(!settingFlg) {
+			    	if( para.ptm_gauusianCheck[n] ) {//ガウシアン
+			    		double sigmaX = para.ptm_gauusianSliderX[n];
+			    		double sigmaY = para.ptm_gauusianSliderY[n];
+			    		int tmpValue = (int) para.ptm_gauusianSliderA[n];
+			    		if( tmpValue % 2 == 0 ) {
+			    			tmpValue++;
+			    		}
+			    		Size sz = new Size(tmpValue,tmpValue);
+			    		Imgproc.GaussianBlur(c_areaMat, c_areaMat, sz, sigmaX,sigmaY);
+			    		Imgproc.GaussianBlur(c_tmpara.paternMat[n], c_tmpara.paternMat[n], sz, sigmaX,sigmaY);
+			    	}
+			    	if( para.ptm_threshholdCheck[n]) {//２値化
+			    		int type = para.ptm_threshhold_Invers[n]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+			    		Imgproc.threshold(c_areaMat, c_areaMat, para.ptm_threshholdSlider[n],255,type);
+			    		Imgproc.threshold(c_tmpara.paternMat[n], c_tmpara.paternMat[n], para.ptm_threshholdSlider[n],255,type);
+			    	}
+			    	if( para.ptm_dilateCheck[n]) {//膨張
+			    		int v = (int)para.ptm_dilateSliderN[n];
+			    		Imgproc.dilate(c_areaMat, c_areaMat, new Mat(),new Point(-1,-1),v);
+			    		Imgproc.dilate(c_tmpara.paternMat[n], c_tmpara.paternMat[n], new Mat(),new Point(-1,-1),v);
+			    	}
+			    	if( para.ptm_erodeCheck[n]) {//収縮
+			    		int v = (int)para.ptm_erodeSliderN[n];
+			    		Imgproc.erode(c_areaMat, c_areaMat, new Mat(),new Point(-1,-1),v);
+			    		Imgproc.erode(c_tmpara.paternMat[n], c_tmpara.paternMat[n], new Mat(),new Point(-1,-1),v);
+	
+			    	}
+			    	if( para.ptm_cannyCheck[n] ) {//Canny
+			    		double thresh1 = para.ptm_cannyThresh1[n];
+			    		double thresh2 = para.ptm_cannyThresh2[n];
+			    		Imgproc.Canny(c_areaMat,c_areaMat,thresh1,thresh2);
+			    		Imgproc.Canny(c_tmpara.paternMat[n],c_tmpara.paternMat[n],thresh1,thresh2);
+			    	}
+				}
 
 				//比較結果を格納するMatを生成 ※ctmpara.scale[n]適用前に生成
 				Mat dstRoi = dstMat.submat(
