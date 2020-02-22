@@ -21,13 +21,13 @@
 
 <AnchorPane fx:id="aPane" accessibleRole="TEXT_FIELD" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeypressed" pickOnBounds="false" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.VisonController">
    <children>
-      <ImageView fx:id="imgNG" fitHeight="278.0" fitWidth="408.0" layoutX="776.0" layoutY="415.0" pickOnBounds="true" preserveRatio="true" smooth="false">
+      <ImageView fx:id="imgNG" fitHeight="250.0" fitWidth="420.0" layoutX="776.0" layoutY="443.0" pickOnBounds="true" preserveRatio="true" smooth="false">
          <effect>
             <DropShadow color="#da0606" />
          </effect>
       </ImageView>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="91.0" layoutX="854.0" layoutY="244.0" stroke="BLACK" strokeType="INSIDE" width="302.0" />
-      <Accordion fx:id="accordion_1" disable="true" layoutY="350.0" prefHeight="343.0" prefWidth="768.0">
+      <Accordion fx:id="accordion_1" layoutY="350.0" prefHeight="343.0" prefWidth="768.0">
         <panes>
           <TitledPane text="Hard Setting /SAVE /LOAD /Other">
             <content>
@@ -110,6 +110,7 @@
                               <DropShadow />
                            </effect>
                         </CheckBox>
+                        <Button fx:id="paraInitBtn" layoutX="705.0" layoutY="216.0" mnemonicParsing="false" onAction="#onParaInitBtn" text="初期化" />
                      </children>
                   </AnchorPane>
             </content>
@@ -255,6 +256,7 @@
                         <Label layoutX="623.0" layoutY="169.0" text="白面積上限" />
                         <Spinner fx:id="whiteRatioMinSp" layoutX="688.0" layoutY="190.0" prefHeight="25.0" prefWidth="70.0" />
                         <Label layoutX="623.0" layoutY="194.0" text="白面積下限" />
+                        <Button fx:id="whiteAreaBtn" layoutX="613.0" layoutY="132.0" mnemonicParsing="false" onAction="#onWhiteAreaBtn" text="適用" />
                      </children>
                   </AnchorPane>
             </content>
@@ -457,7 +459,7 @@
          </font>
       </Label>
       <CheckBox fx:id="imgSaveFlg" layoutX="744.0" layoutY="315.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
-      <TextArea fx:id="info2" layoutX="690.0" layoutY="11.0" prefHeight="157.0" prefWidth="502.0" text="Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;OPENCV 4.2  JAVAFX11.0 JRE13.0 &#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="690.0" layoutY="11.0" prefHeight="157.0" prefWidth="502.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;OPENCV 4.2  JAVAFX11.0 JRE13.0 &#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />
@@ -512,5 +514,13 @@
             <Font size="24.0" />
          </font>
       </Label>
+      <Button fx:id="holeAnalysisBtn" layoutX="903.0" layoutY="396.0" mnemonicParsing="false" onAction="#onHoleAnalysisBtn" prefHeight="39.0" prefWidth="63.0" text="HoleAnalysis Viewer" wrapText="true">
+         <effect>
+            <DropShadow color="#3000f0" />
+         </effect>
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>

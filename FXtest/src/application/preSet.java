@@ -21,7 +21,7 @@ public class preSet implements Serializable{
 			para[i] = new parameter();
 			select = 1;
 			cameraID = 1;
-			adc_thresh = 2000;
+			adc_thresh = 400;
 			cameraWidth = 1920;
 			cameraHeight = 1080;
 			adcFlg = true;

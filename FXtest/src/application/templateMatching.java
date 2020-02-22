@@ -38,8 +38,6 @@ public class templateMatching {
 	 * @return  true:合格  false:不合格
 	 */
 	public boolean detectPattern(Mat areaMat, Mat dstMat,boolean settingFlg) {
-		preSet pObj = VisonController.pObj;
-		parameter para = pObj.para[pObj.select];
 
 		boolean resultFlg = true;
 		Mat c_areaMat;//検出エリアMatクローン用
@@ -62,10 +60,10 @@ public class templateMatching {
 
 				//フィルタ処理
 				if(!settingFlg) {
-			    	if( para.ptm_gauusianCheck[n] ) {//ガウシアン
-			    		double sigmaX = para.ptm_gauusianSliderX[n];
-			    		double sigmaY = para.ptm_gauusianSliderY[n];
-			    		int tmpValue = (int) para.ptm_gauusianSliderA[n];
+			    	if( c_tmpara.para.ptm_fil_gauusianCheck[n] ) {//ガウシアン
+			    		double sigmaX = c_tmpara.para.ptm_fil_gauusianX[n];
+			    		double sigmaY = c_tmpara.para.ptm_fil_gauusianY[n];
+			    		int tmpValue = (int) c_tmpara.para.ptm_fil_gauusianValue[n];
 			    		if( tmpValue % 2 == 0 ) {
 			    			tmpValue++;
 			    		}
@@ -73,25 +71,25 @@ public class templateMatching {
 			    		Imgproc.GaussianBlur(c_areaMat, c_areaMat, sz, sigmaX,sigmaY);
 			    		Imgproc.GaussianBlur(c_tmpara.paternMat[n], c_tmpara.paternMat[n], sz, sigmaX,sigmaY);
 			    	}
-			    	if( para.ptm_threshholdCheck[n]) {//２値化
-			    		int type = para.ptm_threshhold_Invers[n]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
-			    		Imgproc.threshold(c_areaMat, c_areaMat, para.ptm_threshholdSlider[n],255,type);
-			    		Imgproc.threshold(c_tmpara.paternMat[n], c_tmpara.paternMat[n], para.ptm_threshholdSlider[n],255,type);
+			    	if( c_tmpara.para.hole_fil_threshholdCheck[n]) {//２値化
+			    		int type = c_tmpara.para.hole_fil_threshhold_Invers[n]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+			    		Imgproc.threshold(c_areaMat, c_areaMat, c_tmpara.para.ptm_fil_threshholdValue[n],255,type);
+			    		Imgproc.threshold(c_tmpara.paternMat[n], c_tmpara.paternMat[n], c_tmpara.para.ptm_fil_threshholdValue[n],255,type);
 			    	}
-			    	if( para.ptm_dilateCheck[n]) {//膨張
-			    		int v = (int)para.ptm_dilateSliderN[n];
+			    	if( c_tmpara.para.ptm_fil_dilateCheck[n]) {//膨張
+			    		int v = (int)c_tmpara.para.ptm_fil_dilateValue[n];
 			    		Imgproc.dilate(c_areaMat, c_areaMat, new Mat(),new Point(-1,-1),v);
 			    		Imgproc.dilate(c_tmpara.paternMat[n], c_tmpara.paternMat[n], new Mat(),new Point(-1,-1),v);
 			    	}
-			    	if( para.ptm_erodeCheck[n]) {//収縮
-			    		int v = (int)para.ptm_erodeSliderN[n];
+			    	if( c_tmpara.para.ptm_fil_erodeCheck[n]) {//収縮
+			    		int v = (int)c_tmpara.para.ptm_fil_erodeValue[n];
 			    		Imgproc.erode(c_areaMat, c_areaMat, new Mat(),new Point(-1,-1),v);
 			    		Imgproc.erode(c_tmpara.paternMat[n], c_tmpara.paternMat[n], new Mat(),new Point(-1,-1),v);
-	
+
 			    	}
-			    	if( para.ptm_cannyCheck[n] ) {//Canny
-			    		double thresh1 = para.ptm_cannyThresh1[n];
-			    		double thresh2 = para.ptm_cannyThresh2[n];
+			    	if( c_tmpara.para.ptm_fil_cannyCheck[n] ) {//Canny
+			    		double thresh1 = c_tmpara.para.ptm_fil_cannyThresh1[n];
+			    		double thresh2 = c_tmpara.para.ptm_fil_cannyThresh2[n];
 			    		Imgproc.Canny(c_areaMat,c_areaMat,thresh1,thresh2);
 			    		Imgproc.Canny(c_tmpara.paternMat[n],c_tmpara.paternMat[n],thresh1,thresh2);
 			    	}
@@ -129,7 +127,8 @@ public class templateMatching {
 
 				if( areaRoi.width() > c_tmpara.paternMat[n].width() && areaRoi.height() > c_tmpara.paternMat[n].height() ) {
 
-			    	Mat result = new Mat(areaRoi.rows() - c_tmpara.paternMat[n].rows() + 1, areaRoi.cols() - c_tmpara.paternMat[n].cols() + 1, CvType.CV_32FC1);
+			    	Mat result = new Mat(areaRoi.rows() - c_tmpara.paternMat[n].rows() + 1,
+			    			areaRoi.cols() - c_tmpara.paternMat[n].cols() + 1, CvType.CV_32FC1);
 				    //テンプレートマッチ実行（TM_CCOEFF_NORMED：相関係数＋正規化）
 			    	if(c_tmpara.paternMat[n].type() == CvType.CV_8UC3) {
 			        	Imgproc.cvtColor(c_tmpara.paternMat[n], c_tmpara.paternMat[n], Imgproc.COLOR_BGR2GRAY);//グレースケール化
@@ -158,7 +157,8 @@ public class templateMatching {
 		    						resultValue[n].cnt++;
 		    						finedPoint.add(new Point(j,i));
 		    	    		    	Imgproc.rectangle(dstRoi,new Point(j*c_tmpara.scale[n],i*c_tmpara.scale[n]),
-		    	    		    			new Point((j+c_tmpara.paternMat[n].width())*c_tmpara.scale[n],(i+c_tmpara.paternMat[n].height())*c_tmpara.scale[n]),
+		    	    		    			new Point((j+c_tmpara.paternMat[n].width())*c_tmpara.scale[n],
+		    	    		    			(i+c_tmpara.paternMat[n].height())*c_tmpara.scale[n]),
 		    	    		    			new Scalar(0,255,255),3);
 									Imgproc.putText(dstRoi,
 											String.format("%.3f", rt),

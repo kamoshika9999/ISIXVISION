@@ -17,6 +17,7 @@ public class TMpara implements Cloneable{
 	public boolean[] ptmEnable;//パターンマッチング有効無効フラグ
 	public Rectangle[] detectionRects;//パターンマッチング検出エリア
 	public double[] scale;//パターンマッチングの検出に使用するスケール倍率の逆数
+	public parameter para = null;
 
 	public TMpara() {
 		matchingTreshDetectCnt = new int[arrayCnt];
@@ -48,6 +49,7 @@ public class TMpara implements Cloneable{
         b.matchingThresh = this.matchingThresh;
         b.ptmEnable = this.ptmEnable;
         b.scale = this.scale;
+        b.para = this.para;
 
         for(int i=0;i<this.arrayCnt;i++ ) {
             b.paternMat[i] = (Mat)this.paternMat[i].clone();

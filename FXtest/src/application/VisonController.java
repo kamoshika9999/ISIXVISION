@@ -369,6 +369,12 @@ public class VisonController{
     private CheckBox adc_flg;
     @FXML
     private Button ReTestBtn;//retest_imageフォルダに入っている画像を再テストする
+    @FXML
+    private Button holeAnalysisBtn;//穴検出解析ダイアログを開く
+
+    @FXML
+    private Button paraInitBtn;//設定初期化
+
 
 
     //パターンマッチング関係
@@ -419,6 +425,8 @@ public class VisonController{
     private Spinner<Integer> whiteRatioMaxSp;
     @FXML
     private Spinner<Integer> whiteRatioMinSp;
+    @FXML
+    private Button whiteAreaBtn;
 
     //寸法測定用
     @FXML
@@ -1269,25 +1277,25 @@ public class VisonController{
 			Scalar color;
 	        for (int i=0;i<4;i++) {
 				ngFlg = false;
-	        	if( para.setFlg[i] ) {
-		        	Rectangle r = para.rects[i];
+	        	if( para.hole_DetectFlg[i] ) {
+		        	Rectangle r = para.hole_rects[i];
 		        	Mat roi = tmp0Mat.submat(new Rect(r.x,r.y,r.width,r.height));
-		        	if( para.gauusianCheck[i] ) {
-		        		double sigmaX = para.gauusianSliderX[i];
-		        		double sigmaY = para.gauusianSliderY[i];
-		        		int tmpValue =(int) para.gauusianSliderA[i];
+		        	if( para.hole_fil_gauusianCheck[i] ) {
+		        		double sigmaX = para.hole_fil_gauusianX[i];
+		        		double sigmaY = para.hole_fil_gauusianY[i];
+		        		int tmpValue =(int) para.hole_fil_gauusianValue[i];
 		        		if( tmpValue % 2 == 0 ) {
 		        			tmpValue++;
 		        		}
 		        		Size sz = new Size(tmpValue,tmpValue);
 		        		Imgproc.GaussianBlur(roi, roi, sz, sigmaX,sigmaY);
 		        	}
-		        	if( para.ptm_threshholdCheck[i]) {
-		        		int type = para.ptm_threshhold_Invers[i]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
-		        		Imgproc.threshold(roi, roi, para.threshhold[i],255,type);
+		        	if( para.hole_fil_threshholdCheck[i]) {
+		        		int type = para.hole_fil_threshhold_Invers[i]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+		        		Imgproc.threshold(roi, roi, para.hole_fil_threshhold[i],255,type);
 		        	}
-		        	if( para.dilateCheck[i]) {
-		        		Imgproc.dilate(roi, roi, new Mat(),new Point(-1,-1),para.dilateSliderN[i]);
+		        	if( para.hole_fil_dilateCheck[i]) {
+		        		Imgproc.dilate(roi, roi, new Mat(),new Point(-1,-1),para.hole_fil_dilateValue[i]);
 		        	}
 
 					/*# ハフ変換で円検出する。
@@ -1302,12 +1310,12 @@ public class VisonController{
 					第9引数(sliderDetecPara9)：円の半径の最大値 */
 		            Mat circles = new Mat();
 					Imgproc.HoughCircles(roi, circles, Imgproc.CV_HOUGH_GRADIENT,
-							para.circlePara4[i],
-							para.circlePara5[i],
-							para.circlePara6[i],
-							para.circlePara7[i],
-							(int)para.circlePara8[i],
-							(int)para.circlePara9[i]);
+							para.hole_circlePara4[i],
+							para.hole_circlePara5[i],
+							para.hole_circlePara6[i],
+							para.hole_circlePara7[i],
+							(int)para.hole_circlePara8[i],
+							(int)para.hole_circlePara9[i]);
 
 					boolean holeAreaFlg = true;
 					if( circles.cols() > 0 && !settingMode.isSelected()) {
@@ -1317,7 +1325,7 @@ public class VisonController{
 								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),7);
 						//面積判定
 						holeAreaFlg = holeWhiteAreaCheck(
-								roi,circles,para.whiteAreaMax[i],para.whiteAreaMin[i]);
+								roi,circles,para.hole_whiteAreaMax[i],para.hole_whiteAreaMin[i]);
 						if( holeAreaFlg ) {
 								Imgproc.putText(mainViewMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
 									" Max=" + String.format("%d",whiteAreaMax) +
@@ -1337,7 +1345,7 @@ public class VisonController{
 		            switch(i) {
 		            	case 0:
 		            		Platform.runLater( () ->okuri1_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && holeAreaFlg ) {
+		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
 		            			Platform.runLater( () ->okuri1_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
@@ -1350,7 +1358,7 @@ public class VisonController{
 		            		break;
 		            	case 1:
 		            		Platform.runLater( () ->okuri2_n.setText(String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && holeAreaFlg ) {
+		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
 		            			Platform.runLater( () ->okuri2_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
@@ -1363,7 +1371,7 @@ public class VisonController{
 		            		break;
 		            	case 2:
 		            		Platform.runLater( () ->okuri3_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && holeAreaFlg ) {
+		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
 		            			Platform.runLater( () ->okuri3_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
@@ -1375,7 +1383,7 @@ public class VisonController{
 		            		break;
 		            	case 3:
 		            		Platform.runLater( () ->okuri4_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.cntHoleTh[i] && holeAreaFlg ) {
+		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
 		            			Platform.runLater( () ->okuri4_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
@@ -1703,15 +1711,22 @@ public class VisonController{
      */
     @FXML
     void onWhiteAreaLabelClicked(MouseEvent event) {
+    	int max = (int)(Double.valueOf(whiteRatioLabel.getText())*1.1);
+    	int min = (int)(Double.valueOf(blackRatioLabel.getText())*0.9);
     	Platform.runLater( () ->whiteRatioMaxSp.setValueFactory(
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,
-				Integer.valueOf(whiteRatioLabel.getText()),
+				max,
 				5)));
     	Platform.runLater( () ->whiteRatioMinSp.setValueFactory(
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,
-						Integer.valueOf(blackRatioLabel.getText()),
+				min,
 				5)));
     }
+    @FXML
+    void onWhiteAreaBtn(ActionEvent event) {
+    	onWhiteAreaLabelClicked(null);
+    }
+
     /**
      * 穴の検出パラメーターを設定 ①送り穴～②ポケ穴の４ボタン
      * @param e
@@ -1722,29 +1737,29 @@ public class VisonController{
     	Object eObject = e.getSource();
 
     	if(eObject == okuri1_btn) {
-			if( para.setFlg[0] ) {
-    			para.setFlg[0] = false;
+			if( para.hole_DetectFlg[0] ) {
+    			para.hole_DetectFlg[0] = false;
 			}else {
     			setPara(0);
     	    	onSettingModeBtn(null);
     		}
     	}else if(eObject == okuri2_btn) {
-    		if(para.setFlg[1] ){
-    			para.setFlg[1] = false;
+    		if(para.hole_DetectFlg[1] ){
+    			para.hole_DetectFlg[1] = false;
     		}else {
     			setPara(1);
     	    	onSettingModeBtn(null);
     		}
     	}else if(eObject == okuri3_btn) {
-    		if(para.setFlg[2]){
-    			para.setFlg[2] = false;
+    		if(para.hole_DetectFlg[2]){
+    			para.hole_DetectFlg[2] = false;
     		}else {
     			setPara(2);
     	    	onSettingModeBtn(null);
     		}
     	}else if(eObject == okuri4_btn) {
-    		if(para.setFlg[3]){
-    			para.setFlg[3] = false;
+    		if(para.hole_DetectFlg[3]){
+    			para.hole_DetectFlg[3] = false;
     		}else {
     			setPara(3);
     	    	onSettingModeBtn(null);
@@ -1759,35 +1774,35 @@ public class VisonController{
 
     private void setPara(int i) {
     	parameter para = pObj.para[pObj.select];
-    	para.circlePara4[i] = sliderDetecPara4.getValue();
-    	para.circlePara5[i] = sliderDetecPara5.getValue();
-    	para.circlePara6[i] = sliderDetecPara6.getValue();
-    	para.circlePara7[i] = sliderDetecPara7.getValue();
-    	para.circlePara8[i] = sliderDetecPara8.getValue();
-    	para.circlePara9[i] = sliderDetecPara9.getValue();
+    	para.hole_circlePara4[i] = sliderDetecPara4.getValue();
+    	para.hole_circlePara5[i] = sliderDetecPara5.getValue();
+    	para.hole_circlePara6[i] = sliderDetecPara6.getValue();
+    	para.hole_circlePara7[i] = sliderDetecPara7.getValue();
+    	para.hole_circlePara8[i] = sliderDetecPara8.getValue();
+    	para.hole_circlePara9[i] = sliderDetecPara9.getValue();
 
-    	para.rects[i] = (Rectangle)draggingRect.clone();
+    	para.hole_rects[i] = (Rectangle)draggingRect.clone();
 
-    	para.setFlg[i] = true;
-    	para.gauusianCheck[i] = gauusianCheck.isSelected();
-    	para.gauusianSliderX[i] = gauusianSliderX.getValue();
-    	para.gauusianSliderY[i] = gauusianSliderY.getValue();
-    	para.gauusianSliderA[i] = gauusianSliderK.getValue();
-    	para.dilateCheck[i] = dilateCheck.isSelected();
-    	para.dilateSliderN[i] = (int)dilateSliderN.getValue();
+    	para.hole_DetectFlg[i] = true;
+    	para.hole_fil_gauusianCheck[i] = gauusianCheck.isSelected();
+    	para.hole_fil_gauusianX[i] = gauusianSliderX.getValue();
+    	para.hole_fil_gauusianY[i] = gauusianSliderY.getValue();
+    	para.hole_fil_gauusianValue[i] = gauusianSliderK.getValue();
+    	para.hole_fil_dilateCheck[i] = dilateCheck.isSelected();
+    	para.hole_fil_dilateValue[i] = (int)dilateSliderN.getValue();
     	//para.zoom = this.zoomValue_slider.getValue();
-    	para.ptm_threshholdCheck[i] = threshholdCheck.isSelected();
-    	para.threshhold[i] = threshholdSlider.getValue();
-    	para.ptm_threshhold_Invers[i] = threshhold_Inverse.isSelected();
-    	para.whiteAreaMax[i] = whiteRatioMaxSp.getValue().intValue();
-    	para.whiteAreaMin[i] = whiteRatioMinSp.getValue().intValue();
+    	para.hole_fil_threshholdCheck[i] = threshholdCheck.isSelected();
+    	para.hole_fil_threshhold[i] = threshholdSlider.getValue();
+    	para.hole_fil_threshhold_Invers[i] = threshhold_Inverse.isSelected();
+    	para.hole_whiteAreaMax[i] = whiteRatioMaxSp.getValue().intValue();
+    	para.hole_whiteAreaMin[i] = whiteRatioMinSp.getValue().intValue();
 
     	settingMode.setSelected(false);//セッティングモードから抜ける
     	draggingRect = new Rectangle(0,0,1,1);
     }
     private void setBtnPara() {
     	parameter para = pObj.para[pObj.select];
-		if( !para.setFlg[0] ) {
+		if( !para.hole_DetectFlg[0] ) {
 			Platform.runLater(() ->okuri1_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
 			Platform.runLater(() ->okuri1_btn.setTextFill( Color.BLACK));
 			Platform.runLater(() ->okuri1_n.setText("-"));
@@ -1795,7 +1810,7 @@ public class VisonController{
 			Platform.runLater(() ->okuri1_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
 			Platform.runLater(() ->okuri1_btn.setTextFill( Color.WHITE));
 		}
-		if(!para.setFlg[1] ){
+		if(!para.hole_DetectFlg[1] ){
 			Platform.runLater(() ->okuri2_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
 			Platform.runLater(() ->okuri2_btn.setTextFill( Color.BLACK));
 			Platform.runLater(() ->okuri2_n.setText("-"));
@@ -1803,7 +1818,7 @@ public class VisonController{
 			Platform.runLater(() ->okuri2_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
 			Platform.runLater(() ->okuri2_btn.setTextFill( Color.WHITE));
 		}
-		if(!para.setFlg[2]){
+		if(!para.hole_DetectFlg[2]){
 			Platform.runLater(() ->okuri3_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
 			Platform.runLater(() ->okuri3_btn.setTextFill( Color.BLACK));
 			Platform.runLater(() ->okuri3_n.setText("-"));
@@ -1811,7 +1826,7 @@ public class VisonController{
 			Platform.runLater(() ->okuri3_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
 			Platform.runLater(() ->okuri3_btn.setTextFill( Color.WHITE));
 		}
-		if(!para.setFlg[3]){
+		if(!para.hole_DetectFlg[3]){
 			Platform.runLater(() ->okuri4_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
 			Platform.runLater(() ->okuri4_btn.setTextFill( Color.BLACK));
 			Platform.runLater(() ->okuri4_n.setText("-"));
@@ -1820,53 +1835,53 @@ public class VisonController{
 			Platform.runLater(() ->okuri4_btn.setTextFill( Color.WHITE));
 		}
 
-		para.rects[4] = (Rectangle)draggingRect.clone();
-		para.viewRect[0] = imgORG.getViewport().getMinX();
-		para.viewRect[1] = imgORG.getViewport().getMinY();
-		para.viewRect[2] = imgORG.getViewport().getWidth();
-		para.viewRect[3] = imgORG.getViewport().getHeight();
-		para.circlePara4[4] = sliderDetecPara4.getValue();
-		para.circlePara5[4] = sliderDetecPara5.getValue();
-		para.circlePara6[4] = sliderDetecPara6.getValue();
-		para.circlePara7[4] = sliderDetecPara7.getValue();
-		para.circlePara8[4] = sliderDetecPara8.getValue();
-		para.circlePara9[4] = sliderDetecPara9.getValue();
-		para.gauusianCheck[4] = gauusianCheck.isSelected();
-		para.gauusianSliderX[4] = gauusianSliderX.getValue();
-		para.gauusianSliderY[4] = gauusianSliderY.getValue();
-		para.gauusianSliderA[4] = gauusianSliderK.getValue();
-		para.dilateCheck[4] = dilateCheck.isSelected();
-		para.dilateSliderN[4] = (int)dilateSliderN.getValue();
-		para.zoom = zoomValue_slider.getValue();
-		para.ptm_threshholdCheck[4] = threshholdCheck.isSelected();
-		para.threshhold[4] = threshholdSlider.getValue();
-		para.ptm_threshhold_Invers[4] = threshhold_Inverse.isSelected();
-		para.whiteAreaMax[4] = whiteRatioMaxSp.getValue();
-		para.whiteAreaMin[4] = whiteRatioMinSp.getValue();
+		para.hole_rects[4] = (Rectangle)draggingRect.clone();
+		para.hole_viewRect[0] = imgORG.getViewport().getMinX();
+		para.hole_viewRect[1] = imgORG.getViewport().getMinY();
+		para.hole_viewRect[2] = imgORG.getViewport().getWidth();
+		para.hole_viewRect[3] = imgORG.getViewport().getHeight();
+		para.hole_circlePara4[4] = sliderDetecPara4.getValue();
+		para.hole_circlePara5[4] = sliderDetecPara5.getValue();
+		para.hole_circlePara6[4] = sliderDetecPara6.getValue();
+		para.hole_circlePara7[4] = sliderDetecPara7.getValue();
+		para.hole_circlePara8[4] = sliderDetecPara8.getValue();
+		para.hole_circlePara9[4] = sliderDetecPara9.getValue();
+		para.hole_fil_gauusianCheck[4] = gauusianCheck.isSelected();
+		para.hole_fil_gauusianX[4] = gauusianSliderX.getValue();
+		para.hole_fil_gauusianY[4] = gauusianSliderY.getValue();
+		para.hole_fil_gauusianValue[4] = gauusianSliderK.getValue();
+		para.hole_fil_dilateCheck[4] = dilateCheck.isSelected();
+		para.hole_fil_dilateValue[4] = (int)dilateSliderN.getValue();
+		para.hole_zoom = zoomValue_slider.getValue();
+		para.hole_fil_threshholdCheck[4] = threshholdCheck.isSelected();
+		para.hole_fil_threshhold[4] = threshholdSlider.getValue();
+		para.hole_fil_threshhold_Invers[4] = threshhold_Inverse.isSelected();
+		para.hole_whiteAreaMax[4] = whiteRatioMaxSp.getValue();
+		para.hole_whiteAreaMin[4] = whiteRatioMinSp.getValue();
 
 
 		setSlidbar();
     }
     private void setSlidbar() {
     	parameter para = pObj.para[pObj.select];
-		Platform.runLater(() ->sliderDetecPara4.setValue(para.circlePara4[4]));
-		Platform.runLater(() ->sliderDetecPara5.setValue(para.circlePara5[4]));
-		Platform.runLater(() ->sliderDetecPara6.setValue(para.circlePara6[4]));
-		Platform.runLater(() ->sliderDetecPara7.setValue(para.circlePara7[4]));
-		Platform.runLater(() ->sliderDetecPara8.setValue(para.circlePara8[4]));
-		Platform.runLater(() ->sliderDetecPara9.setValue(para.circlePara9[4]));
-		Platform.runLater(() ->gauusianCheck.setSelected(para.gauusianCheck[4]));
-		Platform.runLater(() ->gauusianSliderX.setValue(para.gauusianSliderX[4]));
-		Platform.runLater(() ->gauusianSliderY.setValue(para.gauusianSliderY[4]));
-		Platform.runLater(() ->gauusianSliderK.setValue(para.gauusianSliderA[4]));
-		Platform.runLater(() ->dilateCheck.setSelected(para.dilateCheck[4]));
-		Platform.runLater(() ->dilateSliderN.setValue(para.dilateSliderN[4]));
-		Platform.runLater(() ->zoomValue_slider.setValue(para.zoom));
-		Platform.runLater(() ->zoomLabel.setText(String.format("%.1f",para.zoom)));
-		Platform.runLater(() ->threshholdCheck.setSelected(para.ptm_threshholdCheck[4]));
-		Platform.runLater(() ->threshholdSlider.setValue(para.threshhold[4]));
+		Platform.runLater(() ->sliderDetecPara4.setValue(para.hole_circlePara4[4]));
+		Platform.runLater(() ->sliderDetecPara5.setValue(para.hole_circlePara5[4]));
+		Platform.runLater(() ->sliderDetecPara6.setValue(para.hole_circlePara6[4]));
+		Platform.runLater(() ->sliderDetecPara7.setValue(para.hole_circlePara7[4]));
+		Platform.runLater(() ->sliderDetecPara8.setValue(para.hole_circlePara8[4]));
+		Platform.runLater(() ->sliderDetecPara9.setValue(para.hole_circlePara9[4]));
+		Platform.runLater(() ->gauusianCheck.setSelected(para.hole_fil_gauusianCheck[4]));
+		Platform.runLater(() ->gauusianSliderX.setValue(para.hole_fil_gauusianX[4]));
+		Platform.runLater(() ->gauusianSliderY.setValue(para.hole_fil_gauusianY[4]));
+		Platform.runLater(() ->gauusianSliderK.setValue(para.hole_fil_gauusianValue[4]));
+		Platform.runLater(() ->dilateCheck.setSelected(para.hole_fil_dilateCheck[4]));
+		Platform.runLater(() ->dilateSliderN.setValue(para.hole_fil_dilateValue[4]));
+		Platform.runLater(() ->zoomValue_slider.setValue(para.hole_zoom));
+		Platform.runLater(() ->zoomLabel.setText(String.format("%.1f",para.hole_zoom)));
+		Platform.runLater(() ->threshholdCheck.setSelected(para.hole_fil_threshholdCheck[4]));
+		Platform.runLater(() ->threshholdSlider.setValue(para.hole_fil_threshhold[4]));
     	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
-    	Platform.runLater(() ->threshhold_Inverse.setSelected(para.ptm_threshhold_Invers[4]));
+    	Platform.runLater(() ->threshhold_Inverse.setSelected(para.hole_fil_threshhold_Invers[4]));
     	Platform.runLater(() ->textFieldDetecPara4.setText(String.valueOf(String.format("%.1f",sliderDetecPara4.getValue()))));
     	Platform.runLater(() ->textFieldDetecPara5.setText(String.valueOf(String.format("%.1f",sliderDetecPara5.getValue()))));
     	Platform.runLater(() ->textFieldDetecPara6.setText(String.valueOf(String.format("%.1f",sliderDetecPara6.getValue()))));
@@ -1883,38 +1898,38 @@ public class VisonController{
     	parameter para = pObj.para[pObj.select];
     	Object obj = e.getSource();
     	onSetVeri_n=0;
-    	if( obj == setVeriBtn1 && para.setFlg[0]) {
+    	if( obj == setVeriBtn1 && para.hole_DetectFlg[0]) {
     		onSetVeri_n=0;
-    	}else if( obj == setVeriBtn2 && para.setFlg[1]) {
+    	}else if( obj == setVeriBtn2 && para.hole_DetectFlg[1]) {
     		onSetVeri_n=1;
-	    }else if( obj == setVeriBtn3 && para.setFlg[2]) {
+	    }else if( obj == setVeriBtn3 && para.hole_DetectFlg[2]) {
 			onSetVeri_n=2;
-		}else if( obj == setVeriBtn4 && para.setFlg[3]) {
+		}else if( obj == setVeriBtn4 && para.hole_DetectFlg[3]) {
 			onSetVeri_n=3;
 		}else {
 			return;
 		}
 
-    	Rectangle r = para.rects[onSetVeri_n];
+    	Rectangle r = para.hole_rects[onSetVeri_n];
     	draggingRect = (Rectangle)r.clone();
 
 
-		Platform.runLater(() ->sliderDetecPara4.setValue(para.circlePara4[onSetVeri_n]));
-		Platform.runLater(() ->sliderDetecPara5.setValue(para.circlePara5[onSetVeri_n]));
-		Platform.runLater(() ->sliderDetecPara6.setValue(para.circlePara6[onSetVeri_n]));
-		Platform.runLater(() ->sliderDetecPara7.setValue(para.circlePara7[onSetVeri_n]));
-		Platform.runLater(() ->sliderDetecPara8.setValue(para.circlePara8[onSetVeri_n]));
-		Platform.runLater(() ->sliderDetecPara9.setValue(para.circlePara9[onSetVeri_n]));
-		Platform.runLater(() ->gauusianCheck.setSelected(para.gauusianCheck[onSetVeri_n]));
-		Platform.runLater(() ->gauusianSliderX.setValue(para.gauusianSliderX[onSetVeri_n]));
-		Platform.runLater(() ->gauusianSliderY.setValue(para.gauusianSliderY[onSetVeri_n]));
-		Platform.runLater(() ->gauusianSliderK.setValue(para.gauusianSliderA[onSetVeri_n]));
-		Platform.runLater(() ->dilateCheck.setSelected(para.dilateCheck[onSetVeri_n]));
-		Platform.runLater(() ->dilateSliderN.setValue(para.dilateSliderN[onSetVeri_n]));
-		Platform.runLater(() ->threshholdCheck.setSelected(para.ptm_threshholdCheck[onSetVeri_n]));
-		Platform.runLater(() ->threshholdSlider.setValue(para.threshhold[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara4.setValue(para.hole_circlePara4[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara5.setValue(para.hole_circlePara5[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara6.setValue(para.hole_circlePara6[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara7.setValue(para.hole_circlePara7[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara8.setValue(para.hole_circlePara8[onSetVeri_n]));
+		Platform.runLater(() ->sliderDetecPara9.setValue(para.hole_circlePara9[onSetVeri_n]));
+		Platform.runLater(() ->gauusianCheck.setSelected(para.hole_fil_gauusianCheck[onSetVeri_n]));
+		Platform.runLater(() ->gauusianSliderX.setValue(para.hole_fil_gauusianX[onSetVeri_n]));
+		Platform.runLater(() ->gauusianSliderY.setValue(para.hole_fil_gauusianY[onSetVeri_n]));
+		Platform.runLater(() ->gauusianSliderK.setValue(para.hole_fil_gauusianValue[onSetVeri_n]));
+		Platform.runLater(() ->dilateCheck.setSelected(para.hole_fil_dilateCheck[onSetVeri_n]));
+		Platform.runLater(() ->dilateSliderN.setValue(para.hole_fil_dilateValue[onSetVeri_n]));
+		Platform.runLater(() ->threshholdCheck.setSelected(para.hole_fil_threshholdCheck[onSetVeri_n]));
+		Platform.runLater(() ->threshholdSlider.setValue(para.hole_fil_threshhold[onSetVeri_n]));
     	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
-    	Platform.runLater(() ->threshhold_Inverse.setSelected(para.ptm_threshhold_Invers[onSetVeri_n]));
+    	Platform.runLater(() ->threshhold_Inverse.setSelected(para.hole_fil_threshhold_Invers[onSetVeri_n]));
     	Platform.runLater(() ->textFieldDetecPara4.setText(String.valueOf(String.format("%.1f",sliderDetecPara4.getValue()))));
     	Platform.runLater(() ->textFieldDetecPara5.setText(String.valueOf(String.format("%.1f",sliderDetecPara5.getValue()))));
     	Platform.runLater(() ->textFieldDetecPara6.setText(String.valueOf(String.format("%.1f",sliderDetecPara6.getValue()))));
@@ -1924,9 +1939,9 @@ public class VisonController{
     	//Platform.runLater(() ->matchTmempTHreshSlider.setValue(para.matchThreshValue[4]));
     	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
 		whiteRatioMaxSp.setValueFactory(
-				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.whiteAreaMax[onSetVeri_n],5));
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.hole_whiteAreaMax[onSetVeri_n],5));
 		whiteRatioMinSp.setValueFactory(
-				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.whiteAreaMin[onSetVeri_n],5));
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.hole_whiteAreaMin[onSetVeri_n],5));
 
 
     	eventTrigger = true;
@@ -1962,32 +1977,32 @@ public class VisonController{
 		ObjectOutputStream objOut = new ObjectOutputStream(fo);
 
     	parameter para = pObj.para[pObj.select];
-		para.rects[4] =  (Rectangle)draggingRect.clone();
-		para.viewRect[0] = imgORG.getViewport().getMinX();
-		para.viewRect[1] = imgORG.getViewport().getMinY();
-		para.viewRect[2] = imgORG.getViewport().getWidth();
-		para.viewRect[3] = imgORG.getViewport().getHeight();
-		para.circlePara4[4] = sliderDetecPara4.getValue();
-		para.circlePara5[4] = sliderDetecPara5.getValue();
-		para.circlePara6[4] = sliderDetecPara6.getValue();
-		para.circlePara7[4] = sliderDetecPara7.getValue();
-		para.circlePara8[4] = sliderDetecPara8.getValue();
-		para.circlePara9[4] = sliderDetecPara9.getValue();
-		para.gauusianCheck[4] = gauusianCheck.isSelected();
-		para.gauusianSliderX[4] = gauusianSliderX.getValue();
-		para.gauusianSliderY[4] = gauusianSliderY.getValue();
-		para.gauusianSliderA[4] = gauusianSliderK.getValue();
-		para.dilateCheck[4] = dilateCheck.isSelected();
-		para.dilateSliderN[4] = (int)dilateSliderN.getValue();
-		para.zoom = zoomValue_slider.getValue();
-		para.ptm_threshholdCheck[4] = threshholdCheck.isSelected();
-		para.threshhold[4] = threshholdSlider.getValue();
-		para.ptm_threshhold_Invers[4] = threshhold_Inverse.isSelected();
+		para.hole_rects[4] =  (Rectangle)draggingRect.clone();
+		para.hole_viewRect[0] = imgORG.getViewport().getMinX();
+		para.hole_viewRect[1] = imgORG.getViewport().getMinY();
+		para.hole_viewRect[2] = imgORG.getViewport().getWidth();
+		para.hole_viewRect[3] = imgORG.getViewport().getHeight();
+		para.hole_circlePara4[4] = sliderDetecPara4.getValue();
+		para.hole_circlePara5[4] = sliderDetecPara5.getValue();
+		para.hole_circlePara6[4] = sliderDetecPara6.getValue();
+		para.hole_circlePara7[4] = sliderDetecPara7.getValue();
+		para.hole_circlePara8[4] = sliderDetecPara8.getValue();
+		para.hole_circlePara9[4] = sliderDetecPara9.getValue();
+		para.hole_fil_gauusianCheck[4] = gauusianCheck.isSelected();
+		para.hole_fil_gauusianX[4] = gauusianSliderX.getValue();
+		para.hole_fil_gauusianY[4] = gauusianSliderY.getValue();
+		para.hole_fil_gauusianValue[4] = gauusianSliderK.getValue();
+		para.hole_fil_dilateCheck[4] = dilateCheck.isSelected();
+		para.hole_fil_dilateValue[4] = (int)dilateSliderN.getValue();
+		para.hole_zoom = zoomValue_slider.getValue();
+		para.hole_fil_threshholdCheck[4] = threshholdCheck.isSelected();
+		para.hole_fil_threshhold[4] = threshholdSlider.getValue();
+		para.hole_fil_threshhold_Invers[4] = threshhold_Inverse.isSelected();
 
-		para.ptmEnable[0] = ptm_pt1_enable.isSelected();
-		para.ptmEnable[1] = ptm_pt2_enable.isSelected();
-		para.ptmEnable[2] = ptm_pt3_enable.isSelected();
-		para.ptmEnable[3] = ptm_pt4_enable.isSelected();
+		para.ptm_Enable[0] = ptm_pt1_enable.isSelected();
+		para.ptm_Enable[1] = ptm_pt2_enable.isSelected();
+		para.ptm_Enable[2] = ptm_pt3_enable.isSelected();
+		para.ptm_Enable[3] = ptm_pt4_enable.isSelected();
 
 		pObj.portNo = portNoSpin.getValue().intValue();
 		pObj.delly = dellySpinner.getValue().intValue();
@@ -2055,25 +2070,25 @@ public class VisonController{
     	}
 
     	parameter para = pObj.para[pObj.select];
-    	draggingRect = (Rectangle)para.rects[4].clone();
+    	draggingRect = (Rectangle)para.hole_rects[4].clone();
 
-    	viewOrgZoom = para.zoom;
+    	viewOrgZoom = para.hole_zoom;
     	zoomValue_slider.setValue(viewOrgZoom);
 
     	imgORG.setViewport(new Rectangle2D(
-    			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
+    			para.hole_viewRect[0],para.hole_viewRect[1],para.hole_viewRect[2],para.hole_viewRect[3]));
     	imgGLAY.setViewport(new Rectangle2D(
-    			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
+    			para.hole_viewRect[0],para.hole_viewRect[1],para.hole_viewRect[2],para.hole_viewRect[3]));
     	imgGLAY1.setViewport(new Rectangle2D(
-    			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
+    			para.hole_viewRect[0],para.hole_viewRect[1],para.hole_viewRect[2],para.hole_viewRect[3]));
     	imgGLAY2.setViewport(new Rectangle2D(
-    			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
+    			para.hole_viewRect[0],para.hole_viewRect[1],para.hole_viewRect[2],para.hole_viewRect[3]));
     	imgGLAY3.setViewport(new Rectangle2D(
-    			para.viewRect[0],para.viewRect[1],para.viewRect[2],para.viewRect[3]));
+    			para.hole_viewRect[0],para.hole_viewRect[1],para.hole_viewRect[2],para.hole_viewRect[3]));
 		whiteRatioMaxSp.setValueFactory(
-				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.whiteAreaMax[4],5));
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.hole_whiteAreaMax[4],5));
 		whiteRatioMinSp.setValueFactory(
-				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.whiteAreaMin[4],5));
+				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.hole_whiteAreaMin[4],5));
     	setBtnPara();
 
     	portNoSpin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 9,pObj.portNo,1));
@@ -2090,10 +2105,10 @@ public class VisonController{
     	updateImageView(ptm_img2, Utils.mat2Image(ptm_ImgMat[pObj.select][1]));
     	updateImageView(ptm_img3, Utils.mat2Image(ptm_ImgMat[pObj.select][2]));
     	updateImageView(ptm_img4, Utils.mat2Image(ptm_ImgMat[pObj.select][3]));
-    	ptm_pt1_enable.setSelected(para.ptmEnable[0]);
-    	ptm_pt2_enable.setSelected(para.ptmEnable[1]);
-    	ptm_pt3_enable.setSelected(para.ptmEnable[2]);
-    	ptm_pt4_enable.setSelected(para.ptmEnable[3]);
+    	ptm_pt1_enable.setSelected(para.ptm_Enable[0]);
+    	ptm_pt2_enable.setSelected(para.ptm_Enable[1]);
+    	ptm_pt3_enable.setSelected(para.ptm_Enable[2]);
+    	ptm_pt4_enable.setSelected(para.ptm_Enable[3]);
         //パターンマッチング用パラメータ設定
     	patternMatchParaSet();
 
@@ -2104,13 +2119,14 @@ public class VisonController{
     private void patternMatchParaSet() {
     	parameter para = pObj.para[pObj.select];
         for(int i=0;i<tmpara.arrayCnt;i++) {
-        	tmpara.matchingTreshDetectCnt[i] = para.ptm_detectionCnt[i];
-        	tmpara.matchingThresh[i] = para.matchThreshValue[i];
+        	tmpara.matchingTreshDetectCnt[i] = para.ptm_fil_detectionCnt[i];
+        	tmpara.matchingThresh[i] = para.ptm_threshValue[i];
         	tmpara.paternMat[i] = ptm_ImgMat[pObj.select][i];
-        	tmpara.ptmEnable[i] = para.ptmEnable[i];
+        	tmpara.ptmEnable[i] = para.ptm_Enable[i];
         	tmpara.detectionRects[i] = para.ptm_rectsDetection[i];
         	tmpara.scale[i] = para.ptm_detectionScale[i];
         }
+        tmpara.para = pObj.para[pObj.select];
         templateMatchingObj = new templateMatching(tmpara);
     }
 
@@ -2155,7 +2171,7 @@ public class VisonController{
     		pObj.select = 3;
     		Platform.runLater(() ->preset4.setTextFill( Color.BLUE ));
     	}
-    	draggingRect = (Rectangle)pObj.para[pObj.select].rects[4].clone();
+    	draggingRect = (Rectangle)pObj.para[pObj.select].hole_rects[4].clone();
 
     	setBtnPara();
     }
@@ -2221,6 +2237,15 @@ public class VisonController{
 			onSettingModeBtn(null);
 		}
 		eventTrigger = true;
+    }
+
+    /**
+     * 穴検出の解析
+     * @param event
+     */
+    @FXML
+    void onHoleAnalysisBtn(ActionEvent event) {
+
     }
 
 	@FXML
@@ -2404,26 +2429,26 @@ public class VisonController{
 		PtmView.ptmSrcMat = srcMat.clone();
 
 		PtmView.arg_ptmMat = ptm_ImgMat[pObj.select][selectBtn].clone();
-		PtmView.arg_detectionCnt = para.ptm_detectionCnt[selectBtn];
+		PtmView.arg_detectionCnt = para.ptm_fil_detectionCnt[selectBtn];
 
-		PtmView.arg_gauusianCheck = para.ptm_gauusianCheck[selectBtn];
-		PtmView.arg_gauusianSliderX = para.ptm_gauusianSliderX[selectBtn];
-		PtmView.arg_gauusianSliderY = para.ptm_gauusianSliderY[selectBtn];
-		PtmView.arg_gauusianSliderA = para.ptm_gauusianSliderA[selectBtn];
+		PtmView.arg_gauusianCheck = para.ptm_fil_gauusianCheck[selectBtn];
+		PtmView.arg_gauusianSliderX = para.ptm_fil_gauusianX[selectBtn];
+		PtmView.arg_gauusianSliderY = para.ptm_fil_gauusianY[selectBtn];
+		PtmView.arg_gauusianSliderA = para.ptm_fil_gauusianValue[selectBtn];
 
-		PtmView.arg_dilateCheck = para.ptm_dilateCheck[selectBtn];
-		PtmView.arg_dilateSliderN = para.ptm_dilateSliderN[selectBtn];
+		PtmView.arg_dilateCheck = para.ptm_fil_dilateCheck[selectBtn];
+		PtmView.arg_dilateSliderN = para.ptm_fil_dilateValue[selectBtn];
 
-		PtmView.arg_erodeCheck = para.ptm_erodeCheck[selectBtn];
-		PtmView.arg_erodeSliderN = para.ptm_erodeSliderN[selectBtn];
+		PtmView.arg_erodeCheck = para.ptm_fil_erodeCheck[selectBtn];
+		PtmView.arg_erodeSliderN = para.ptm_fil_erodeValue[selectBtn];
 
-		PtmView.arg_threshholdCheck = para.ptm_threshholdCheck[selectBtn];
-		PtmView.arg_threshhold_Inverse = para.ptm_threshhold_Invers[selectBtn];
-		PtmView.arg_threshholdSlider = para.ptm_threshholdSlider[selectBtn];//2値化閾値
+		PtmView.arg_threshholdCheck = para.ptm_fil_threshholdCheck[selectBtn];
+		PtmView.arg_threshhold_Inverse = para.ptm_fil_threshhold_Invers[selectBtn];
+		PtmView.arg_threshholdSlider = para.ptm_fil_threshholdValue[selectBtn];//2値化閾値
 
-		PtmView.arg_cannyCheck = para.ptm_cannyCheck[selectBtn];
-		PtmView.arg_cannyThresh1 = para.ptm_cannyThresh1[selectBtn];
-		PtmView.arg_cannyThresh2 = para.ptm_cannyThresh2[selectBtn];
+		PtmView.arg_cannyCheck = para.ptm_fil_cannyCheck[selectBtn];
+		PtmView.arg_cannyThresh1 = para.ptm_fil_cannyThresh1[selectBtn];
+		PtmView.arg_cannyThresh2 = para.ptm_fil_cannyThresh2[selectBtn];
 
 		PtmView.arg_ptmThreshSliderN = para.ptm_threshValue[selectBtn];//閾値
 		PtmView.arg_zoomValue_slider = para.ptm_zoomValue_slider[selectBtn];
@@ -2450,26 +2475,26 @@ public class VisonController{
 			ptm_ImgMat[pObj.select][selectBtn] = PtmView.arg_ptmMat;
 			updateImageView(iv, Utils.mat2Image(ptm_ImgMat[pObj.select][selectBtn]));
 
-			para.ptm_detectionCnt[selectBtn] = PtmView.arg_detectionCnt;
+			para.ptm_fil_detectionCnt[selectBtn] = PtmView.arg_detectionCnt;
 
-			para.ptm_gauusianCheck[selectBtn] = PtmView.arg_gauusianCheck;
-			para.ptm_gauusianSliderX[selectBtn] = PtmView.arg_gauusianSliderX;
-			para.ptm_gauusianSliderY[selectBtn]  = PtmView.arg_gauusianSliderY;
-			para.ptm_gauusianSliderA[selectBtn] = PtmView.arg_gauusianSliderA;
+			para.ptm_fil_gauusianCheck[selectBtn] = PtmView.arg_gauusianCheck;
+			para.ptm_fil_gauusianX[selectBtn] = PtmView.arg_gauusianSliderX;
+			para.ptm_fil_gauusianY[selectBtn]  = PtmView.arg_gauusianSliderY;
+			para.ptm_fil_gauusianValue[selectBtn] = PtmView.arg_gauusianSliderA;
 
-			para.ptm_dilateCheck[selectBtn] = PtmView.arg_dilateCheck;
-			para.ptm_dilateSliderN[selectBtn] = PtmView.arg_dilateSliderN;
+			para.ptm_fil_dilateCheck[selectBtn] = PtmView.arg_dilateCheck;
+			para.ptm_fil_dilateValue[selectBtn] = PtmView.arg_dilateSliderN;
 
-			para.ptm_erodeCheck[selectBtn] = PtmView.arg_erodeCheck;
-			para.ptm_erodeSliderN[selectBtn] = PtmView.arg_erodeSliderN;
+			para.ptm_fil_erodeCheck[selectBtn] = PtmView.arg_erodeCheck;
+			para.ptm_fil_erodeValue[selectBtn] = PtmView.arg_erodeSliderN;
 
-			para.ptm_threshholdCheck[selectBtn] = PtmView.arg_threshholdCheck;
-			para.ptm_threshhold_Invers[selectBtn] = PtmView.arg_threshhold_Inverse;
-			para.ptm_threshholdSlider[selectBtn] = PtmView.arg_threshholdSlider;//2値化閾値
+			para.ptm_fil_threshholdCheck[selectBtn] = PtmView.arg_threshholdCheck;
+			para.ptm_fil_threshhold_Invers[selectBtn] = PtmView.arg_threshhold_Inverse;
+			para.ptm_fil_threshholdValue[selectBtn] = PtmView.arg_threshholdSlider;//2値化閾値
 
-			para.ptm_cannyCheck[selectBtn] = PtmView.arg_cannyCheck;
-			para.ptm_cannyThresh1[selectBtn] = PtmView.arg_cannyThresh1;
-			para.ptm_cannyThresh2[selectBtn] = PtmView.arg_cannyThresh2;
+			para.ptm_fil_cannyCheck[selectBtn] = PtmView.arg_cannyCheck;
+			para.ptm_fil_cannyThresh1[selectBtn] = PtmView.arg_cannyThresh1;
+			para.ptm_fil_cannyThresh2[selectBtn] = PtmView.arg_cannyThresh2;
 
 			para.ptm_threshValue[selectBtn] = PtmView.arg_ptmThreshSliderN;//閾値
 			para.ptm_zoomValue_slider[selectBtn] = PtmView.arg_zoomValue_slider;
@@ -2591,6 +2616,15 @@ public class VisonController{
      */
     void onPtm_disableChk(ActionEvent event) {
 
+    }
+
+    /**
+     * 設定初期化
+     * @param event
+     */
+    @FXML
+    void onParaInitBtn(ActionEvent event) {
+    	pObj = new preSet();
     }
 
     @FXML
@@ -2750,6 +2784,9 @@ public class VisonController{
         assert cameraGain != null : "fx:id=\"cameraGain\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert count_label != null : "fx:id=\"count_label\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ptm_disableChk != null : "fx:id=\"ptm_disableChk\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert holeAnalysisBtn != null : "fx:id=\"holeAnalysisBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert whiteAreaBtn != null : "fx:id=\"whiteAreaBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert paraInitBtn != null : "fx:id=\"paraInitBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());
@@ -2770,7 +2807,7 @@ public class VisonController{
         updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
         updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	Platform.runLater(() ->info1.setText(""));
-
+    	Platform.runLater(() ->accordion_1.setDisable(true));
 
         accordion_1.expandedPaneProperty().addListener(new
                 ChangeListener<TitledPane>() {
