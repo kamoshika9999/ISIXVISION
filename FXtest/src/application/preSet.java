@@ -12,6 +12,11 @@ public class preSet implements Serializable{
 	int cameraWidth,cameraHeight;
 	boolean adcFlg;
 
+	boolean dimensionDispChk;
+	boolean holeDispChk;
+	boolean patternDispChk;
+
+
 	public preSet() {
 		portNo = 4;
 		delly = 550;

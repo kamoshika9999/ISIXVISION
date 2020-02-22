@@ -3,6 +3,11 @@ package application;
 import java.awt.Rectangle;
 import java.io.Serializable;
 
+/**
+ * 検出パラメーター群　シリアライズ化対応
+ * @author Mamoru
+ *
+ */
 public class parameter implements Serializable {
 	final int hole_arrySize = 5;
 	double hole_zoom;
@@ -166,7 +171,7 @@ public class parameter implements Serializable {
 			ptm_fil_cannyThresh2[i] = 0;
 
 			ptm_threshValue[i] = 0.8;
-			ptm_zoomValue_slider[i] = 1;
+			ptm_zoomValue_slider[i] = 0.3;
 
 
 		}

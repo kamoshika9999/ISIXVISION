@@ -522,5 +522,8 @@
             <Font size="10.0" />
          </font>
       </Button>
+      <CheckBox fx:id="holeDispChk" layoutX="95.0" layoutY="324.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="68.0" selected="true" text="Hole" />
+      <CheckBox fx:id="patternDispChk" layoutX="163.0" layoutY="324.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="68.0" selected="true" text="Pattern" />
+      <CheckBox fx:id="dimensionDispChk" layoutX="237.0" layoutY="324.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="102.0" selected="true" text="Dimension" />
    </children>
 </AnchorPane>

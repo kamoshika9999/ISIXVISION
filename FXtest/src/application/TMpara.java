@@ -28,7 +28,6 @@ public class TMpara implements Cloneable{
 		scale = new double[arrayCnt];
 	}
 
-
 	public TMpara(int arg_arrayCnt) {
 		arrayCnt = arg_arrayCnt;
 
@@ -39,7 +38,6 @@ public class TMpara implements Cloneable{
 		detectionRects = new Rectangle[arrayCnt];
 		scale = new double[arrayCnt];
 	}
-
 
 	@Override
     public TMpara clone() {

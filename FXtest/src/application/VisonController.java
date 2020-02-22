@@ -482,6 +482,13 @@ public class VisonController{
     @FXML
     private Label count_label;
 
+    @FXML
+    private CheckBox dimensionDispChk;
+    @FXML
+    private CheckBox holeDispChk;
+    @FXML
+    private CheckBox patternDispChk;
+
 
     @FXML
     /**
@@ -1319,26 +1326,32 @@ public class VisonController{
 
 					boolean holeAreaFlg = true;
 					if( circles.cols() > 0 && !settingMode.isSelected()) {
-						fncDrwCircles(roi,circles, mainViewMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
-						Imgproc.putText(mainViewMat, String.valueOf(circles.cols()),
-								new Point(r.x-25,r.y-6),
-								Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),7);
+
+						if( holeDispChk.isSelected() ) {
+							fncDrwCircles(roi,circles, mainViewMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
+							Imgproc.putText(mainViewMat, String.valueOf(circles.cols()),
+									new Point(r.x-25,r.y-6),
+									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),7);
+						}
 						//面積判定
 						holeAreaFlg = holeWhiteAreaCheck(
 								roi,circles,para.hole_whiteAreaMax[i],para.hole_whiteAreaMin[i]);
-						if( holeAreaFlg ) {
-								Imgproc.putText(mainViewMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
-									" Max=" + String.format("%d",whiteAreaMax) +
-									" Min=" + String.format("%d",whiteAreaMin),
-									new Point(r.x+20,r.y-6),
-									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),7);
-						}else {
-							Imgproc.putText(mainViewMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
-									" Max=" + String.format("%d",whiteAreaMax) +
-									" Min=" + String.format("%d",whiteAreaMin),
-									new Point(r.x+20,r.y-6),
-									Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),7);
+						if( holeDispChk.isSelected() ) {
+							if( holeAreaFlg ) {
+									Imgproc.putText(mainViewMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
+										" Max=" + String.format("%d",whiteAreaMax) +
+										" Min=" + String.format("%d",whiteAreaMin),
+										new Point(r.x+20,r.y-6),
+										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),7);
+							}else {
+								Imgproc.putText(mainViewMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
+										" Max=" + String.format("%d",whiteAreaMax) +
+										" Min=" + String.format("%d",whiteAreaMin),
+										new Point(r.x+20,r.y-6),
+										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),7);
+							}
 						}
+
 					}
 
 					//判定
@@ -1834,6 +1847,10 @@ public class VisonController{
 			Platform.runLater(() ->okuri4_btn.setBackground(new Background(new BackgroundFill(Color.GREEN, null, null))));
 			Platform.runLater(() ->okuri4_btn.setTextFill( Color.WHITE));
 		}
+		Platform.runLater(() ->dimensionDispChk.setSelected(pObj.dimensionDispChk));
+		Platform.runLater(() ->holeDispChk.setSelected(pObj.holeDispChk));
+		Platform.runLater(() ->patternDispChk.setSelected(pObj.patternDispChk));
+
 
 		para.hole_rects[4] = (Rectangle)draggingRect.clone();
 		para.hole_viewRect[0] = imgORG.getViewport().getMinX();
@@ -1976,6 +1993,10 @@ public class VisonController{
 		FileOutputStream fo = new FileOutputStream("./conf5.txt");
 		ObjectOutputStream objOut = new ObjectOutputStream(fo);
 
+		pObj.dimensionDispChk =  dimensionDispChk.isSelected();
+	    pObj.holeDispChk = holeDispChk.isSelected();
+	    pObj.patternDispChk = patternDispChk.isSelected();
+
     	parameter para = pObj.para[pObj.select];
 		para.hole_rects[4] =  (Rectangle)draggingRect.clone();
 		para.hole_viewRect[0] = imgORG.getViewport().getMinX();
@@ -2101,14 +2122,6 @@ public class VisonController{
 
     	//パターンマッチング部
     	loadPtmImg();
-    	updateImageView(ptm_img1, Utils.mat2Image(ptm_ImgMat[pObj.select][0]));
-    	updateImageView(ptm_img2, Utils.mat2Image(ptm_ImgMat[pObj.select][1]));
-    	updateImageView(ptm_img3, Utils.mat2Image(ptm_ImgMat[pObj.select][2]));
-    	updateImageView(ptm_img4, Utils.mat2Image(ptm_ImgMat[pObj.select][3]));
-    	ptm_pt1_enable.setSelected(para.ptm_Enable[0]);
-    	ptm_pt2_enable.setSelected(para.ptm_Enable[1]);
-    	ptm_pt3_enable.setSelected(para.ptm_Enable[2]);
-    	ptm_pt4_enable.setSelected(para.ptm_Enable[3]);
         //パターンマッチング用パラメータ設定
     	patternMatchParaSet();
 
@@ -2137,16 +2150,23 @@ public class VisonController{
     	for( int i=0;i<4;i++) {
     		for( int j=0;j<4;j++) {
     	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/ptm"+String.format("_%d_%d", i,j)+".jpeg");
-    	    	if( tmpMat.width() > 0 ) {
+    	    	if( tmpMat.width() > 0 &&  pObj.para[i].ptm_Enable[j]) {
     	    		 ptm_ImgMat[i][j] = new Mat();
     	    		 ptm_ImgMat[i][j] = tmpMat.clone();
-
     	    	}else {
-    	    		ptm_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3);
+    	    		ptm_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3,new Scalar(0));
     	    	}
-
     		}
     	}
+    	updateImageView(ptm_img1, Utils.mat2Image(ptm_ImgMat[pObj.select][0]));
+    	updateImageView(ptm_img2, Utils.mat2Image(ptm_ImgMat[pObj.select][1]));
+    	updateImageView(ptm_img3, Utils.mat2Image(ptm_ImgMat[pObj.select][2]));
+    	updateImageView(ptm_img4, Utils.mat2Image(ptm_ImgMat[pObj.select][3]));
+    	ptm_pt1_enable.setSelected(pObj.para[pObj.select].ptm_Enable[0]);
+    	ptm_pt2_enable.setSelected(pObj.para[pObj.select].ptm_Enable[1]);
+    	ptm_pt3_enable.setSelected(pObj.para[pObj.select].ptm_Enable[2]);
+    	ptm_pt4_enable.setSelected(pObj.para[pObj.select].ptm_Enable[3]);
+
     }
 
     @FXML
@@ -2787,6 +2807,9 @@ public class VisonController{
         assert holeAnalysisBtn != null : "fx:id=\"holeAnalysisBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert whiteAreaBtn != null : "fx:id=\"whiteAreaBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert paraInitBtn != null : "fx:id=\"paraInitBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert holeDispChk != null : "fx:id=\"holeDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert patternDispChk != null : "fx:id=\"patternDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dimensionDispChk != null : "fx:id=\"dimensionDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());
