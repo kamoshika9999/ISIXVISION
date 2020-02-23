@@ -1,6 +1,8 @@
 package application;
 
+import java.awt.BasicStroke;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,7 +13,6 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,13 +23,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.jfree.chart.ChartColor;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.labels.PieSectionLabelGenerator;
-import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
-import org.jfree.chart.plot.PiePlot;
-import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.general.PieDataset;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.LegendTitle;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -50,8 +55,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
-import javafx.scene.chart.XYChart;
-import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -160,6 +163,13 @@ public class VisonController{
 
 	//インフォメーション
 	private String initInfo2;
+
+	//チャート
+	private Tab[] chartTab_P2;
+	private Tab[] chartTab_F;
+	private JFreeChart[] chart_P2;
+	private JFreeChart[] chart_F;
+
 
 	@FXML
     private Spinner<Integer> dellySpinner;
@@ -476,7 +486,12 @@ public class VisonController{
     @FXML
     private Button dimSettingBtn;
     @FXML
+    private TextField dimSetting_offset;
+    @FXML
+    private Label dimSettingLabel;
+    @FXML
     private Button dimensionBtn;
+
     //カメラ関係
     @FXML
     private Button getExproBtn;
@@ -503,10 +518,13 @@ public class VisonController{
     //チャート
     @FXML
     private TabPane dataTabpane;
-    @FXML
-    private Tab tab_P2;
-    @FXML
-    private Tab tab_F;
+
+	private XYSeriesCollection[] dataset_P2;
+
+	private XYSeriesCollection[] dataset_F;
+
+	private double holeDist_DimSetting;
+
 
 
     @FXML
@@ -1445,17 +1463,31 @@ public class VisonController{
 	        }
 
 
-	        //最終判定
-	        if( !saveImgUseFlg && !settingModeFlg) {
-		        //パターンマッチング
-	        	boolean tmFlg;
-	        	if( !ptm_disableChk.isSelected() ) {//パターンマッチングが強制的に無効になっているか？
-	        		tmFlg = templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
-	        											,false,patternDispChk.isSelected());
-	        	}else {
-	        		tmFlg = true;
-	        	}
+	        //パターンマッチング
+        	boolean tmFlg;
+        	if( !ptm_disableChk.isSelected() ) {//パターンマッチングが強制的に無効になっているか？
+        		tmFlg = templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
+        											,false,patternDispChk.isSelected());
+        	}else {
+        		tmFlg = true;
+        	}
 
+
+        	//寸法測定
+        	for(int g=0;g<2;g++) {
+        		if( ((g==0 && dim_1_enable.isSelected()) || ((g==1) && dim_2_enable.isSelected())) && shotCnt>0) {
+	        		int g2 =g;
+	        		Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt, Math.random()*0.05 + 1.975));
+	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt, Math.random()*0.05 + 3.475));
+	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getDomainAxis()).
+																setRange(shotCnt<=100?0:shotCnt-100,shotCnt));
+	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getDomainAxis()).
+	        													setRange(shotCnt<=100?0:shotCnt-100,shotCnt));
+        		}
+        	}
+
+	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
+		        //最終判定
 	        	if(judgCnt==4 && tmFlg ) {
 		        	Platform.runLater( () ->judg.setText("OK"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
@@ -1664,6 +1696,7 @@ public class VisonController{
 	  		  }
 	  	  }
   		  distAve /= (circles.cols()-1);
+  		  holeDist_DimSetting = distAve;
   	  	  radiusAve /= circles.cols();
   	  }else {
   		radiusAve = circles.get(0, 0)[2];
@@ -1871,6 +1904,9 @@ public class VisonController{
 		Platform.runLater(() ->holeDispChk.setSelected(pObj.holeDispChk));
 		Platform.runLater(() ->patternDispChk.setSelected(pObj.patternDispChk));
 
+		Platform.runLater(() ->this.dim_1_enable.setSelected(para.dim_1_enable));
+		Platform.runLater(() ->this.dim_2_enable.setSelected(para.dim_2_enable));
+
 
 		para.hole_rects[4] = (Rectangle)draggingRect.clone();
 		para.hole_viewRect[0] = imgORG.getViewport().getMinX();
@@ -2045,6 +2081,10 @@ public class VisonController{
 		para.ptm_Enable[2] = ptm_pt3_enable.isSelected();
 		para.ptm_Enable[3] = ptm_pt4_enable.isSelected();
 
+		para.dim_1_enable = dim_1_enable.isSelected();
+		para.dim_2_enable = dim_2_enable.isSelected();
+		//para.dimPixel_mm = dimSetting_offset.getText()
+
 		pObj.portNo = portNoSpin.getValue().intValue();
 		pObj.delly = dellySpinner.getValue().intValue();
 		pObj.cameraID = camIDspinner.getValue().intValue();
@@ -2144,6 +2184,9 @@ public class VisonController{
     	loadPtmImg();
         //パターンマッチング用パラメータ設定
     	patternMatchParaSet();
+
+    	//寸法測定部
+    	Platform.runLater( () ->dimSettingLabel.setText(String.format("%.0f μm/pixel", para.dimPixel_mm*1000)));
 
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
@@ -2602,10 +2645,20 @@ public class VisonController{
     void onDimSetPara(ActionEvent event) {
 
     }
-    //測定設定
+    //測定設定 送り穴間距離
     @FXML
     void onDimSetting(ActionEvent event) {
-
+    	if( holeDist_DimSetting > 0) {
+	    	Double pixel_mm = 0.0;
+	    	try {
+	    		pixel_mm = 4 / holeDist_DimSetting + Double.valueOf(dimSetting_offset.getText())/1000.0;
+	    	}catch( java.lang.NumberFormatException e) {
+	    		pixel_mm = 0.0;
+	    	}
+	    	final Double tmp_pixel_mm = pixel_mm;
+	    	Platform.runLater( () ->this.dimSettingLabel.setText(String.format("%.0f μm/pixel", tmp_pixel_mm*1000)));
+	    	pObj.para[pObj.select].dimPixel_mm = pixel_mm;
+    	}
     }
 
     @FXML
@@ -2822,6 +2875,8 @@ public class VisonController{
         assert dim_offset_P2_2 != null : "fx:id=\"dim_offset_P2_2\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dim_offset_E_2 != null : "fx:id=\"dim_offset_E_2\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dimSettingBtn != null : "fx:id=\"dimSettingBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dimSetting_offset != null : "fx:id=\"dimSetting_offset\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dimSettingLabel != null : "fx:id=\"dimSettingLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert ReTestBtn != null : "fx:id=\"ReTestBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert getExproBtn != null : "fx:id=\"getExproBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert setExproBtn != null : "fx:id=\"setExproBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
@@ -2837,8 +2892,6 @@ public class VisonController{
         assert holeDispChk != null : "fx:id=\"holeDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert patternDispChk != null : "fx:id=\"patternDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dimensionDispChk != null : "fx:id=\"dimensionDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert tab_P2 != null : "fx:id=\"tab_P2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert tab_F != null : "fx:id=\"tab_F\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dataTabpane != null : "fx:id=\"dataTabpane\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
@@ -2874,10 +2927,8 @@ public class VisonController{
                   }
             });
 
-        // 折れ線グラフを作成
-        this.dataTabpane.getTabs().add(
-        		new Tab("test",new org.jfree.chart.fx.ChartViewer( createChart("test")))
-        );
+        chartFact();
+
     	try {
 	    	int fileCnt = FileClass.getFiles(new File("./ok_image")).length;
 	    		allSaveCnt = fileCnt;
@@ -2891,6 +2942,7 @@ public class VisonController{
 			System.out.println(" void initialize() {onTest(null);::エラー");
 			e.printStackTrace();
 		}
+
         manualTrigger = true;
         try {
 			Thread.sleep(3000);
@@ -2899,68 +2951,115 @@ public class VisonController{
 		}
 
         onAllClear(null);
-
-
-
     }
 
-    private JFreeChart createChart(String name){
-        PieDataset dataset = createDataset();
-        JFreeChart chart = ChartFactory.createPieChart(
-            name, dataset, false, true, false);
-        PiePlot plot = (PiePlot) chart.getPlot();
-        plot.setOutlineVisible(false);
+    private void chartFact() {
+        chart_P2 = new JFreeChart[2];
+        chartTab_P2 = new Tab[2];
+        chart_F = new JFreeChart[2];
+        chartTab_F = new Tab[2];
+        dataset_P2 = new XYSeriesCollection[2];
+        dataset_F = new XYSeriesCollection[2];
+        for(int i=0;i<2;i++) {
+        	dataset_P2[i] = getChartData3();
+	        chart_P2[i] = createInitChart(String.valueOf(i+1)+"列目 P2","(mm)","n",dataset_P2[i] ,1.8,2.2);
+			chartTab_P2[i] = new Tab(String.valueOf(i+1)+"列目 P2     ",new org.jfree.chart.fx.ChartViewer(chart_P2[i]));
+
+			dataset_F[i] = getChartData4();
+	        chart_F[i] = createInitChart(String.valueOf(i+1)+"列目 F","(mm)","n",dataset_F[i],3.3,3.6);
+			chartTab_F[i] = new Tab(String.valueOf(i+1)+"列目 F      ",new org.jfree.chart.fx.ChartViewer(chart_F[i]));
+
+			dataTabpane.getTabs().add(chartTab_P2[i]);
+	        dataTabpane.getTabs().add(chartTab_F[i]);
+        }
+    }
+    /**
+     * グラフの雛形作成
+     * @param title
+     * @param valueAxisLabel
+     * @param categoryAxisLabel
+     * @return
+     */
+    private JFreeChart createInitChart(String title,String valueAxisLabel,
+    							String categoryAxisLabel,XYSeriesCollection dataset,double lower,double upper){
+    	JFreeChart chart = ChartFactory.createXYLineChart(title,categoryAxisLabel,valueAxisLabel,
+                dataset,//データーセット
+                PlotOrientation.VERTICAL,//値の軸方向
+                true,//凡例
+                false,//tooltips
+                false);//urls
+        // 背景色を設定
+    	chart.setBackgroundPaint(ChartColor.WHITE);
+
+        // 凡例の設定
+        LegendTitle lt = chart.getLegend();
+        lt.setFrame(new BlockBorder(1d, 2d, 3d, 4d, ChartColor.WHITE));
+
+        XYPlot plot = (XYPlot) chart.getPlot();
+        // 背景色
+        plot.setBackgroundPaint(ChartColor.gray);
+        // 背景色 透明度
+        plot.setBackgroundAlpha(0.5f);
+        // 前景色 透明度
+        plot.setForegroundAlpha(0.5f);
+        // 縦線の色
+        plot.setDomainGridlinePaint(ChartColor.white);
+        // 横線の色
+        plot.setRangeGridlinePaint(ChartColor.white);
+        // カーソル位置で横方向の補助線をいれる
+        plot.setDomainCrosshairVisible(true);
+        // カーソル位置で縦方向の補助線をいれる
+        plot.setRangeCrosshairVisible(true);
+        // 横軸の設定
+        NumberAxis xAxis = (NumberAxis)plot.getDomainAxis();
+        xAxis.setAutoRange(false);
+        xAxis.setRange(1,200);
+        // 縦軸の設定
+        NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
+        yAxis.setAutoRange(false);
+        yAxis.setRange(lower,upper);
+
+        // プロットをつける
+        XYLineAndShapeRenderer  renderer = new XYLineAndShapeRenderer (true, true);
+        plot.setRenderer(renderer);
+        renderer.setDefaultShapesVisible(true);
+        renderer.setDefaultShapesFilled(true);
+
+        // プロットのサイズ
+        Stroke stroke = new BasicStroke(
+            0.001f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+        renderer.setDefaultOutlineStroke(stroke);
+
+        renderer.setSeriesPaint(0, ChartColor.BLUE);
+
         /*
-        plot.lookupSectionPaint("A", Color.RED);
-        plot.setSectionPaint("B", Color.BLUE);
-        plot.setSectionPaint("C", Color.GREEN);
-        plot.setSectionPaint("D", Color.YELLOW);
-        plot.setSectionPaint("E", Color.CYAN);
-        plot.setLabelFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-        */
-        // Custom labels https://stackoverflow.com/a/17507061/230513
-        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
-            "{0}: {2}", new DecimalFormat("0"), new DecimalFormat("0.0%"));
-        plot.setLabelGenerator(gen);
+        // プロットに値を付ける
+        NumberFormat format = NumberFormat.getNumberInstance();
+        format.setMaximumFractionDigits(2);
+        XYItemLabelGenerator generator =
+            new StandardXYItemLabelGenerator(
+                StandardXYItemLabelGenerator.DEFAULT_ITEM_LABEL_FORMAT,
+                format, format);
+        renderer.setDefaultItemLabelGenerator(generator);
+        renderer.setDefaultItemLabelsVisible(true);
+         */
         return chart;
 
     }
-    private static PieDataset createDataset() {
-        DefaultPieDataset dataset = new DefaultPieDataset();
-        dataset.setValue("A", 0.8);
-        dataset.setValue("B", 9.4);
-        dataset.setValue("C", 0.1);
-        dataset.setValue("D", 89.5);
-        dataset.setValue("E", 0.2);
-        dataset.setValue("F", 0.0);
-        return dataset;
+    private XYSeriesCollection getChartData3(){
+        XYSeriesCollection p2_dataset = new XYSeriesCollection();
+        XYSeries p2_series = new XYSeries("P2");
+        p2_dataset.addSeries(p2_series);
+
+        return p2_dataset;
     }
-   private XYChart.Series<Integer,Double> getChartData(){
-       double p2 = 2.00;
+    private XYSeriesCollection getChartData4(){
+        XYSeriesCollection f_dataset = new XYSeriesCollection();
+        XYSeries f_series = new XYSeries("F");
+        f_dataset.addSeries(f_series);
 
-       XYChart.Series<Integer,Double> p2_series = new Series<>();
+        return f_dataset;
+    }
 
-       p2_series.setName("P2");
 
-       for (double i = 30; i < 100; i++) {
-           p2_series.getData().add( new XYChart.Data( i,p2));
-           p2 = Math.random()*0.2 + 1.9;
-       }
-
-       return p2_series;
-   }
-   private XYChart.Series<Integer,Double> getChartData2(){
-       double f = 3.50;
-
-       XYChart.Series<Integer,Double> f_series = new Series<>();
-
-       f_series.setName("F");
-
-       for (double i = 50; i < 70; i++) {
-           f_series.getData().add( new XYChart.Data( i,f));
-           f = Math.random()*0.2 + 3.4;
-       }
-
-       return f_series;
-   }
 }

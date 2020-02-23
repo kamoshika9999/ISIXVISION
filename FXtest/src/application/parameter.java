@@ -62,6 +62,11 @@ public class parameter implements Serializable {
 	public double[] ptm_fil_cannyThresh1;
 	public double[] ptm_fil_cannyThresh2;
 
+	//寸法測定
+	public boolean dim_1_enable = false;
+	public boolean dim_2_enable = false;
+	public Double dimPixel_mm = 0.035;//ピクセル-mm換算
+
 	public parameter() {
 		hole_zoom = 1.0;
 		hole_viewRect = new double[hole_arrySize];
