@@ -2167,6 +2167,13 @@ public class VisonController{
      * パターンマッチング画像のロード
      */
     private void loadPtmImg() {
+    	File folder = new File("./ptm_image");
+    	if( !folder.exists()) {
+    		if( !folder.mkdir() ) {
+    			Platform.runLater( () ->info2.appendText("ptm_imageフォルダの作成に失敗"+"\n"));
+    			return;
+    		}
+    	}
     	for( int i=0;i<4;i++) {
     		for( int j=0;j<4;j++) {
     	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/ptm"+String.format("_%d_%d", i,j)+".jpeg");
@@ -2833,7 +2840,7 @@ public class VisonController{
         assert tab_P2 != null : "fx:id=\"tab_P2\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert tab_F != null : "fx:id=\"tab_F\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dataTabpane != null : "fx:id=\"dataTabpane\" was not injected: check your FXML file 'Sample2.fxml'.";
-        
+
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());
         draggingRect = new Rectangle(0, 0,1,1);
