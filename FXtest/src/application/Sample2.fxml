@@ -7,6 +7,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
@@ -21,11 +23,6 @@
 
 <AnchorPane fx:id="aPane" accessibleRole="TEXT_FIELD" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeypressed" pickOnBounds="false" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.VisonController">
    <children>
-      <ImageView fx:id="imgNG" fitHeight="250.0" fitWidth="420.0" layoutX="776.0" layoutY="443.0" pickOnBounds="true" preserveRatio="true" smooth="false">
-         <effect>
-            <DropShadow color="#da0606" />
-         </effect>
-      </ImageView>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="91.0" layoutX="854.0" layoutY="244.0" stroke="BLACK" strokeType="INSIDE" width="302.0" />
       <Accordion fx:id="accordion_1" layoutY="350.0" prefHeight="343.0" prefWidth="768.0">
         <panes>
@@ -493,7 +490,7 @@
             <Font size="10.0" />
          </font>
       </Button>
-      <Button fx:id="dimensionBtn" layoutX="836.0" layoutY="396.0" mnemonicParsing="false" onAction="#onDimensionBtn" prefHeight="39.0" prefWidth="63.0" text="Dimension Viewer" wrapText="true">
+      <Button fx:id="dimensionBtn" disable="true" layoutX="836.0" layoutY="396.0" mnemonicParsing="false" onAction="#onDimensionBtn" prefHeight="39.0" prefWidth="63.0" text="Dimension Viewer" wrapText="true">
          <effect>
             <DropShadow color="#3000f0" />
          </effect>
@@ -501,7 +498,7 @@
             <Font size="10.0" />
          </font>
       </Button>
-      <Button fx:id="ReTestBtn" layoutX="767.0" layoutY="396.0" mnemonicParsing="false" onAction="#onRetestBtn" prefHeight="39.0" prefWidth="63.0" text="ReTest" wrapText="true">
+      <Button fx:id="ReTestBtn" disable="true" layoutX="767.0" layoutY="396.0" mnemonicParsing="false" onAction="#onRetestBtn" prefHeight="39.0" prefWidth="63.0" text="ReTest" wrapText="true">
          <effect>
             <DropShadow color="#84f000" />
          </effect>
@@ -514,7 +511,7 @@
             <Font size="24.0" />
          </font>
       </Label>
-      <Button fx:id="holeAnalysisBtn" layoutX="903.0" layoutY="396.0" mnemonicParsing="false" onAction="#onHoleAnalysisBtn" prefHeight="39.0" prefWidth="63.0" text="HoleAnalysis Viewer" wrapText="true">
+      <Button fx:id="holeAnalysisBtn" disable="true" layoutX="903.0" layoutY="396.0" mnemonicParsing="false" onAction="#onHoleAnalysisBtn" prefHeight="39.0" prefWidth="63.0" text="HoleAnalysis Viewer" wrapText="true">
          <effect>
             <DropShadow color="#3000f0" />
          </effect>
@@ -525,5 +522,35 @@
       <CheckBox fx:id="holeDispChk" layoutX="95.0" layoutY="324.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="68.0" selected="true" text="Hole" />
       <CheckBox fx:id="patternDispChk" layoutX="163.0" layoutY="324.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="68.0" selected="true" text="Pattern" />
       <CheckBox fx:id="dimensionDispChk" layoutX="237.0" layoutY="324.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="102.0" selected="true" text="Dimension" />
+      <TabPane fx:id="dataTabpane" layoutX="768.0" layoutY="435.0" prefHeight="262.0" prefWidth="430.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="NG画像">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <ImageView fx:id="imgNG" fitHeight="230.0" fitWidth="400.0" pickOnBounds="true" preserveRatio="true" smooth="false">
+                           <effect>
+                              <DropShadow color="#da0606" />
+                           </effect>
+                           <viewport>
+                              <Rectangle2D />
+                           </viewport>
+                        </ImageView>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab fx:id="tab_P2" text="    P2    ">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </Tab>
+            <Tab fx:id="tab_F" text="     F     ">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              </content>
+            </Tab>
+        </tabs>
+      </TabPane>
    </children>
 </AnchorPane>

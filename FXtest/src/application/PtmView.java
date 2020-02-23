@@ -624,7 +624,7 @@ public class PtmView {
     		threshhold[0] = ptmThreshSliderN.getValue();
 
     		//テンプレートマッチング
-    		templateMatchingInstance.detectPattern(areaMat,orgMat,true);//実行し結果を表示用Matに上書き
+    		templateMatchingInstance.detectPattern(areaMat,orgMat,true,true);//実行し結果を表示用Matに上書き
 
 	    	final int tmp_cnt = templateMatchingInstance.resultValue[0].cnt;
 	    	final double tmp_detectMax = templateMatchingInstance.resultValue[0].detectMax;

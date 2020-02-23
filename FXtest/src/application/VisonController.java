@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +22,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.labels.PieSectionLabelGenerator;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -42,6 +50,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -49,6 +59,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
@@ -488,6 +500,13 @@ public class VisonController{
     private CheckBox holeDispChk;
     @FXML
     private CheckBox patternDispChk;
+    //チャート
+    @FXML
+    private TabPane dataTabpane;
+    @FXML
+    private Tab tab_P2;
+    @FXML
+    private Tab tab_F;
 
 
     @FXML
@@ -1414,7 +1433,7 @@ public class VisonController{
 					}else {
 						color = new Scalar(255,0,0);
 					}
-					if( !settingMode.isSelected()) {
+					if( !settingMode.isSelected() && holeDispChk.isSelected() ) {
 			            Imgproc.rectangle(mainViewMat,new Point(r.x, r.y),
 			            		new Point(r.x+r.width, r.y+r.height),
 			            		color,4);
@@ -1431,7 +1450,8 @@ public class VisonController{
 		        //パターンマッチング
 	        	boolean tmFlg;
 	        	if( !ptm_disableChk.isSelected() ) {//パターンマッチングが強制的に無効になっているか？
-	        		tmFlg = templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat,false);
+	        		tmFlg = templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
+	        											,false,patternDispChk.isSelected());
 	        	}else {
 	        		tmFlg = true;
 	        	}
@@ -2810,7 +2830,10 @@ public class VisonController{
         assert holeDispChk != null : "fx:id=\"holeDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert patternDispChk != null : "fx:id=\"patternDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dimensionDispChk != null : "fx:id=\"dimensionDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
-
+        assert tab_P2 != null : "fx:id=\"tab_P2\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert tab_F != null : "fx:id=\"tab_F\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dataTabpane != null : "fx:id=\"dataTabpane\" was not injected: check your FXML file 'Sample2.fxml'.";
+        
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());
         draggingRect = new Rectangle(0, 0,1,1);
@@ -2844,6 +2867,10 @@ public class VisonController{
                   }
             });
 
+        // 折れ線グラフを作成
+        this.dataTabpane.getTabs().add(
+        		new Tab("test",new org.jfree.chart.fx.ChartViewer( createChart("test")))
+        );
     	try {
 	    	int fileCnt = FileClass.getFiles(new File("./ok_image")).length;
 	    		allSaveCnt = fileCnt;
@@ -2869,4 +2896,64 @@ public class VisonController{
 
 
     }
+
+    private JFreeChart createChart(String name){
+        PieDataset dataset = createDataset();
+        JFreeChart chart = ChartFactory.createPieChart(
+            name, dataset, false, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        plot.setOutlineVisible(false);
+        /*
+        plot.lookupSectionPaint("A", Color.RED);
+        plot.setSectionPaint("B", Color.BLUE);
+        plot.setSectionPaint("C", Color.GREEN);
+        plot.setSectionPaint("D", Color.YELLOW);
+        plot.setSectionPaint("E", Color.CYAN);
+        plot.setLabelFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        */
+        // Custom labels https://stackoverflow.com/a/17507061/230513
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
+            "{0}: {2}", new DecimalFormat("0"), new DecimalFormat("0.0%"));
+        plot.setLabelGenerator(gen);
+        return chart;
+
+    }
+    private static PieDataset createDataset() {
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        dataset.setValue("A", 0.8);
+        dataset.setValue("B", 9.4);
+        dataset.setValue("C", 0.1);
+        dataset.setValue("D", 89.5);
+        dataset.setValue("E", 0.2);
+        dataset.setValue("F", 0.0);
+        return dataset;
+    }
+   private XYChart.Series<Integer,Double> getChartData(){
+       double p2 = 2.00;
+
+       XYChart.Series<Integer,Double> p2_series = new Series<>();
+
+       p2_series.setName("P2");
+
+       for (double i = 30; i < 100; i++) {
+           p2_series.getData().add( new XYChart.Data( i,p2));
+           p2 = Math.random()*0.2 + 1.9;
+       }
+
+       return p2_series;
+   }
+   private XYChart.Series<Integer,Double> getChartData2(){
+       double f = 3.50;
+
+       XYChart.Series<Integer,Double> f_series = new Series<>();
+
+       f_series.setName("F");
+
+       for (double i = 50; i < 70; i++) {
+           f_series.getData().add( new XYChart.Data( i,f));
+           f = Math.random()*0.2 + 3.4;
+       }
+
+       return f_series;
+   }
 }

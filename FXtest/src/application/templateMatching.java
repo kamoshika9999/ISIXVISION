@@ -37,7 +37,7 @@ public class templateMatching {
 	 * @param settingFlg セッティングモード時 true
 	 * @return  true:合格  false:不合格
 	 */
-	public boolean detectPattern(Mat areaMat, Mat dstMat,boolean settingFlg) {
+	public boolean detectPattern(Mat areaMat, Mat dstMat,boolean settingFlg,boolean patternDispChk) {
 
 		boolean resultFlg = true;
 		Mat c_areaMat;//検出エリアMatクローン用
@@ -156,14 +156,16 @@ public class templateMatching {
 		    					if( !flg2 ){
 		    						resultValue[n].cnt++;
 		    						finedPoint.add(new Point(j,i));
-		    	    		    	Imgproc.rectangle(dstRoi,new Point(j*c_tmpara.scale[n],i*c_tmpara.scale[n]),
-		    	    		    			new Point((j+c_tmpara.paternMat[n].width())*c_tmpara.scale[n],
-		    	    		    			(i+c_tmpara.paternMat[n].height())*c_tmpara.scale[n]),
-		    	    		    			new Scalar(0,255,255),3);
-									Imgproc.putText(dstRoi,
-											String.format("%.3f", rt),
-											new Point(j*c_tmpara.scale[n],i*c_tmpara.scale[n]),
-											Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),7);
+		    						if(patternDispChk) {
+			    	    		    	Imgproc.rectangle(dstRoi,new Point(j*c_tmpara.scale[n],i*c_tmpara.scale[n]),
+			    	    		    			new Point((j+c_tmpara.paternMat[n].width())*c_tmpara.scale[n],
+			    	    		    			(i+c_tmpara.paternMat[n].height())*c_tmpara.scale[n]),
+			    	    		    			new Scalar(0,255,255),3);
+										Imgproc.putText(dstRoi,
+												String.format("%.3f", rt),
+												new Point(j*c_tmpara.scale[n],i*c_tmpara.scale[n]),
+												Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),7);
+		    						}
 		    	    		    	j = (int) (j + c_tmpara.paternMat[n].cols() + tmpPtWidth);
 		    	    		    	resultValue[n].x.add(j);//X座標格納
 		    	    		    	resultValue[n].y.add(i);//y座標格納
