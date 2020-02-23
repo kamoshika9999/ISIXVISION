@@ -2643,6 +2643,7 @@ public class VisonController{
     //登録パターンなどの詳細設定
     @FXML
     void onDimSetPara(ActionEvent event) {
+    	
 
     }
     //測定設定 送り穴間距離
