@@ -44,7 +44,7 @@
                               <DropShadow />
                            </effect>
                         </CheckBox>
-                        <CheckBox fx:id="settingMode" layoutX="14.0" layoutY="45.0" mnemonicParsing="false" onAction="#onEventTrigger" text="Filter View">
+                        <CheckBox fx:id="FilterViewMode" layoutX="14.0" layoutY="45.0" mnemonicParsing="false" onAction="#onEventTrigger" text="Filter View">
                            <font>
                               <Font size="13.0" />
                            </font>
@@ -293,12 +293,12 @@
                         <Button fx:id="dim_set_para2" layoutX="165.0" layoutY="123.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
                         <Label layoutX="72.0" layoutY="6.0" text="1列目 送り穴" />
                         <Label layoutX="175.0" layoutY="6.0" text="1列目 ポケット" />
-                        <TextField fx:id="dim_offset_F_1" layoutX="114.0" layoutY="203.0" prefHeight="25.0" prefWidth="48.0" />
-                        <TextField fx:id="dim_offset_P2_1" layoutX="60.0" layoutY="203.0" prefHeight="25.0" prefWidth="48.0" />
+                        <TextField fx:id="dim_offset_F_1" alignment="CENTER_RIGHT" layoutX="114.0" layoutY="203.0" prefHeight="25.0" prefWidth="48.0" text="0" />
+                        <TextField fx:id="dim_offset_P2_1" alignment="CENTER_RIGHT" layoutX="60.0" layoutY="203.0" prefHeight="25.0" prefWidth="48.0" text="0" />
                         <Label layoutX="22.0" layoutY="207.0" text="offset" />
                         <Label layoutX="70.0" layoutY="184.0" text="P2" />
                         <Label layoutX="131.0" layoutY="184.0" text="F" />
-                        <TextField fx:id="dim_offset_E_1" layoutX="167.0" layoutY="204.0" prefHeight="25.0" prefWidth="48.0" />
+                        <TextField fx:id="dim_offset_E_1" alignment="CENTER_RIGHT" layoutX="167.0" layoutY="204.0" prefHeight="25.0" prefWidth="48.0" text="0" />
                         <Label layoutX="184.0" layoutY="185.0" text="E" />
                         <Line endX="-101.0" endY="200.0" layoutX="373.0" layoutY="31.0" startX="-101.0" startY="-14.0" />
                         <Label layoutX="292.0" layoutY="6.0" text="2列目 送り穴" />
@@ -308,11 +308,11 @@
                         <Button fx:id="dim_set_para4" layoutX="395.0" layoutY="122.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
                         <ImageView fx:id="dim_poke_2" fitHeight="90.0" fitWidth="90.0" layoutX="395.0" layoutY="31.0" pickOnBounds="true" preserveRatio="true" />
                         <CheckBox fx:id="dim_2_enable" layoutX="292.0" layoutY="157.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
-                        <TextField fx:id="dim_offset_F_2" layoutX="345.0" layoutY="204.0" prefHeight="25.0" prefWidth="48.0" />
-                        <TextField fx:id="dim_offset_P2_2" layoutX="291.0" layoutY="204.0" prefHeight="25.0" prefWidth="48.0" />
+                        <TextField fx:id="dim_offset_F_2" alignment="CENTER_RIGHT" layoutX="345.0" layoutY="204.0" prefHeight="25.0" prefWidth="48.0" text="0" />
+                        <TextField fx:id="dim_offset_P2_2" alignment="CENTER_RIGHT" layoutX="291.0" layoutY="204.0" prefHeight="25.0" prefWidth="48.0" text="0" />
                         <Label layoutX="301.0" layoutY="185.0" text="P2" />
                         <Label layoutX="362.0" layoutY="185.0" text="F" />
-                        <TextField fx:id="dim_offset_E_2" layoutX="398.0" layoutY="205.0" prefHeight="25.0" prefWidth="48.0" />
+                        <TextField fx:id="dim_offset_E_2" alignment="CENTER_RIGHT" layoutX="398.0" layoutY="205.0" prefHeight="25.0" prefWidth="48.0" text="0" />
                         <Label layoutX="415.0" layoutY="186.0" text="E" />
                         <Line endX="-101.0" endY="200.0" layoutX="597.0" layoutY="28.0" startX="-101.0" startY="-14.0" />
                         <Button fx:id="dimSettingBtn" layoutX="511.0" layoutY="76.0" mnemonicParsing="false" onAction="#onDimSetting" prefHeight="25.0" prefWidth="109.0" text="設定" />
@@ -552,5 +552,7 @@
           </Tab>
         </tabs>
       </TabPane>
+      <Label layoutX="991.0" layoutY="416.0" prefHeight="17.0" prefWidth="85.0" text="カーソル位置の値" />
+      <Label fx:id="dimChartValueLable" layoutX="1076.0" layoutY="416.0" prefHeight="17.0" prefWidth="70.0" textAlignment="RIGHT" />
    </children>
 </AnchorPane>

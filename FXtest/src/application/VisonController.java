@@ -1141,9 +1141,9 @@ public class VisonController{
 
 	    	Mat ptnAreaMat = mainViewGlayMat.clone();
 	    	Mat tmp0Mat = mainViewGlayMat.clone();//各穴のパラメータに従った判定のベースMat
-	    	//Mat tmp1Mat = mainViewGlayMat.clone();
-	    	//Mat tmp2Mat = new Mat();
-	    	//Mat tmp3Mat = new Mat();
+	    	Mat tmp1Mat = new Mat();
+	    	Mat tmp2Mat = new Mat();
+	    	Mat tmp3Mat = new Mat();
 	    	Mat fillterAftterMat = mainViewGlayMat.clone();//セッティングモード時判定のベースMat
 	    	int filterUselFlg = 0;
 
@@ -1156,98 +1156,75 @@ public class VisonController{
 	    			tmpValue++;
 	    		}
 	    		Size sz = new Size(tmpValue,tmpValue);
-	    		Imgproc.GaussianBlur(tmp1Mat, tmp1Mat, sz, sigmaX,sigmaY);
+	    		Imgproc.GaussianBlur(fillterAftterMat, fillterAftterMat, sz, sigmaX,sigmaY);
+	    		tmp1Mat = fillterAftterMat.clone();
 	    		filterUselFlg+=1;
 	    	}
 	    	if( threshholdCheck.isSelected()) {
 	    		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
-	    		Imgproc.threshold(tmp1Mat, tmp2Mat, this.threshholdSlider.getValue(),255,type);
+	    		Imgproc.threshold(fillterAftterMat, fillterAftterMat, this.threshholdSlider.getValue(),255,type);
+	    		tmp2Mat = fillterAftterMat.clone();
 	    		filterUselFlg+=2;
 	    	}
 	    	if( dilateCheck.isSelected() ) {
 	    		int n = (int)dilateSliderN.getValue();
-
-	    		if(threshholdCheck.isSelected()) {
-	    			tmp3Mat = mainViewGlayMat.clone();
-		    		Imgproc.dilate(tmp2Mat, tmp3Mat, new Mat(),new Point(-1,-1),n);
-		    	}else {
-		    		Imgproc.dilate(tmp1Mat, tmp3Mat, new Mat(),new Point(-1,-1),n);
-		    	}
+	    		Imgproc.dilate(fillterAftterMat, fillterAftterMat, new Mat(),new Point(-1,-1),n);
+	    		tmp3Mat = fillterAftterMat.clone();
 	    		filterUselFlg+=4;
 	    	}
-	    	switch(filterUselFlg) {
-	    	case 0://全てなし
-	    		Imgproc.Canny(tmp1Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-		    	if( FilterViewMode.isSelected()) {
+    		Imgproc.Canny(fillterAftterMat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+
+	    	if( FilterViewMode.isSelected()) {
+	    		switch(filterUselFlg) {
+		    	case 0://全てなし
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-		    	}
 			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-	    		break;
-	    	case 1://ガウシアンのみ
-				Imgproc.Canny(tmp1Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-		    	if( FilterViewMode.isSelected()) {
+		    		break;
+		    	case 1://ガウシアンのみ
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    	}
-	    		break;
-	    	case 2://２値化のみ
-				Imgproc.Canny(tmp2Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-		    	if( FilterViewMode.isSelected()) {
+		    		break;
+		    	case 2://２値化のみ
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    	}
-	    		break;
-	    	case 3://ガウシアンと２値化あり
-				Imgproc.Canny(tmp2Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-		    	if( FilterViewMode.isSelected()) {
+		    		break;
+		    	case 3://ガウシアンと２値化あり
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    	}
-	    		break;
-	    	case 4://膨張のみ
-				Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-		    	if( FilterViewMode.isSelected()) {
+		    		break;
+		    	case 4://膨張のみ
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
 			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    	}
-	    		break;
-	    	case 5://ガウシアンと膨張あり
-				Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-		    	if( FilterViewMode.isSelected()) {
+		    		break;
+		    	case 5://ガウシアンと膨張あり
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
 			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    	}
-	    		break;
-	    	case 6://ガウシアン無し　他あり
-	    		Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-		    	if( FilterViewMode.isSelected()) {
+		    		break;
+		    	case 6://ガウシアン無し　他あり
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
 			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    	}
-	    		break;
-	    	case 7://全てあり
-				Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-		    	if( FilterViewMode.isSelected()) {
+		    		break;
+		    	case 7://全てあり
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
 			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    		break;
 		    	}
-	    		break;
 	    	}
 
 	        if (dragging && settingModeFlg) {
@@ -1257,39 +1234,15 @@ public class VisonController{
 	            		new Scalar(0,255,0),3);
 	        }else{
 	        	if(draggingRect.width >0 && draggingRect.height > 0 && settingModeFlg){
-	        		Mat mainViewGlayRoi = fillterAftterMat.submat(
+	        		Mat fillterAftterMatRoi = fillterAftterMat.submat(
 		        			draggingRect.y,
 		        			draggingRect.y + draggingRect.height,
 		        			draggingRect.x,
 		        			draggingRect.x+draggingRect.width);
-	        		/*
-	        		Mat mainViewGlayRoi = mainViewGlayMat.submat(
-		        			draggingRect.y,
-		        			draggingRect.y + draggingRect.height,
-		        			draggingRect.x,
-		        			draggingRect.x+draggingRect.width);
-		        	if( gauusianCheck.isSelected() ) {
-		        		double gauusianSigmaX = gauusianSliderX.getValue();
-		        		double gauusianSigmaY = gauusianSliderY.getValue();
-		        		int gauusianKsize_tmp =(int)gauusianSliderK.getValue();
-		        		if( gauusianKsize_tmp % 2 == 0 ) {
-		        			gauusianKsize_tmp++;
-		        		}
-		        		Size gauusianKsize = new Size(gauusianKsize_tmp,gauusianKsize_tmp);
-		        		Imgproc.GaussianBlur(mainViewGlayRoi, mainViewGlayRoi, gauusianKsize, gauusianSigmaX,gauusianSigmaY);
-		        	}
-		        	if( threshholdCheck.isSelected()) {
-		        		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
-		        		Imgproc.threshold(mainViewGlayRoi, mainViewGlayRoi, this.threshholdSlider.getValue(),255,type);
-		        	}
-		        	if( dilateCheck.isSelected()) {
-		        		Imgproc.dilate(mainViewGlayRoi, mainViewGlayRoi, new Mat(),new Point(-1,-1),(int)dilateSliderN.getValue());
-		        	}
-		        	*/
 		        	//穴検出
 		        	if( !ptmSetStartFlg ) {
 			            Mat resultCircles = new Mat();
-						Imgproc.HoughCircles(mainViewGlayRoi, resultCircles, Imgproc.CV_HOUGH_GRADIENT,
+						Imgproc.HoughCircles(fillterAftterMatRoi, resultCircles, Imgproc.CV_HOUGH_GRADIENT,
 								sliderDetecPara4.getValue(),
 								sliderDetecPara5.getValue(),
 								sliderDetecPara6.getValue(),
@@ -1297,7 +1250,7 @@ public class VisonController{
 								(int)sliderDetecPara8.getValue(),
 								(int)sliderDetecPara9.getValue());
 						if( resultCircles.cols() > 0) {
-							fncDrwCircles(mainViewGlayRoi,resultCircles,
+							fncDrwCircles(fillterAftterMatRoi,resultCircles,
 									mainViewMat.submat(
 						        			draggingRect.y,
 						        			draggingRect.y + draggingRect.height,
@@ -1311,7 +1264,7 @@ public class VisonController{
 
 							//面積判定
 							boolean holeAreaJudgFlg = holeWhiteAreaCheck(
-									mainViewGlayRoi,resultCircles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
+									fillterAftterMatRoi,resultCircles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
 							if( holeAreaJudgFlg ) {
 								Imgproc.putText(mainViewMat,
 										"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +

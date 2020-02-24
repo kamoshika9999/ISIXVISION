@@ -167,12 +167,17 @@ public class templateMatching {
 												Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),7);
 		    						}
 		    	    		    	j = (int) (j + c_tmpara.paternMat[n].cols() + tmpPtWidth);
-		    	    		    	resultValue[n].x.add(j);//X座標格納
-		    	    		    	resultValue[n].y.add(i);//y座標格納
+		    	    		    	resultValue[n].x.add((int)(j*c_tmpara.scale[n]));//X座標格納
+		    	    		    	resultValue[n].y.add((int)(i*c_tmpara.scale[n]));//y座標格納
 		    	    		    	resultValue[n].ratio.add(rt);//マッチング度格納
 		    	    		    	resultValue[n].detectMax = resultValue[n].detectMax<rt?rt:resultValue[n].detectMax;
 		    	    		    	resultValue[n].detectMin = resultValue[n].detectMin>rt?rt:resultValue[n].detectMin;
 		    	    		    	resultValue[n].detectAve += rt;
+		    	    		    	//パターン中心計算
+		    	    		    	resultValue[n].centerPositionX.add((int)(
+		    	    		    			j*c_tmpara.scale[n]+(j+c_tmpara.paternMat[n].width())*c_tmpara.scale[n])/2);
+		    	    		    	resultValue[n].centerPositionY.add((int)(
+		    	    		    			i*c_tmpara.scale[n]+(i+c_tmpara.paternMat[n].height())*c_tmpara.scale[n])/2);
 		    	    		    	break;
 		    					}
 			    			}

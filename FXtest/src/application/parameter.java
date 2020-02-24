@@ -1,5 +1,6 @@
 package application;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.Serializable;
 
@@ -67,6 +68,31 @@ public class parameter implements Serializable {
 	public boolean dim_2_enable = false;
 	public Double dimPixel_mm = 0.035;//ピクセル-mm換算
 
+	final int dim_arrySize = 4;
+	String[] dim_FileName;//パターンマッチングの登録Mat
+	int[] dim_DetectCnt;//検出数
+	public Rectangle[] dim_rectsDetection;//検出エリア
+	double[] dim_detectionScale;//パターンマッチングの検出に使用するスケール倍率の逆数
+	public double[] dim_zoomValue_slider;
+	public double[] dim_threshValue;//検出閾値
+	public Point[] dim_centerPosition;
+	//パターンマッチングに適用されるフィルタ
+	public int[] dim_fil_detectionCnt;
+	public boolean[] dim_fil_threshholdCheck;
+	public boolean[] dim_fil_threshhold_Invers;
+	public double[] dim_fil_threshholdValue;
+    public boolean[] dim_fil_gauusianCheck;
+	public double[] dim_fil_gauusianX;
+	public double[] dim_fil_gauusianY;
+	public double[] dim_fil_gauusianValue;
+	public boolean[] dim_fil_dilateCheck;
+	public double[] dim_fil_dilateValue;
+	public boolean[] dim_fil_erodeCheck;
+	public double[] dim_fil_erodeValue;
+	public boolean[] dim_fil_cannyCheck;
+	public double[] dim_fil_cannyThresh1;
+	public double[] dim_fil_cannyThresh2;
+
 	public parameter() {
 		hole_zoom = 1.0;
 		hole_viewRect = new double[hole_arrySize];
@@ -126,7 +152,35 @@ public class parameter implements Serializable {
 		ptm_threshValue = new double[ptm_arrySize];
 		ptm_zoomValue_slider = new double[ptm_arrySize];
 		ptm_rectsDetection = new Rectangle[ptm_arrySize];
+		//--------------寸法測定------------------------
+		dim_DetectCnt = new int[dim_arrySize];
+		dim_fil_detectionCnt = new int[dim_arrySize];
+		dim_detectionScale = new double[dim_arrySize];
 
+		dim_fil_gauusianCheck = new boolean[dim_arrySize];
+		dim_fil_gauusianX = new double[dim_arrySize];
+		dim_fil_gauusianY = new double[dim_arrySize];
+		dim_fil_gauusianValue = new double[dim_arrySize];
+
+		dim_fil_dilateCheck = new boolean[dim_arrySize];
+		dim_fil_dilateValue = new double[dim_arrySize];
+
+		dim_fil_erodeCheck = new boolean[dim_arrySize];
+		dim_fil_erodeValue = new double[dim_arrySize];
+
+		dim_fil_threshholdCheck = new boolean[dim_arrySize];
+		dim_fil_threshhold_Invers = new boolean[dim_arrySize];
+		dim_fil_threshholdValue = new double[dim_arrySize];
+
+		dim_fil_cannyCheck = new boolean[dim_arrySize];
+		dim_fil_cannyThresh1 = new double[dim_arrySize];
+		dim_fil_cannyThresh2 = new double[dim_arrySize];
+
+		dim_threshValue = new double[dim_arrySize];
+		dim_zoomValue_slider = new double[dim_arrySize];
+		dim_rectsDetection = new Rectangle[dim_arrySize];
+		dim_centerPosition = new Point[dim_arrySize];
+		//------------------------------------------------
 
 		for(int i=0;i<hole_arrySize;i++){
 			hole_circlePara4[i] = 2;
@@ -177,8 +231,34 @@ public class parameter implements Serializable {
 
 			ptm_threshValue[i] = 0.8;
 			ptm_zoomValue_slider[i] = 0.3;
+		}
+		for(int i=0;i<dim_arrySize;i++) {
+			dim_DetectCnt[i] = 1;
+			dim_detectionScale[i] = 3;
+			dim_rectsDetection[i] = new Rectangle();
 
+			dim_fil_threshholdCheck[i] = false;
+			dim_fil_threshhold_Invers[i] = false;
+			dim_fil_threshholdValue[i] = 128;
+			dim_fil_gauusianCheck[i] = false;
+			dim_fil_gauusianX[i] = 0;
+			dim_fil_gauusianY[i] = 0;
+			dim_fil_gauusianValue[i] = 0;
 
+			dim_fil_dilateCheck[i] = false;
+			dim_fil_dilateValue[i] = 0;
+
+			dim_fil_erodeCheck[i] = false;
+			dim_fil_erodeValue[i] = 0;
+
+			dim_fil_threshholdValue[i] = 0;
+
+			dim_fil_cannyCheck[i] = false;
+			dim_fil_cannyThresh1[i] = 0;
+			dim_fil_cannyThresh2[i] = 0;
+
+			dim_threshValue[i] = 0.8;
+			dim_zoomValue_slider[i] = 0.3;
 		}
 	}
 }
