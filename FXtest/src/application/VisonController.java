@@ -28,6 +28,9 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.fx.ChartViewer;
+import org.jfree.chart.fx.interaction.ChartMouseEventFX;
+import org.jfree.chart.fx.interaction.ChartMouseListenerFX;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -169,6 +172,7 @@ public class VisonController{
 	private Tab[] chartTab_F;
 	private JFreeChart[] chart_P2;
 	private JFreeChart[] chart_F;
+	public Mat[][] dim_ImgMat = new Mat[4][4];//[presetNo][dim1～dim4]
 
 
 	@FXML
@@ -350,7 +354,7 @@ public class VisonController{
     @FXML
     private CheckBox outTrigDisableChk;//True:NGが発生してもGPIOの状態を変えない
     @FXML
-    private CheckBox settingMode;//True:設定モード中
+    private CheckBox FilterViewMode;//True:フィルタビュー有効
     @FXML
     private Spinner<Integer> portNoSpin;//GPIOボード用シリアルポート番号選択
     @FXML
@@ -518,11 +522,11 @@ public class VisonController{
     //チャート
     @FXML
     private TabPane dataTabpane;
+    @FXML
+    private Label dimChartValueLable;
 
 	private XYSeriesCollection[] dataset_P2;
-
 	private XYSeriesCollection[] dataset_F;
-
 	private double holeDist_DimSetting;
 
 
@@ -1106,7 +1110,6 @@ public class VisonController{
     private void rePaint() {
     	if( saveImgUseFlg ) {
     		srcMat = saveImgMat.clone();
-    		autoTrigger = false;
     	}
     	if( srcMat.width() < 1) return;
     	try {
@@ -1137,102 +1140,115 @@ public class VisonController{
 	    	//Imgproc.equalizeHist(mainViewGlayMat, mainViewGlayMat);//コントラスト均等化
 
 	    	Mat ptnAreaMat = mainViewGlayMat.clone();
-	    	Mat tmp0Mat = mainViewGlayMat.clone();
+	    	Mat tmp0Mat = mainViewGlayMat.clone();//各穴のパラメータに従った判定のベースMat
+	    	//Mat tmp1Mat = mainViewGlayMat.clone();
+	    	//Mat tmp2Mat = new Mat();
+	    	//Mat tmp3Mat = new Mat();
+	    	Mat fillterAftterMat = mainViewGlayMat.clone();//セッティングモード時判定のベースMat
+	    	int filterUselFlg = 0;
 
-	    	if( settingMode.isSelected()) {
-		    	Mat tmp1Mat = mainViewGlayMat.clone();
-		    	Mat tmp2Mat = new Mat();
-		    	Mat tmp3Mat = new Mat();
-		    	Mat fillterAftterMat = mainViewGlayMat.clone();
-		    	int filterUselFlg = 0;
+	    	//ガウシアン→２値化→膨張の順番
+	    	if( gauusianCheck.isSelected() ) {
+	    		double sigmaX = gauusianSliderX.getValue();
+	    		double sigmaY = gauusianSliderY.getValue();
+	    		int tmpValue =(int)gauusianSliderK.getValue();
+	    		if( tmpValue % 2 == 0 ) {
+	    			tmpValue++;
+	    		}
+	    		Size sz = new Size(tmpValue,tmpValue);
+	    		Imgproc.GaussianBlur(tmp1Mat, tmp1Mat, sz, sigmaX,sigmaY);
+	    		filterUselFlg+=1;
+	    	}
+	    	if( threshholdCheck.isSelected()) {
+	    		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+	    		Imgproc.threshold(tmp1Mat, tmp2Mat, this.threshholdSlider.getValue(),255,type);
+	    		filterUselFlg+=2;
+	    	}
+	    	if( dilateCheck.isSelected() ) {
+	    		int n = (int)dilateSliderN.getValue();
 
-		    	//ガウシアン→２値化→膨張の順番
-		    	if( gauusianCheck.isSelected() ) {
-		    		double sigmaX = gauusianSliderX.getValue();
-		    		double sigmaY = gauusianSliderY.getValue();
-		    		int tmpValue =(int)gauusianSliderK.getValue();
-		    		if( tmpValue % 2 == 0 ) {
-		    			tmpValue++;
-		    		}
-		    		Size sz = new Size(tmpValue,tmpValue);
-		    		Imgproc.GaussianBlur(tmp1Mat, tmp1Mat, sz, sigmaX,sigmaY);
-		    		filterUselFlg+=1;
+	    		if(threshholdCheck.isSelected()) {
+	    			tmp3Mat = mainViewGlayMat.clone();
+		    		Imgproc.dilate(tmp2Mat, tmp3Mat, new Mat(),new Point(-1,-1),n);
+		    	}else {
+		    		Imgproc.dilate(tmp1Mat, tmp3Mat, new Mat(),new Point(-1,-1),n);
 		    	}
-		    	if( threshholdCheck.isSelected()) {
-		    		int type = threshhold_Inverse.isSelected()?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
-		    		Imgproc.threshold(tmp1Mat, tmp2Mat, this.threshholdSlider.getValue(),255,type);
-		    		filterUselFlg+=2;
-		    	}
-		    	if( dilateCheck.isSelected() ) {
-		    		int n = (int)dilateSliderN.getValue();
-
-		    		if(threshholdCheck.isSelected()) {
-		    			tmp3Mat = mainViewGlayMat.clone();
-			    		Imgproc.dilate(tmp2Mat, tmp3Mat, new Mat(),new Point(-1,-1),n);
-			    	}else {
-			    		Imgproc.dilate(tmp1Mat, tmp3Mat, new Mat(),new Point(-1,-1),n);
-			    	}
-		    		filterUselFlg+=4;
-		    	}
-		    	switch(filterUselFlg) {
-		    	case 0://全てなし
-		    		Imgproc.Canny(tmp1Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+	    		filterUselFlg+=4;
+	    	}
+	    	switch(filterUselFlg) {
+	    	case 0://全てなし
+	    		Imgproc.Canny(tmp1Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+		    	if( FilterViewMode.isSelected()) {
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+		    	}
 			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    		break;
-		    	case 1://ガウシアンのみ
-					Imgproc.Canny(tmp1Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+	    		break;
+	    	case 1://ガウシアンのみ
+				Imgproc.Canny(tmp1Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+		    	if( FilterViewMode.isSelected()) {
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    		break;
-		    	case 2://２値化のみ
-					Imgproc.Canny(tmp2Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
-			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    		break;
-		    	case 3://ガウシアンと２値化あり
-					Imgproc.Canny(tmp2Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
-			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
-			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    		break;
-		    	case 4://膨張のみ
-					Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    		break;
-		    	case 5://ガウシアンと膨張あり
-					Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
-			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    		break;
-		    	case 6://ガウシアン無し　他あり
-		    		Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
-			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    		break;
-		    	case 7://全てあり
-					Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
-			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
-			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
-			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
-		    		break;
 		    	}
-			}
+	    		break;
+	    	case 2://２値化のみ
+				Imgproc.Canny(tmp2Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+		    	if( FilterViewMode.isSelected()) {
+			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
+			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    	}
+	    		break;
+	    	case 3://ガウシアンと２値化あり
+				Imgproc.Canny(tmp2Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+		    	if( FilterViewMode.isSelected()) {
+			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
+			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
+			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    	}
+	    		break;
+	    	case 4://膨張のみ
+				Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+		    	if( FilterViewMode.isSelected()) {
+			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    	}
+	    		break;
+	    	case 5://ガウシアンと膨張あり
+				Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+		    	if( FilterViewMode.isSelected()) {
+			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
+			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    	}
+	    		break;
+	    	case 6://ガウシアン無し　他あり
+	    		Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+		    	if( FilterViewMode.isSelected()) {
+			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
+			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
+			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    	}
+	    		break;
+	    	case 7://全てあり
+				Imgproc.Canny(tmp3Mat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+		    	if( FilterViewMode.isSelected()) {
+			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
+			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
+			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+		    	}
+	    		break;
+	    	}
 
 	        if (dragging && settingModeFlg) {
 	            Imgproc.rectangle(mainViewMat,
@@ -1241,7 +1257,13 @@ public class VisonController{
 	            		new Scalar(0,255,0),3);
 	        }else{
 	        	if(draggingRect.width >0 && draggingRect.height > 0 && settingModeFlg){
-		        	Mat mainViewGlayRoi = mainViewGlayMat.submat(
+	        		Mat mainViewGlayRoi = fillterAftterMat.submat(
+		        			draggingRect.y,
+		        			draggingRect.y + draggingRect.height,
+		        			draggingRect.x,
+		        			draggingRect.x+draggingRect.width);
+	        		/*
+	        		Mat mainViewGlayRoi = mainViewGlayMat.submat(
 		        			draggingRect.y,
 		        			draggingRect.y + draggingRect.height,
 		        			draggingRect.x,
@@ -1263,6 +1285,7 @@ public class VisonController{
 		        	if( dilateCheck.isSelected()) {
 		        		Imgproc.dilate(mainViewGlayRoi, mainViewGlayRoi, new Mat(),new Point(-1,-1),(int)dilateSliderN.getValue());
 		        	}
+		        	*/
 		        	//穴検出
 		        	if( !ptmSetStartFlg ) {
 			            Mat resultCircles = new Mat();
@@ -1362,7 +1385,7 @@ public class VisonController{
 							(int)para.hole_circlePara9[i]);
 
 					boolean holeAreaFlg = true;
-					if( circles.cols() > 0 && !settingMode.isSelected()) {
+					if( circles.cols() > 0 && !FilterViewMode.isSelected()) {
 
 						if( holeDispChk.isSelected() ) {
 							fncDrwCircles(roi,circles, mainViewMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
@@ -1451,7 +1474,7 @@ public class VisonController{
 					}else {
 						color = new Scalar(255,0,0);
 					}
-					if( !settingMode.isSelected() && holeDispChk.isSelected() ) {
+					if( !FilterViewMode.isSelected() && holeDispChk.isSelected() ) {
 			            Imgproc.rectangle(mainViewMat,new Point(r.x, r.y),
 			            		new Point(r.x+r.width, r.y+r.height),
 			            		color,4);
@@ -1478,11 +1501,17 @@ public class VisonController{
         		if( ((g==0 && dim_1_enable.isSelected()) || ((g==1) && dim_2_enable.isSelected())) && shotCnt>0) {
 	        		int g2 =g;
 	        		Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt, Math.random()*0.05 + 1.975));
-	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt, Math.random()*0.05 + 3.475));
+	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt, Math.random()*0.05 + 11.475));
+
+	        		//軸の設定更新
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getDomainAxis()).
 																setRange(shotCnt<=100?0:shotCnt-100,shotCnt));
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getDomainAxis()).
 	        													setRange(shotCnt<=100?0:shotCnt-100,shotCnt));
+	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getRangeAxis()).
+							setRange(1.8,2.2));
+	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
+							setRange(11.3,11.7));
         		}
         	}
 
@@ -1787,6 +1816,7 @@ public class VisonController{
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,
 				min,
 				5)));
+    	eventTrigger = true;
     }
     @FXML
     void onWhiteAreaBtn(ActionEvent event) {
@@ -1807,28 +1837,28 @@ public class VisonController{
     			para.hole_DetectFlg[0] = false;
 			}else {
     			setPara(0);
-    	    	onSettingModeBtn(null);
+    	    	//onSettingModeBtn(null);
     		}
     	}else if(eObject == okuri2_btn) {
     		if(para.hole_DetectFlg[1] ){
     			para.hole_DetectFlg[1] = false;
     		}else {
     			setPara(1);
-    	    	onSettingModeBtn(null);
+    	    	//onSettingModeBtn(null);
     		}
     	}else if(eObject == okuri3_btn) {
     		if(para.hole_DetectFlg[2]){
     			para.hole_DetectFlg[2] = false;
     		}else {
     			setPara(2);
-    	    	onSettingModeBtn(null);
+    	    	//onSettingModeBtn(null);
     		}
     	}else if(eObject == okuri4_btn) {
     		if(para.hole_DetectFlg[3]){
     			para.hole_DetectFlg[3] = false;
     		}else {
     			setPara(3);
-    	    	onSettingModeBtn(null);
+    	    	//onSettingModeBtn(null);
     		}
     	}
     	setBtnPara();
@@ -1856,15 +1886,12 @@ public class VisonController{
     	para.hole_fil_gauusianValue[i] = gauusianSliderK.getValue();
     	para.hole_fil_dilateCheck[i] = dilateCheck.isSelected();
     	para.hole_fil_dilateValue[i] = (int)dilateSliderN.getValue();
-    	//para.zoom = this.zoomValue_slider.getValue();
     	para.hole_fil_threshholdCheck[i] = threshholdCheck.isSelected();
     	para.hole_fil_threshhold[i] = threshholdSlider.getValue();
     	para.hole_fil_threshhold_Invers[i] = threshhold_Inverse.isSelected();
     	para.hole_whiteAreaMax[i] = whiteRatioMaxSp.getValue().intValue();
     	para.hole_whiteAreaMin[i] = whiteRatioMinSp.getValue().intValue();
 
-    	settingMode.setSelected(false);//セッティングモードから抜ける
-    	draggingRect = new Rectangle(0,0,1,1);
     }
     private void setBtnPara() {
     	parameter para = pObj.para[pObj.select];
@@ -1980,6 +2007,8 @@ public class VisonController{
 		}else if( obj == setVeriBtn4 && para.hole_DetectFlg[3]) {
 			onSetVeri_n=3;
 		}else {
+			draggingRect = new Rectangle(0,0,1,1);
+			eventTrigger = true;
 			return;
 		}
 
@@ -2102,7 +2131,15 @@ public class VisonController{
 		for(int i=0;i<4;i++) {
 			for(int j=0;j<4;j++) {
 				if( ptm_ImgMat[i][j] != null ) {
-					savePtmImg(ptm_ImgMat[i][j],"ptm"+String.format("_%d_%d", i,j));
+					savePtmImg(ptm_ImgMat[i][j],"dim"+String.format("_%d_%d", i,j));
+				}
+			}
+		}
+		//寸法測定用画像保存
+		for(int i=0;i<4;i++) {
+			for(int j=0;j<4;j++) {
+				if( dim_ImgMat[i][j] != null ) {
+					savePtmImg(dim_ImgMat[i][j],"dim"+String.format("_%d_%d", i,j));
 				}
 			}
 		}
@@ -2236,6 +2273,23 @@ public class VisonController{
     	ptm_pt2_enable.setSelected(pObj.para[pObj.select].ptm_Enable[1]);
     	ptm_pt3_enable.setSelected(pObj.para[pObj.select].ptm_Enable[2]);
     	ptm_pt4_enable.setSelected(pObj.para[pObj.select].ptm_Enable[3]);
+
+    	//寸法測定用画像
+    	for( int i=0;i<4;i++) {
+    		for( int j=0;j<4;j++) {
+    	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/dim"+String.format("_%d_%d", i,j)+".jpeg");
+    	    	if( tmpMat.width() > 0 && pObj.para[pObj.select].dim_rectsDetection[0].width>1) {
+    	    		 dim_ImgMat[i][j] = new Mat();
+    	    		 dim_ImgMat[i][j] = tmpMat.clone();
+    	    	}else {
+    	    		dim_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3,new Scalar(0));
+    	    	}
+    		}
+    	}
+    	updateImageView(dim_okuriImg_1, Utils.mat2Image(dim_ImgMat[pObj.select][0]));
+    	updateImageView(dim_poke_1, Utils.mat2Image(dim_ImgMat[pObj.select][1]));
+    	updateImageView(dim_okuriImg_2, Utils.mat2Image(dim_ImgMat[pObj.select][2]));
+    	updateImageView(dim_poke_2, Utils.mat2Image(dim_ImgMat[pObj.select][3]));
 
     }
 
@@ -2376,7 +2430,7 @@ public class VisonController{
 
     		Platform.runLater(() ->this.accordion_1.setDisable(true));
         	settingModeFlg = false;
-        	Platform.runLater(() ->settingMode.setSelected(false));
+        	Platform.runLater(() ->FilterViewMode.setSelected(false));
         	Platform.runLater(() ->info1.setText(""));
         	draggingRect = new Rectangle(1,1,1,1);
         	saveImgUseFlg = false;
@@ -2388,7 +2442,7 @@ public class VisonController{
     		Platform.runLater(() ->this.accordion_1.setDisable(false));
         	settingModeFlg = true;
         	lockedTimer = System.currentTimeMillis();
-        	Platform.runLater(() ->settingMode.setSelected(true));
+        	Platform.runLater(() ->FilterViewMode.setSelected(true));
 
     	}
     	eventTrigger = true;
@@ -2642,9 +2696,104 @@ public class VisonController{
     //寸法測定メソッド群
     //登録パターンなどの詳細設定
     @FXML
-    void onDimSetPara(ActionEvent event) {
-    	
+    void onDimSetPara(ActionEvent e) {
+    	Button obj = (Button)e.getSource();
+    	ImageView iv;
+    	int selectBtn;
+    	if( obj == dim_set_para1 ) {
+    		selectBtn = 0;
+    		iv = dim_okuriImg_1;
+    	}else if( obj == dim_set_para2 ) {
+    		selectBtn = 1;
+    		iv = dim_poke_1;
+    	}else if( obj == dim_set_para3 ) {
+    		selectBtn = 2;
+    		iv = dim_okuriImg_2;
+    	}else if( obj == dim_set_para4 ) {
+    		selectBtn = 3;
+    		iv = dim_poke_2;
+    	}else {
+    		return;
+    	}
 
+    	parameter para = pObj.para[pObj.select];
+
+		//パラメーターを渡す
+		PtmView.ptmSrcMat = srcMat.clone();
+
+		PtmView.arg_ptmMat = dim_ImgMat[pObj.select][selectBtn].clone();
+		PtmView.arg_detectionCnt = para.dim_fil_detectionCnt[selectBtn];
+
+		PtmView.arg_gauusianCheck = para.dim_fil_gauusianCheck[selectBtn];
+		PtmView.arg_gauusianSliderX = para.dim_fil_gauusianX[selectBtn];
+		PtmView.arg_gauusianSliderY = para.dim_fil_gauusianY[selectBtn];
+		PtmView.arg_gauusianSliderA = para.dim_fil_gauusianValue[selectBtn];
+
+		PtmView.arg_dilateCheck = para.dim_fil_dilateCheck[selectBtn];
+		PtmView.arg_dilateSliderN = para.dim_fil_dilateValue[selectBtn];
+
+		PtmView.arg_erodeCheck = para.dim_fil_erodeCheck[selectBtn];
+		PtmView.arg_erodeSliderN = para.dim_fil_erodeValue[selectBtn];
+
+		PtmView.arg_threshholdCheck = para.dim_fil_threshholdCheck[selectBtn];
+		PtmView.arg_threshhold_Inverse = para.dim_fil_threshhold_Invers[selectBtn];
+		PtmView.arg_threshholdSlider = para.dim_fil_threshholdValue[selectBtn];//2値化閾値
+
+		PtmView.arg_cannyCheck = para.dim_fil_cannyCheck[selectBtn];
+		PtmView.arg_cannyThresh1 = para.dim_fil_cannyThresh1[selectBtn];
+		PtmView.arg_cannyThresh2 = para.dim_fil_cannyThresh2[selectBtn];
+
+		PtmView.arg_ptmThreshSliderN = para.dim_threshValue[selectBtn];//閾値
+		PtmView.arg_zoomValue_slider = para.dim_zoomValue_slider[selectBtn];
+		PtmView.arg_rectsDetection =  para.dim_rectsDetection[selectBtn];//検出範囲
+
+		PtmView.arg_detectionScale = para.dim_detectionScale[selectBtn];//検出倍率の逆数
+
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("ptmView.fxml"));
+		AnchorPane root = null;
+		try {
+			root = (AnchorPane) loader.load();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		Scene scene = new Scene(root);
+		Stage stage = new Stage();
+		stage.setScene(scene);
+		stage.setResizable(false);
+
+		//設定ウィンドウを開く
+		stage.showAndWait();
+
+		if( PtmView.confimFlg ) {
+			dim_ImgMat[pObj.select][selectBtn] = PtmView.arg_ptmMat;
+			updateImageView(iv, Utils.mat2Image(dim_ImgMat[pObj.select][selectBtn]));
+
+			para.dim_fil_detectionCnt[selectBtn] = PtmView.arg_detectionCnt;
+
+			para.dim_fil_gauusianCheck[selectBtn] = PtmView.arg_gauusianCheck;
+			para.dim_fil_gauusianX[selectBtn] = PtmView.arg_gauusianSliderX;
+			para.dim_fil_gauusianY[selectBtn]  = PtmView.arg_gauusianSliderY;
+			para.dim_fil_gauusianValue[selectBtn] = PtmView.arg_gauusianSliderA;
+
+			para.dim_fil_dilateCheck[selectBtn] = PtmView.arg_dilateCheck;
+			para.dim_fil_dilateValue[selectBtn] = PtmView.arg_dilateSliderN;
+
+			para.dim_fil_erodeCheck[selectBtn] = PtmView.arg_erodeCheck;
+			para.dim_fil_erodeValue[selectBtn] = PtmView.arg_erodeSliderN;
+
+			para.dim_fil_threshholdCheck[selectBtn] = PtmView.arg_threshholdCheck;
+			para.dim_fil_threshhold_Invers[selectBtn] = PtmView.arg_threshhold_Inverse;
+			para.dim_fil_threshholdValue[selectBtn] = PtmView.arg_threshholdSlider;//2値化閾値
+
+			para.dim_fil_cannyCheck[selectBtn] = PtmView.arg_cannyCheck;
+			para.dim_fil_cannyThresh1[selectBtn] = PtmView.arg_cannyThresh1;
+			para.dim_fil_cannyThresh2[selectBtn] = PtmView.arg_cannyThresh2;
+
+			para.dim_threshValue[selectBtn] = PtmView.arg_ptmThreshSliderN;//閾値
+			para.dim_zoomValue_slider[selectBtn] = PtmView.arg_zoomValue_slider;
+			para.dim_rectsDetection[selectBtn] =  PtmView.arg_rectsDetection;//検出範囲
+			para.dim_detectionScale[selectBtn] = PtmView.arg_detectionScale;//検出倍率の逆数
+		}
     }
     //測定設定 送り穴間距離
     @FXML
@@ -2814,7 +2963,7 @@ public class VisonController{
         assert lockShape5 != null : "fx:id=\"lockShape5\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert imgNG != null : "fx:id=\"imgNG\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert outTrigDisableChk != null : "fx:id=\"outTrigDisableChk\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert settingMode != null : "fx:id=\"settingMode\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert FilterViewMode != null : "fx:id=\"FilterViewMode\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert portNoSpin != null : "fx:id=\"portNoSpin\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert zoomLabel != null : "fx:id=\"zoomLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dellySpinner != null : "fx:id=\"dellySpinner\" was not injected: check your FXML file 'Sample2.fxml'.";
@@ -2894,6 +3043,7 @@ public class VisonController{
         assert patternDispChk != null : "fx:id=\"patternDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dimensionDispChk != null : "fx:id=\"dimensionDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
         assert dataTabpane != null : "fx:id=\"dataTabpane\" was not injected: check your FXML file 'Sample2.fxml'.";
+        assert dimChartValueLable != null : "fx:id=\"dimChartValueLable\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());
@@ -2964,11 +3114,44 @@ public class VisonController{
         for(int i=0;i<2;i++) {
         	dataset_P2[i] = getChartData3();
 	        chart_P2[i] = createInitChart(String.valueOf(i+1)+"列目 P2","(mm)","n",dataset_P2[i] ,1.8,2.2);
-			chartTab_P2[i] = new Tab(String.valueOf(i+1)+"列目 P2     ",new org.jfree.chart.fx.ChartViewer(chart_P2[i]));
+	        ChartViewer chV = new ChartViewer(chart_P2[i]);
+	        chV.addChartMouseListener( new ChartMouseListenerFX() {
+					@Override
+					public void chartMouseClicked(ChartMouseEventFX e) {
+						XYPlot xyplot = e.getChart().getXYPlot();
+						double value = xyplot.getRangeCrosshairValue();
+						Platform.runLater(() ->dimChartValueLable.setText( String.format("%.2f", value)));
+						//System.out.println( "X=" + xyplot.getDomainCrosshairValue());
+						//System.out.println( "Y=" + xyplot.getRangeCrosshairValue());
+					}
+
+					@Override
+					public void chartMouseMoved(ChartMouseEventFX e) {
+					}
+	        	}
+	        );
+			chartTab_P2[i] = new Tab(String.valueOf(i+1)+"列目 P2     ",chV);
+
 
 			dataset_F[i] = getChartData4();
-	        chart_F[i] = createInitChart(String.valueOf(i+1)+"列目 F","(mm)","n",dataset_F[i],3.3,3.6);
-			chartTab_F[i] = new Tab(String.valueOf(i+1)+"列目 F      ",new org.jfree.chart.fx.ChartViewer(chart_F[i]));
+	        chart_F[i] = createInitChart(String.valueOf(i+1)+"列目 F","(mm)","n",dataset_F[i],11.3,11.7);
+	        ChartViewer chV2 = new ChartViewer(chart_F[i]);
+	        chV2.addChartMouseListener( new ChartMouseListenerFX() {
+					@Override
+					public void chartMouseClicked(ChartMouseEventFX e) {
+						XYPlot xyplot = e.getChart().getXYPlot();
+						double value = xyplot.getRangeCrosshairValue();
+						Platform.runLater(() ->dimChartValueLable.setText( String.format("%.2f", value)));
+						//System.out.println( "X=" + xyplot.getDomainCrosshairValue());
+						//System.out.println( "Y=" + xyplot.getRangeCrosshairValue());
+					}
+
+					@Override
+					public void chartMouseMoved(ChartMouseEventFX e) {
+					}
+	        	}
+	        );
+	        chartTab_F[i] = new Tab(String.valueOf(i+1)+"列目 F      ",chV2);
 
 			dataTabpane.getTabs().add(chartTab_P2[i]);
 	        dataTabpane.getTabs().add(chartTab_F[i]);
@@ -2987,7 +3170,7 @@ public class VisonController{
                 dataset,//データーセット
                 PlotOrientation.VERTICAL,//値の軸方向
                 true,//凡例
-                false,//tooltips
+                true,//tooltips
                 false);//urls
         // 背景色を設定
     	chart.setBackgroundPaint(ChartColor.WHITE);
