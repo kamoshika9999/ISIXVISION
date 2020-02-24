@@ -166,33 +166,30 @@ public class templateMatching {
 												new Point(j*c_tmpara.scale[n],i*c_tmpara.scale[n]),
 												Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),7);
 		    						}
-		    	    		    	j = (int) (j + c_tmpara.paternMat[n].cols() + tmpPtWidth);
-		    	    		    	resultValue[n].x.add(c_tmpara.detectionRects[n].x+(int)(j*c_tmpara.scale[n]));//X座標格納
-		    	    		    	resultValue[n].y.add(c_tmpara.detectionRects[n].y+(int)(i*c_tmpara.scale[n]));//y座標格納
+		    	    		    	resultValue[n].x.add((int)((c_tmpara.detectionRects[n].x+j)*c_tmpara.scale[n]));//X座標格納
+		    	    		    	resultValue[n].y.add((int)((c_tmpara.detectionRects[n].y+i)*c_tmpara.scale[n]));//y座標格納
 		    	    		    	resultValue[n].ratio.add(rt);//マッチング度格納
 		    	    		    	resultValue[n].detectMax = resultValue[n].detectMax<rt?rt:resultValue[n].detectMax;
 		    	    		    	resultValue[n].detectMin = resultValue[n].detectMin>rt?rt:resultValue[n].detectMin;
 		    	    		    	resultValue[n].detectAve += rt;
 		    	    		    	//パターン中心計算
-		    	    		    	resultValue[n].centerPositionX.add(
-		    	    		    			resultValue[n].x.get(resultValue[n].cnt-1)+
-		    	    		    			((int)((j+c_tmpara.paternMat[n].width())*c_tmpara.scale[n])/2));
+		    	    		    	resultValue[n].centerPositionX.add((int)(
+		    	    		    			c_tmpara.detectionRects[n].x*c_tmpara.scale[n] +
+		    	    		    			j*c_tmpara.scale[n]+
+		    	    		    			c_tmpara.paternMat[n].width()*c_tmpara.scale[n]/2));
+		    	    		    	resultValue[n].centerPositionY.add((int)(
+		    	    		    			c_tmpara.detectionRects[n].y*c_tmpara.scale[n] +
+		    	    		    			i*c_tmpara.scale[n]+
+		    	    		    			c_tmpara.paternMat[n].height()*c_tmpara.scale[n]/2));
+		    	    		    	//十字マーク表示
+		    	    		    	int orgX = resultValue[n].centerPositionX.get(resultValue[n].cnt-1);
+		    	    		    	int orgY = resultValue[n].centerPositionY.get(resultValue[n].cnt-1);
+		    	    		    	Imgproc.line(dstMat,new Point(orgX-20,orgY-20),new Point(orgX+20,orgY+20),
+		    	    		    					new Scalar(0,200,200),3);
+		    	    		    	Imgproc.line(dstMat,new Point(orgX+20,orgY-20),new Point(orgX-20,orgY+20),
+    	    		    							new Scalar(0,200,200),3);
 
-		    	    		    	resultValue[n].centerPositionY.add(
-		    	    		    			resultValue[n].y.get(resultValue[n].cnt-1)+
-		    	    		    			((int)((i+c_tmpara.paternMat[n].height())*c_tmpara.scale[n])/2));
-		    	    		    	/*
-		    	    		    	Imgproc.line(dstMat,
-		    	    		    			new Point(resultValue[n].centerPositionX.get(resultValue[n].cnt-1),
-		    	    		    					resultValue[n].centerPositionY.get(resultValue[n].cnt-1)),
-		    	    		    			new Point(resultValue[n].centerPositionX.get(resultValue[n].cnt-1+10),
-		    	    		    					resultValue[n].centerPositionY.get(resultValue[n].cnt-1)+10),
-		    	    		    			new Scalar(0,255,255));*/
-
-		    	    		    	System.out.println("ptm_X="+resultValue[n].centerPositionX.get(resultValue[n].cnt-1));
-		    	    		    	System.out.println("ptm_Y="+resultValue[n].centerPositionY.get(resultValue[n].cnt-1));
-
-
+		    	    		    	j = (int) (j + c_tmpara.paternMat[n].cols() + tmpPtWidth);
 		    	    		    	break;
 		    					}
 			    			}
