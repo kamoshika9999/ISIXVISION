@@ -186,6 +186,24 @@ public class PtmView {
     	tmpara.detectionRects[0] = tmp_rectsDetection;
     	tmpara.scale[0] = scaleSlider.getValue();
 
+    	/*
+    	//PtmView.javaではフィルタ適用後にtmplateMatching.javaを呼び出す為設定しない
+    	boolean[]ptm_fil_gauusianCheck;
+    	double[] ptm_fil_gauusianX;
+    	double[] ptm_fil_gauusianY;
+    	int[] ptm_fil_gauusianValue;
+    	boolean[] hole_fil_threshholdCheck;
+    	boolean[] hole_fil_threshhold_Invers;
+    	double[] ptm_fil_threshholdValue;
+    	boolean[] ptm_fil_dilateCheck;
+    	int[] ptm_fil_dilateValue;
+    	boolean[] ptm_fil_erodeCheck;
+    	double[] ptm_fil_erodeValue;
+    	boolean[] ptm_fil_cannyCheck;
+    	double[] ptm_fil_cannyThresh1;
+    	double[] ptm_fil_cannyThresh2;
+    	*/
+
         templateMatchingInstance = new templateMatching(tmpara);
     }
 

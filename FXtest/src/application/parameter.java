@@ -67,10 +67,13 @@ public class parameter implements Serializable {
 	public boolean dim_1_enable = false;
 	public boolean dim_2_enable = false;
 	public Double dimPixel_mm = 0.035;//ピクセル-mm換算
+	public double[] dim_offset_P2 = new double[2];
+	public double[] dim_offset_F = new double[2];
+	public double[] dim_offset_E = new double[2];
 
 	final int dim_arrySize = 4;
 	String[] dim_FileName;//パターンマッチングの登録Mat
-	int[] dim_DetectCnt;//検出数
+	int[] dim_DetectCnt;//検出数 1個固定
 	public Rectangle[] dim_rectsDetection;//検出エリア
 	double[] dim_detectionScale;//パターンマッチングの検出に使用するスケール倍率の逆数
 	public double[] dim_zoomValue_slider;

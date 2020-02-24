@@ -10,6 +10,7 @@ public class TMResult {
 	public List<Integer> centerPositionX = new ArrayList<Integer>();
 	public List<Integer> centerPositionY = new ArrayList<Integer>();
 
+
 	public int cnt = 0;//検出数
 	public double detectMax = 0;//一致率の最大値
 	public double detectMin = 1.0;//一致率の最小値

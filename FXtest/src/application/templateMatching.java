@@ -60,10 +60,10 @@ public class templateMatching {
 
 				//フィルタ処理
 				if(!settingFlg) {
-			    	if( c_tmpara.para.ptm_fil_gauusianCheck[n] ) {//ガウシアン
-			    		double sigmaX = c_tmpara.para.ptm_fil_gauusianX[n];
-			    		double sigmaY = c_tmpara.para.ptm_fil_gauusianY[n];
-			    		int tmpValue = (int) c_tmpara.para.ptm_fil_gauusianValue[n];
+			    	if( c_tmpara.ptm_fil_gauusianCheck[n] ) {//ガウシアン
+			    		double sigmaX = c_tmpara.ptm_fil_gauusianX[n];
+			    		double sigmaY = c_tmpara.ptm_fil_gauusianY[n];
+			    		int tmpValue = (int) c_tmpara.ptm_fil_gauusianValue[n];
 			    		if( tmpValue % 2 == 0 ) {
 			    			tmpValue++;
 			    		}
@@ -71,25 +71,25 @@ public class templateMatching {
 			    		Imgproc.GaussianBlur(c_areaMat, c_areaMat, sz, sigmaX,sigmaY);
 			    		Imgproc.GaussianBlur(c_tmpara.paternMat[n], c_tmpara.paternMat[n], sz, sigmaX,sigmaY);
 			    	}
-			    	if( c_tmpara.para.hole_fil_threshholdCheck[n]) {//２値化
-			    		int type = c_tmpara.para.hole_fil_threshhold_Invers[n]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
-			    		Imgproc.threshold(c_areaMat, c_areaMat, c_tmpara.para.ptm_fil_threshholdValue[n],255,type);
-			    		Imgproc.threshold(c_tmpara.paternMat[n], c_tmpara.paternMat[n], c_tmpara.para.ptm_fil_threshholdValue[n],255,type);
+			    	if( c_tmpara.hole_fil_threshholdCheck[n]) {//２値化
+			    		int type = c_tmpara.hole_fil_threshhold_Invers[n]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+			    		Imgproc.threshold(c_areaMat, c_areaMat, c_tmpara.ptm_fil_threshholdValue[n],255,type);
+			    		Imgproc.threshold(c_tmpara.paternMat[n], c_tmpara.paternMat[n], c_tmpara.ptm_fil_threshholdValue[n],255,type);
 			    	}
-			    	if( c_tmpara.para.ptm_fil_dilateCheck[n]) {//膨張
-			    		int v = (int)c_tmpara.para.ptm_fil_dilateValue[n];
+			    	if( c_tmpara.ptm_fil_dilateCheck[n]) {//膨張
+			    		int v = (int)c_tmpara.ptm_fil_dilateValue[n];
 			    		Imgproc.dilate(c_areaMat, c_areaMat, new Mat(),new Point(-1,-1),v);
 			    		Imgproc.dilate(c_tmpara.paternMat[n], c_tmpara.paternMat[n], new Mat(),new Point(-1,-1),v);
 			    	}
-			    	if( c_tmpara.para.ptm_fil_erodeCheck[n]) {//収縮
-			    		int v = (int)c_tmpara.para.ptm_fil_erodeValue[n];
+			    	if( c_tmpara.ptm_fil_erodeCheck[n]) {//収縮
+			    		int v = (int)c_tmpara.ptm_fil_erodeValue[n];
 			    		Imgproc.erode(c_areaMat, c_areaMat, new Mat(),new Point(-1,-1),v);
 			    		Imgproc.erode(c_tmpara.paternMat[n], c_tmpara.paternMat[n], new Mat(),new Point(-1,-1),v);
 
 			    	}
-			    	if( c_tmpara.para.ptm_fil_cannyCheck[n] ) {//Canny
-			    		double thresh1 = c_tmpara.para.ptm_fil_cannyThresh1[n];
-			    		double thresh2 = c_tmpara.para.ptm_fil_cannyThresh2[n];
+			    	if( c_tmpara.ptm_fil_cannyCheck[n] ) {//Canny
+			    		double thresh1 = c_tmpara.ptm_fil_cannyThresh1[n];
+			    		double thresh2 = c_tmpara.ptm_fil_cannyThresh2[n];
 			    		Imgproc.Canny(c_areaMat,c_areaMat,thresh1,thresh2);
 			    		Imgproc.Canny(c_tmpara.paternMat[n],c_tmpara.paternMat[n],thresh1,thresh2);
 			    	}
@@ -167,17 +167,32 @@ public class templateMatching {
 												Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),7);
 		    						}
 		    	    		    	j = (int) (j + c_tmpara.paternMat[n].cols() + tmpPtWidth);
-		    	    		    	resultValue[n].x.add((int)(j*c_tmpara.scale[n]));//X座標格納
-		    	    		    	resultValue[n].y.add((int)(i*c_tmpara.scale[n]));//y座標格納
+		    	    		    	resultValue[n].x.add(c_tmpara.detectionRects[n].x+(int)(j*c_tmpara.scale[n]));//X座標格納
+		    	    		    	resultValue[n].y.add(c_tmpara.detectionRects[n].y+(int)(i*c_tmpara.scale[n]));//y座標格納
 		    	    		    	resultValue[n].ratio.add(rt);//マッチング度格納
 		    	    		    	resultValue[n].detectMax = resultValue[n].detectMax<rt?rt:resultValue[n].detectMax;
 		    	    		    	resultValue[n].detectMin = resultValue[n].detectMin>rt?rt:resultValue[n].detectMin;
 		    	    		    	resultValue[n].detectAve += rt;
 		    	    		    	//パターン中心計算
-		    	    		    	resultValue[n].centerPositionX.add((int)(
-		    	    		    			j*c_tmpara.scale[n]+(j+c_tmpara.paternMat[n].width())*c_tmpara.scale[n])/2);
-		    	    		    	resultValue[n].centerPositionY.add((int)(
-		    	    		    			i*c_tmpara.scale[n]+(i+c_tmpara.paternMat[n].height())*c_tmpara.scale[n])/2);
+		    	    		    	resultValue[n].centerPositionX.add(
+		    	    		    			resultValue[n].x.get(resultValue[n].cnt-1)+
+		    	    		    			((int)((j+c_tmpara.paternMat[n].width())*c_tmpara.scale[n])/2));
+
+		    	    		    	resultValue[n].centerPositionY.add(
+		    	    		    			resultValue[n].y.get(resultValue[n].cnt-1)+
+		    	    		    			((int)((i+c_tmpara.paternMat[n].height())*c_tmpara.scale[n])/2));
+		    	    		    	/*
+		    	    		    	Imgproc.line(dstMat,
+		    	    		    			new Point(resultValue[n].centerPositionX.get(resultValue[n].cnt-1),
+		    	    		    					resultValue[n].centerPositionY.get(resultValue[n].cnt-1)),
+		    	    		    			new Point(resultValue[n].centerPositionX.get(resultValue[n].cnt-1+10),
+		    	    		    					resultValue[n].centerPositionY.get(resultValue[n].cnt-1)+10),
+		    	    		    			new Scalar(0,255,255));*/
+
+		    	    		    	System.out.println("ptm_X="+resultValue[n].centerPositionX.get(resultValue[n].cnt-1));
+		    	    		    	System.out.println("ptm_Y="+resultValue[n].centerPositionY.get(resultValue[n].cnt-1));
+
+
 		    	    		    	break;
 		    					}
 			    			}

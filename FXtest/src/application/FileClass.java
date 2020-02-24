@@ -31,7 +31,7 @@ class FileClass {
                  //ファイルの場合は再帰的に自身を呼び出して削除する
                  } else if(files[i].isFile()) {
                      //拡張子が".java"であればファイルを削除
-                     if(file.getPath().endsWith(".jpeg")) {
+                     if(file.getPath().endsWith(".png")) {
                          fileClass(files[i]);
                          //System.out.println("ファイル削除2");
                      }

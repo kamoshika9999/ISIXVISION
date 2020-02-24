@@ -1732,7 +1732,7 @@ public class VisonController{
 		int  x = (int)v[0];
 		int  y = (int)v[1];
 		int  r = (int)v[2];
-		if( x-r-offset < 0 || y-r-offset<0 || r+r+offset+offset>judgeAreaMat.width() || r+r+offset+offset>judgeAreaMat.height() ) {
+		if( x-r-offset < 0 || y-r-offset<0 || x-r-offset+r+r+offset>judgeAreaMat.width() || y-r-offset+r+r+offset>judgeAreaMat.height() ) {
 			result = false;
 		}else {
 	  		roi = judgeAreaMat.submat(new Rect( x-r-offset, y-r-offset, r+r+offset, r+r+offset));
@@ -2066,6 +2066,13 @@ public class VisonController{
 
 		para.dim_1_enable = dim_1_enable.isSelected();
 		para.dim_2_enable = dim_2_enable.isSelected();
+	    para.dim_offset_P2[0] = Double.valueOf(dim_offset_P2_1.getText());
+	    para.dim_offset_F[0] = Double.valueOf(dim_offset_F_1.getText());
+	    para.dim_offset_E[0] = Double.valueOf(dim_offset_E_1.getText());
+	    para.dim_offset_P2[1] = Double.valueOf(dim_offset_P2_2.getText());
+	    para.dim_offset_F[1] = Double.valueOf(dim_offset_F_2.getText());
+	    para.dim_offset_E[1] = Double.valueOf(dim_offset_E_2.getText());
+
 		//para.dimPixel_mm = dimSetting_offset.getText()
 
 		pObj.portNo = portNoSpin.getValue().intValue();
@@ -2085,7 +2092,7 @@ public class VisonController{
 		for(int i=0;i<4;i++) {
 			for(int j=0;j<4;j++) {
 				if( ptm_ImgMat[i][j] != null ) {
-					savePtmImg(ptm_ImgMat[i][j],"dim"+String.format("_%d_%d", i,j));
+					savePtmImg(ptm_ImgMat[i][j],"ptm"+String.format("_%d_%d", i,j));
 				}
 			}
 		}
@@ -2173,16 +2180,27 @@ public class VisonController{
 
     	//パターンマッチング部
     	loadPtmImg();
+
         //パターンマッチング用パラメータ設定
     	patternMatchParaSet();
 
+
     	//寸法測定部
     	Platform.runLater( () ->dimSettingLabel.setText(String.format("%.0f μm/pixel", para.dimPixel_mm*1000)));
+    	Platform.runLater( () ->dim_offset_P2_1.setText(String.valueOf(para.dim_offset_P2[0])));
+    	Platform.runLater( () ->dim_offset_F_1.setText(String.valueOf(para.dim_offset_F[0])));
+    	Platform.runLater( () ->dim_offset_E_1.setText(String.valueOf(para.dim_offset_E[0])));
+    	Platform.runLater( () ->dim_offset_P2_2.setText(String.valueOf(para.dim_offset_P2[1])));
+    	Platform.runLater( () ->dim_offset_F_2.setText(String.valueOf(para.dim_offset_F[1])));
+    	Platform.runLater( () ->dim_offset_E_2.setText(String.valueOf(para.dim_offset_E[1])));
 
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
     }
 
+    /**
+     * パターンマッチング用パラメータ設定
+     */
     private void patternMatchParaSet() {
     	parameter para = pObj.para[pObj.select];
         for(int i=0;i<tmpara.arrayCnt;i++) {
@@ -2193,7 +2211,21 @@ public class VisonController{
         	tmpara.detectionRects[i] = para.ptm_rectsDetection[i];
         	tmpara.scale[i] = para.ptm_detectionScale[i];
         }
-        tmpara.para = pObj.para[pObj.select];
+        tmpara.ptm_fil_gauusianCheck = para.ptm_fil_gauusianCheck;
+        tmpara.ptm_fil_gauusianX = para.ptm_fil_gauusianX;
+        tmpara.ptm_fil_gauusianY = para.ptm_fil_gauusianY;
+        tmpara.ptm_fil_gauusianValue = para.ptm_fil_gauusianValue;
+        tmpara.hole_fil_threshholdCheck = para.ptm_fil_threshholdCheck;
+        tmpara.hole_fil_threshhold_Invers = para.ptm_fil_threshhold_Invers;
+        tmpara.ptm_fil_threshholdValue = para.ptm_fil_threshholdValue;
+        tmpara.ptm_fil_dilateCheck = para.ptm_fil_dilateCheck;
+        tmpara.ptm_fil_dilateValue = para.ptm_fil_dilateValue;
+        tmpara.ptm_fil_erodeCheck = para.ptm_fil_erodeCheck;
+        tmpara.ptm_fil_erodeValue = para.ptm_fil_erodeValue;
+        tmpara.ptm_fil_cannyCheck = para.ptm_fil_cannyCheck;
+        tmpara.ptm_fil_cannyThresh1 = para.ptm_fil_cannyThresh1;
+        tmpara.ptm_fil_cannyThresh2 = para.ptm_fil_cannyThresh2;
+
         templateMatchingObj = new templateMatching(tmpara);
     }
 
@@ -2210,7 +2242,8 @@ public class VisonController{
     	}
     	for( int i=0;i<4;i++) {
     		for( int j=0;j<4;j++) {
-    	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/ptm"+String.format("_%d_%d", i,j)+".png");
+    	    	Mat tmpMat = Imgcodecs.imread(
+    	    			"./ptm_image/ptm"+String.format("_%d_%d", i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
     	    	if( tmpMat.width() > 0 &&  pObj.para[i].ptm_Enable[j]) {
     	    		 ptm_ImgMat[i][j] = new Mat();
     	    		 ptm_ImgMat[i][j] = tmpMat.clone();
@@ -2231,7 +2264,8 @@ public class VisonController{
     	//寸法測定用画像
     	for( int i=0;i<4;i++) {
     		for( int j=0;j<4;j++) {
-    	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/dim"+String.format("_%d_%d", i,j)+".png");
+    	    	Mat tmpMat = Imgcodecs.imread(
+    	    			"./ptm_image/dim"+String.format("_%d_%d", i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
     	    	if( tmpMat.width() > 0 && pObj.para[pObj.select].dim_rectsDetection[0].width>1) {
     	    		 dim_ImgMat[i][j] = new Mat();
     	    		 dim_ImgMat[i][j] = tmpMat.clone();
@@ -2490,6 +2524,7 @@ public class VisonController{
     @FXML
     void onOpenPtmAccordion(MouseEvent event) {
     	ptmSetStartFlg = true;
+
     	System.out.println("open_ptm");
 
     }
@@ -3028,6 +3063,12 @@ public class VisonController{
                     		onOpenPtmAccordion(null);
                     	}else if(old_val == ptm_setting_accordion ) {
                     		ptmSetStartFlg = false;
+                        	parameter para = pObj.para[pObj.select];
+                        	para.ptm_Enable[0] = ptm_pt1_enable.isSelected();
+                        	para.ptm_Enable[1] = ptm_pt2_enable.isSelected();
+                        	para.ptm_Enable[2] = ptm_pt3_enable.isSelected();
+                        	para.ptm_Enable[3] = ptm_pt4_enable.isSelected();
+                        	patternMatchParaSet();
                     	}
                   }
             });
@@ -3050,7 +3091,7 @@ public class VisonController{
 
         manualTrigger = true;
         try {
-			Thread.sleep(3000);
+			Thread.sleep(4000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

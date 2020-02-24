@@ -48,7 +48,6 @@ public class MatIO {
 		final int rows = Integer.valueOf(matDataElement.getAttribute("rows"));
 		final int cols = Integer.valueOf(matDataElement.getAttribute("cols"));
 		final int channels = Integer.valueOf(matDataElement.getAttribute("channels"));
-		final int dims = Integer.valueOf(matDataElement.getAttribute("dims")); // TODO
 		String matDataString = matDataElement.getTextContent();
 		matDataString = matDataString.replaceAll("\\[", "").replaceAll("\\]", "").trim();
 
