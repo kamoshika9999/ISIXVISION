@@ -18,12 +18,12 @@ public class TMpara implements Cloneable{
 	public Rectangle[] detectionRects;//パターンマッチング検出エリア
 	public double[] scale;//パターンマッチングの検出に使用するスケール倍率の逆数
 
-	boolean[]ptm_fil_gauusianCheck;
+	boolean[] ptm_fil_gauusianCheck;
 	double[] ptm_fil_gauusianX;
 	double[] ptm_fil_gauusianY;
 	double[] ptm_fil_gauusianValue;
-	boolean[] hole_fil_threshholdCheck;
-	boolean[] hole_fil_threshhold_Invers;
+	boolean[] ptm_fil_threshholdCheck;
+	boolean[] ptm_fil_threshhold_Invers;
 	double[] ptm_fil_threshholdValue;
 	boolean[] ptm_fil_dilateCheck;
 	double[] ptm_fil_dilateValue;
@@ -46,8 +46,8 @@ public class TMpara implements Cloneable{
 		ptm_fil_gauusianX = new double[arrayCnt];
 		ptm_fil_gauusianY = new double[arrayCnt];
 		ptm_fil_gauusianValue = new double[arrayCnt];
-		hole_fil_threshholdCheck = new boolean[arrayCnt];
-		hole_fil_threshhold_Invers = new boolean[arrayCnt];
+		ptm_fil_threshholdCheck = new boolean[arrayCnt];
+		ptm_fil_threshhold_Invers = new boolean[arrayCnt];
 		ptm_fil_threshholdValue = new double[arrayCnt];
 		ptm_fil_dilateCheck = new boolean[arrayCnt];
 		ptm_fil_dilateValue = new double[arrayCnt];
@@ -72,8 +72,8 @@ public class TMpara implements Cloneable{
 		ptm_fil_gauusianX = new double[arrayCnt];
 		ptm_fil_gauusianY = new double[arrayCnt];
 		ptm_fil_gauusianValue = new double[arrayCnt];
-		hole_fil_threshholdCheck = new boolean[arrayCnt];
-		hole_fil_threshhold_Invers = new boolean[arrayCnt];
+		ptm_fil_threshholdCheck = new boolean[arrayCnt];
+		ptm_fil_threshhold_Invers = new boolean[arrayCnt];
 		ptm_fil_threshholdValue = new double[arrayCnt];
 		ptm_fil_dilateCheck = new boolean[arrayCnt];
 		ptm_fil_dilateValue = new double[arrayCnt];
@@ -96,8 +96,8 @@ public class TMpara implements Cloneable{
 		b.ptm_fil_gauusianX = this.ptm_fil_gauusianX;
 		b.ptm_fil_gauusianY = this.ptm_fil_gauusianY;
 		b.ptm_fil_gauusianValue = this.ptm_fil_gauusianValue;
-		b.hole_fil_threshholdCheck = this.hole_fil_threshholdCheck;
-		b.hole_fil_threshhold_Invers = this.hole_fil_threshhold_Invers;
+		b.ptm_fil_threshholdCheck = this.ptm_fil_threshholdCheck;
+		b.ptm_fil_threshhold_Invers = this.ptm_fil_threshhold_Invers;
 		b.ptm_fil_threshholdValue = this.ptm_fil_threshholdValue;
 		b.ptm_fil_dilateCheck = this.ptm_fil_dilateCheck;
 		b.ptm_fil_dilateValue = this.ptm_fil_dilateValue;

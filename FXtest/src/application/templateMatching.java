@@ -71,8 +71,8 @@ public class templateMatching {
 			    		Imgproc.GaussianBlur(c_areaMat, c_areaMat, sz, sigmaX,sigmaY);
 			    		Imgproc.GaussianBlur(c_tmpara.paternMat[n], c_tmpara.paternMat[n], sz, sigmaX,sigmaY);
 			    	}
-			    	if( c_tmpara.hole_fil_threshholdCheck[n]) {//２値化
-			    		int type = c_tmpara.hole_fil_threshhold_Invers[n]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
+			    	if( c_tmpara.ptm_fil_threshholdCheck[n]) {//２値化
+			    		int type = c_tmpara.ptm_fil_threshhold_Invers[n]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
 			    		Imgproc.threshold(c_areaMat, c_areaMat, c_tmpara.ptm_fil_threshholdValue[n],255,type);
 			    		Imgproc.threshold(c_tmpara.paternMat[n], c_tmpara.paternMat[n], c_tmpara.ptm_fil_threshholdValue[n],255,type);
 			    	}

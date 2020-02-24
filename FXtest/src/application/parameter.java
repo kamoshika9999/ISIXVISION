@@ -95,6 +95,7 @@ public class parameter implements Serializable {
 	public boolean[] dim_fil_cannyCheck;
 	public double[] dim_fil_cannyThresh1;
 	public double[] dim_fil_cannyThresh2;
+	public boolean[] dim_Enable;
 
 	public parameter() {
 		hole_zoom = 1.0;
@@ -121,9 +122,12 @@ public class parameter implements Serializable {
 		hole_fil_dilateCheck = new boolean[hole_arrySize];
 		hole_fil_dilateValue = new int[hole_arrySize];
 
-		hole_fil_threshholdCheck = new boolean[hole_arrySize];
 		hole_fil_threshhold = new double[hole_arrySize];
-		hole_fil_threshhold_Invers = new boolean[hole_arrySize];
+		hole_fil_threshholdCheck  = new boolean[hole_arrySize];
+		hole_fil_threshhold_Invers  = new boolean[hole_arrySize];
+
+		ptm_fil_threshholdCheck = new boolean[hole_arrySize];
+		ptm_fil_threshhold_Invers = new boolean[hole_arrySize];
 
 		hole_whiteAreaMax = new int[hole_arrySize];
 		hole_whiteAreaMin = new int[hole_arrySize];
@@ -183,6 +187,8 @@ public class parameter implements Serializable {
 		dim_zoomValue_slider = new double[dim_arrySize];
 		dim_rectsDetection = new Rectangle[dim_arrySize];
 		dim_centerPosition = new Point[dim_arrySize];
+
+		dim_Enable = new boolean[dim_arrySize];
 		//------------------------------------------------
 
 		for(int i=0;i<hole_arrySize;i++){
@@ -226,8 +232,6 @@ public class parameter implements Serializable {
 			ptm_fil_erodeCheck[i] = false;
 			ptm_fil_erodeValue[i] = 0;
 
-			ptm_fil_threshholdValue[i] = 0;
-
 			ptm_fil_cannyCheck[i] = false;
 			ptm_fil_cannyThresh1[i] = 0;
 			ptm_fil_cannyThresh2[i] = 0;
@@ -262,6 +266,8 @@ public class parameter implements Serializable {
 
 			dim_threshValue[i] = 0.8;
 			dim_zoomValue_slider[i] = 0.3;
+
+			dim_Enable[i]=false;
 		}
 	}
 }
