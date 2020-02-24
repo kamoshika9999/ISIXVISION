@@ -1140,10 +1140,11 @@ public class VisonController{
 	    	//Imgproc.equalizeHist(mainViewGlayMat, mainViewGlayMat);//コントラスト均等化
 
 	    	Mat ptnAreaMat = mainViewGlayMat.clone();
-	    	Mat tmp0Mat = mainViewGlayMat.clone();//各穴のパラメータに従った判定のベースMat
+	    	Mat holeDetectAreaMat = mainViewGlayMat.clone();//各穴のパラメータに従った判定のベースMat
 	    	Mat tmp1Mat = new Mat();
 	    	Mat tmp2Mat = new Mat();
 	    	Mat tmp3Mat = new Mat();
+	    	Mat tmp4mat = new Mat();
 	    	Mat fillterAftterMat = mainViewGlayMat.clone();//セッティングモード時判定のベースMat
 	    	int filterUselFlg = 0;
 
@@ -1172,7 +1173,7 @@ public class VisonController{
 	    		tmp3Mat = fillterAftterMat.clone();
 	    		filterUselFlg+=4;
 	    	}
-    		Imgproc.Canny(fillterAftterMat, fillterAftterMat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
+    		Imgproc.Canny(fillterAftterMat, tmp4mat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
 
 	    	if( FilterViewMode.isSelected()) {
 	    		switch(filterUselFlg) {
@@ -1180,49 +1181,49 @@ public class VisonController{
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
 		    		break;
 		    	case 1://ガウシアンのみ
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
 		    		break;
 		    	case 2://２値化のみ
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
 		    		break;
 		    	case 3://ガウシアンと２値化あり
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
 		    		break;
 		    	case 4://膨張のみ
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
 		    		break;
 		    	case 5://ガウシアンと膨張あり
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
 		    		break;
 		    	case 6://ガウシアン無し　他あり
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
 		    		break;
 		    	case 7://全てあり
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
+			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
 		    		break;
 		    	}
 	    	}
@@ -1298,8 +1299,8 @@ public class VisonController{
 	        for (int i=0;i<4;i++) {
 				ngFlg = false;
 	        	if( para.hole_DetectFlg[i] ) {
-		        	Rectangle r = para.hole_rects[i];
-		        	Mat roi = tmp0Mat.submat(new Rect(r.x,r.y,r.width,r.height));
+		        	Rectangle r = para.hole_rects[i];//検査範囲
+		        	Mat holeDetectAreaMatroi = holeDetectAreaMat.submat(new Rect(r.x,r.y,r.width,r.height));
 		        	if( para.hole_fil_gauusianCheck[i] ) {
 		        		double sigmaX = para.hole_fil_gauusianX[i];
 		        		double sigmaY = para.hole_fil_gauusianY[i];
@@ -1308,14 +1309,14 @@ public class VisonController{
 		        			tmpValue++;
 		        		}
 		        		Size sz = new Size(tmpValue,tmpValue);
-		        		Imgproc.GaussianBlur(roi, roi, sz, sigmaX,sigmaY);
+		        		Imgproc.GaussianBlur(holeDetectAreaMatroi, holeDetectAreaMatroi, sz, sigmaX,sigmaY);
 		        	}
 		        	if( para.hole_fil_threshholdCheck[i]) {
 		        		int type = para.hole_fil_threshhold_Invers[i]?Imgproc.THRESH_BINARY_INV:Imgproc.THRESH_BINARY;
-		        		Imgproc.threshold(roi, roi, para.hole_fil_threshhold[i],255,type);
+		        		Imgproc.threshold(holeDetectAreaMatroi, holeDetectAreaMatroi, para.hole_fil_threshhold[i],255,type);
 		        	}
 		        	if( para.hole_fil_dilateCheck[i]) {
-		        		Imgproc.dilate(roi, roi, new Mat(),new Point(-1,-1),para.hole_fil_dilateValue[i]);
+		        		Imgproc.dilate(holeDetectAreaMatroi, holeDetectAreaMatroi, new Mat(),new Point(-1,-1),para.hole_fil_dilateValue[i]);
 		        	}
 
 					/*# ハフ変換で円検出する。
@@ -1329,7 +1330,7 @@ public class VisonController{
 					第8引数(sliderDetecPara8)：円の半径の最小値
 					第9引数(sliderDetecPara9)：円の半径の最大値 */
 		            Mat circles = new Mat();
-					Imgproc.HoughCircles(roi, circles, Imgproc.CV_HOUGH_GRADIENT,
+					Imgproc.HoughCircles(holeDetectAreaMatroi, circles, Imgproc.CV_HOUGH_GRADIENT,
 							para.hole_circlePara4[i],
 							para.hole_circlePara5[i],
 							para.hole_circlePara6[i],
@@ -1341,14 +1342,14 @@ public class VisonController{
 					if( circles.cols() > 0 && !FilterViewMode.isSelected()) {
 
 						if( holeDispChk.isSelected() ) {
-							fncDrwCircles(roi,circles, mainViewMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
+							fncDrwCircles(holeDetectAreaMatroi,circles, mainViewMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
 							Imgproc.putText(mainViewMat, String.valueOf(circles.cols()),
 									new Point(r.x-25,r.y-6),
 									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),7);
 						}
 						//面積判定
 						holeAreaFlg = holeWhiteAreaCheck(
-								roi,circles,para.hole_whiteAreaMax[i],para.hole_whiteAreaMin[i]);
+								holeDetectAreaMatroi,circles,para.hole_whiteAreaMax[i],para.hole_whiteAreaMin[i]);
 						if( holeDispChk.isSelected() ) {
 							if( holeAreaFlg ) {
 									Imgproc.putText(mainViewMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
@@ -1545,12 +1546,12 @@ public class VisonController{
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH' h 'mm' m 'ss' s'");
         String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
         try {
-        	Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat);
-        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"NG画像保存"+"\n"));
+        	Imgcodecs.imwrite(folder+"/" + fileName + ".png", imgMat);
+        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".png"+"NG画像保存"+"\n"));
         }catch(Exception e) {
         	Platform.runLater( () ->info2.appendText("NG画像の保存に失敗"+e.toString()+"\n"));
         }
-        Platform.runLater( () ->info2.appendText("NG画像ファイルを保存\n" + fileName +".jpeg\n"));
+        Platform.runLater( () ->info2.appendText("NG画像ファイルを保存\n" + fileName +".png\n"));
 
     }
     /**
@@ -1572,13 +1573,13 @@ public class VisonController{
     	}
         allSaveCnt++;
         try {
-        	Imgcodecs.imwrite(folder+"/" + allSaveCnt + ".jpeg", imgMat);
+        	Imgcodecs.imwrite(folder+"/" + allSaveCnt + ".png", imgMat);
         }catch(Exception e) {
         	Platform.runLater( () ->info2.appendText("OK画像の保存に失敗"+e.toString()+"\n"));
         }
 
         if( allSaveCnt > saveMax_all+1 ) {
-        	File f = new File(folder+"/"+(allSaveCnt-saveMax_all)+".jpeg");
+        	File f = new File(folder+"/"+(allSaveCnt-saveMax_all)+".png");
         	Platform.runLater( () ->{if( !f.delete() ) {
         		System.out.println(f.toString()+"削除失敗");
         		}
@@ -1603,12 +1604,12 @@ public class VisonController{
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSS");
         String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
         try {
-        	Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat);
-        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"shot画像保存"+"\n"));
+        	Imgcodecs.imwrite(folder+"/" + fileName + ".png", imgMat);
+        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".png"+"shot画像保存"+"\n"));
         }catch(Exception e) {
         	Platform.runLater( () ->info2.appendText("shot画像の保存に失敗"+e.toString()+"\n"));
         }
-        Platform.runLater( () ->info2.appendText("shot画像ファイルを保存\n" + fileName +".jpeg\n"));
+        Platform.runLater( () ->info2.appendText("shot画像ファイルを保存\n" + fileName +".png\n"));
 
     }
     /**
@@ -1628,12 +1629,12 @@ public class VisonController{
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSS");
         String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
         try {
-        	Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat);
-        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"チェスボード画像保存"+"\n"));
+        	Imgcodecs.imwrite(folder+"/" + fileName + ".png", imgMat);
+        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".png"+"チェスボード画像保存"+"\n"));
         }catch(Exception e) {
         	Platform.runLater( () ->info2.appendText("チェスボード画像の保存に失敗"+e.toString()+"\n"));
         }
-        Platform.runLater( () ->info2.appendText("チェスボード画像ファイルを保存\n" + fileName +".jpeg\n"));
+        Platform.runLater( () ->info2.appendText("チェスボード画像ファイルを保存\n" + fileName +".png\n"));
 
     }
 
@@ -2114,12 +2115,12 @@ public class VisonController{
     		}
     	}
         try {
-        	Imgcodecs.imwrite(folder+"/" + fileName + ".jpeg", imgMat);
-        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".jpeg"+"PTM画像保存"+"\n"));
+        	Imgcodecs.imwrite(folder+"/" + fileName + ".png", imgMat);
+        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".png"+"PTM画像保存"+"\n"));
         }catch(Exception e) {
         	Platform.runLater( () ->info2.appendText("PTM画像の保存に失敗"+e.toString()+"\n"));
         }
-        Platform.runLater( () ->info2.appendText("PTM画像ファイルを保存\n" + fileName +".jpeg\n"));
+        Platform.runLater( () ->info2.appendText("PTM画像ファイルを保存\n" + fileName +".png\n"));
 
     }
 
@@ -2209,7 +2210,7 @@ public class VisonController{
     	}
     	for( int i=0;i<4;i++) {
     		for( int j=0;j<4;j++) {
-    	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/ptm"+String.format("_%d_%d", i,j)+".jpeg");
+    	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/ptm"+String.format("_%d_%d", i,j)+".png");
     	    	if( tmpMat.width() > 0 &&  pObj.para[i].ptm_Enable[j]) {
     	    		 ptm_ImgMat[i][j] = new Mat();
     	    		 ptm_ImgMat[i][j] = tmpMat.clone();
@@ -2230,7 +2231,7 @@ public class VisonController{
     	//寸法測定用画像
     	for( int i=0;i<4;i++) {
     		for( int j=0;j<4;j++) {
-    	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/dim"+String.format("_%d_%d", i,j)+".jpeg");
+    	    	Mat tmpMat = Imgcodecs.imread("./ptm_image/dim"+String.format("_%d_%d", i,j)+".png");
     	    	if( tmpMat.width() > 0 && pObj.para[pObj.select].dim_rectsDetection[0].width>1) {
     	    		 dim_ImgMat[i][j] = new Mat();
     	    		 dim_ImgMat[i][j] = tmpMat.clone();

@@ -51,23 +51,23 @@ public class ngImageController {
 		window.hide();
     }
 
-    
+
     private String getShotCount(File f) {
     	String[] tmpStr = f.toString().split("x");
     	return tmpStr[1];
-    	
+
     }
-    
+
     private String getDate(File f) {
     	String[] tmpStr = f.toString().split("_");
     	return tmpStr[ tmpStr.length-2];
     }
-    
+
     @FXML
     void onNext(ActionEvent event) {
     	if( files_pointer < files.length-1 && files_pointer != -1) {
     		files_pointer++;
-	        img = Imgcodecs.imread( files[files_pointer].getPath());
+	        img = Imgcodecs.imread( files[files_pointer].getPath(),Imgcodecs.IMREAD_UNCHANGED);
 	        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
 	        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
 	        Platform.runLater(() ->this.shotCountLabele.setText( getShotCount(files[files_pointer])));
@@ -79,7 +79,7 @@ public class ngImageController {
     void onPrev(ActionEvent event) {
     	if( files_pointer > 0 ) {
     		files_pointer--;
-	        img = Imgcodecs.imread( files[files_pointer].getPath());
+	        img = Imgcodecs.imread( files[files_pointer].getPath(),Imgcodecs.IMREAD_UNCHANGED);
 	        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
 	        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
 	        Platform.runLater(() ->this.shotCountLabele.setText( getShotCount(files[files_pointer])));
@@ -96,10 +96,10 @@ public class ngImageController {
 		Window window = scene.getWindow();
 		window.hide();
     }
-    
+
     private File[] sortFile(File[] f) {
     	File tmp;
-    	
+
     	for(int i=0;i<f.length;i++) {
     		for(int j=i+1;j<f.length;j++) {
     			int s1 = Integer.valueOf( f[i].toString().split("x")[1] );
@@ -112,9 +112,9 @@ public class ngImageController {
     		}
     	}
     	return f;
-    	
+
     }
-    
+
     @FXML
     void initialize() {
         assert ngImage != null : "fx:id=\"ngImage\" was not injected: check your FXML file 'NgImageViewer.fxml'.";
@@ -131,11 +131,11 @@ public class ngImageController {
         if( files == null ) {
         	return;
         }
-        
+
 	        files_pointer = files.length-1;
 	        if( files.length  >0 ) {
 	        	files = sortFile( files );
-		        img = Imgcodecs.imread( files[files_pointer].getPath());
+		        img = Imgcodecs.imread( files[files_pointer].getPath(),Imgcodecs.IMREAD_UNCHANGED);
 		        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
 		        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
 		        Platform.runLater(() ->this.shotCountLabele.setText( getShotCount(files[files_pointer])));

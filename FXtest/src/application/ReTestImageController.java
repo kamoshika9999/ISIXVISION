@@ -50,7 +50,7 @@ public class ReTestImageController {
     void onNext(ActionEvent event) {
     	if( files_pointer < files.length-1) {
     		files_pointer++;
-	        img = Imgcodecs.imread( files[files_pointer].getPath());
+	        img = Imgcodecs.imread( files[files_pointer].getPath(),Imgcodecs.IMREAD_UNCHANGED);
 	        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
 	        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
 
@@ -61,7 +61,7 @@ public class ReTestImageController {
     void onPrev(ActionEvent event) {
     	if( files_pointer > 0 ) {
     		files_pointer--;
-	        img = Imgcodecs.imread( files[files_pointer].getPath());
+	        img = Imgcodecs.imread( files[files_pointer].getPath(),Imgcodecs.IMREAD_UNCHANGED);
 	        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
 	        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / "+String.valueOf(files.length)));
 
@@ -97,7 +97,7 @@ public class ReTestImageController {
 
         files_pointer = files.length-1;
         if( files.length  >0 ) {
-	        img = Imgcodecs.imread( files[files_pointer].getPath());
+	        img = Imgcodecs.imread( files[files_pointer].getPath(),Imgcodecs.IMREAD_UNCHANGED);
 	        Platform.runLater(() ->ngImage.setImage( Utils.mat2Image(img)));
 	        Platform.runLater(() ->this.info1.setText(String.valueOf(files_pointer+1)+" / " +
 	        															String.valueOf(files.length)));
