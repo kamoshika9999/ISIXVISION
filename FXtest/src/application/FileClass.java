@@ -39,7 +39,7 @@ class FileClass {
              }
          }
      } else {
-         System.out.println("ディレクトリが存在しない");
+         System.out.println(dir.toString()+" ディレクトリが存在しない");
      }
  }
 

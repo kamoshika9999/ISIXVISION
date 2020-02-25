@@ -1,8 +1,6 @@
 package application;
 
-import java.awt.BasicStroke;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -1457,6 +1455,7 @@ public class VisonController{
         	boolean dimFlg;
        		dimFlg = dim_templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
         											,false,dimensionDispChk.isSelected());
+       		if( dimFlg ) {
         	for(int g=0;g<2;g++) {
         		if( ((g==0 && dim_1_enable.isSelected()) || ((g==1) && dim_2_enable.isSelected())) && shotCnt>0) {
         			int g2 =g;
@@ -1482,6 +1481,7 @@ public class VisonController{
 							setRange(11.3,11.7));
         		}
         	}
+       		}
 
 	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
 		        //最終判定
@@ -2446,6 +2446,13 @@ public class VisonController{
     	//Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
     	Platform.runLater(() ->info2.appendText("NG画像ファイルを全て削除しました。\n"));
 
+    	//チャートデーターのクリア
+    	for(int i=0;i<2;i++) {
+    		int _i = i;
+    		Platform.runLater( () ->dataset_F[_i].getSeries(0).clear());
+    		Platform.runLater( () ->dataset_P2[_i].getSeries(0).clear());
+    	}
+
 		while( Gpio.useFlg ) {
 			System.out.println("onAllClear() Gpio.useFlg=true");
 		}
@@ -3126,6 +3133,14 @@ public class VisonController{
         dragging = false;
         moveDragingFlg = false;
 		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094"));
+        //チャート生成
+        chart_P2 = new JFreeChart[2];
+        chartTab_P2 = new Tab[2];
+        chart_F = new JFreeChart[2];
+        chartTab_F = new Tab[2];
+        dataset_P2 = new XYSeriesCollection[2];
+        dataset_F = new XYSeriesCollection[2];
+        chartFact();
 
 		//イニシャルinfo2の内容保存
 		initInfo2 = this.info2.getText();
@@ -3158,8 +3173,6 @@ public class VisonController{
                   }
             });
 
-        chartFact();
-
     	try {
 	    	int fileCnt = FileClass.getFiles(new File("./ok_image")).length;
 	    		allSaveCnt = fileCnt;
@@ -3185,14 +3198,8 @@ public class VisonController{
     }
 
     private void chartFact() {
-        chart_P2 = new JFreeChart[2];
-        chartTab_P2 = new Tab[2];
-        chart_F = new JFreeChart[2];
-        chartTab_F = new Tab[2];
-        dataset_P2 = new XYSeriesCollection[2];
-        dataset_F = new XYSeriesCollection[2];
         for(int i=0;i<2;i++) {
-        	dataset_P2[i] = getChartData3();
+        	dataset_P2[i] = getChartData_P2();
 	        chart_P2[i] = createInitChart(String.valueOf(i+1)+"列目 P2","(mm)","n",dataset_P2[i] ,1.8,2.2);
 	        ChartViewer chV = new ChartViewer(chart_P2[i]);
 	        chV.addChartMouseListener( new ChartMouseListenerFX() {
@@ -3201,8 +3208,6 @@ public class VisonController{
 						XYPlot xyplot = e.getChart().getXYPlot();
 						double value = xyplot.getRangeCrosshairValue();
 						Platform.runLater(() ->dimChartValueLable.setText( String.format("%.2f", value)));
-						//System.out.println( "X=" + xyplot.getDomainCrosshairValue());
-						//System.out.println( "Y=" + xyplot.getRangeCrosshairValue());
 					}
 
 					@Override
@@ -3212,8 +3217,7 @@ public class VisonController{
 	        );
 			chartTab_P2[i] = new Tab(String.valueOf(i+1)+"列目 P2     ",chV);
 
-
-			dataset_F[i] = getChartData4();
+			dataset_F[i] = getChartData_F();
 	        chart_F[i] = createInitChart(String.valueOf(i+1)+"列目 F","(mm)","n",dataset_F[i],11.3,11.7);
 	        ChartViewer chV2 = new ChartViewer(chart_F[i]);
 	        chV2.addChartMouseListener( new ChartMouseListenerFX() {
@@ -3222,8 +3226,6 @@ public class VisonController{
 						XYPlot xyplot = e.getChart().getXYPlot();
 						double value = xyplot.getRangeCrosshairValue();
 						Platform.runLater(() ->dimChartValueLable.setText( String.format("%.2f", value)));
-						//System.out.println( "X=" + xyplot.getDomainCrosshairValue());
-						//System.out.println( "Y=" + xyplot.getRangeCrosshairValue());
 					}
 
 					@Override
@@ -3250,7 +3252,7 @@ public class VisonController{
                 dataset,//データーセット
                 PlotOrientation.VERTICAL,//値の軸方向
                 true,//凡例
-                true,//tooltips
+                false,//tooltips
                 false);//urls
         // 背景色を設定
     	chart.setBackgroundPaint(ChartColor.WHITE);
@@ -3289,11 +3291,13 @@ public class VisonController{
         renderer.setDefaultShapesVisible(true);
         renderer.setDefaultShapesFilled(true);
 
+        /*
         // プロットのサイズ
         Stroke stroke = new BasicStroke(
-            0.001f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-        renderer.setDefaultOutlineStroke(stroke);
-
+            2.0f);
+        renderer.setSeriesStroke(0, stroke);
+        */
+		
         renderer.setSeriesPaint(0, ChartColor.BLUE);
 
         /*
@@ -3310,14 +3314,14 @@ public class VisonController{
         return chart;
 
     }
-    private XYSeriesCollection getChartData3(){
+    private XYSeriesCollection getChartData_P2(){
         XYSeriesCollection p2_dataset = new XYSeriesCollection();
         XYSeries p2_series = new XYSeries("P2");
         p2_dataset.addSeries(p2_series);
 
         return p2_dataset;
     }
-    private XYSeriesCollection getChartData4(){
+    private XYSeriesCollection getChartData_F(){
         XYSeriesCollection f_dataset = new XYSeriesCollection();
         XYSeries f_series = new XYSeries("F");
         f_dataset.addSeries(f_series);
