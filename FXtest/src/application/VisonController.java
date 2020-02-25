@@ -1,6 +1,8 @@
 package application;
 
+import java.awt.BasicStroke;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -3286,18 +3288,14 @@ public class VisonController{
         yAxis.setRange(lower,upper);
 
         // プロットをつける
-        XYLineAndShapeRenderer  renderer = new XYLineAndShapeRenderer (true, true);
+        XYLineAndShapeRenderer  renderer = new XYLineAndShapeRenderer();
         plot.setRenderer(renderer);
-        renderer.setDefaultShapesVisible(true);
-        renderer.setDefaultShapesFilled(true);
-
-        /*
+        //renderer.setDefaultShapesVisible(true);
+        //renderer.setDefaultShapesFilled(true);
         // プロットのサイズ
-        Stroke stroke = new BasicStroke(
-            2.0f);
+        Stroke stroke = new BasicStroke(1.0f);
         renderer.setSeriesStroke(0, stroke);
-        */
-		
+		//色
         renderer.setSeriesPaint(0, ChartColor.BLUE);
 
         /*
