@@ -533,6 +533,7 @@ public class VisonController{
 
 
 
+
     @FXML
     /**
      * スライダーの値を対応するテキストフィールドに入力する
@@ -3326,6 +3327,12 @@ public class VisonController{
 
         return f_dataset;
     }
+    private XYSeriesCollection getChartData_E(){
+        XYSeriesCollection e_dataset = new XYSeriesCollection();
+        XYSeries e_series = new XYSeries("E");
+        e_dataset.addSeries(e_series);
 
+        return e_dataset;
+    }
 
 }
