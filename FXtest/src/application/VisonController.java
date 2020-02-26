@@ -70,6 +70,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -179,6 +180,17 @@ public class VisonController{
 
 	@FXML
     private Spinner<Integer> dellySpinner;
+  @FXML
+    private Spinner<Integer> dellySpinner2;
+    @FXML
+    private CheckBox trigger_2nd_chk;
+    @FXML
+    private ToggleButton para_12st_shot;
+    @FXML
+    private ToggleButton para_12st_shot1;
+    @FXML
+    private ToggleButton para_12st_shot11;
+
 
     @FXML
     private ResourceBundle resources;
@@ -530,6 +542,8 @@ public class VisonController{
 	private XYSeriesCollection[] dataset_P2;
 	private XYSeriesCollection[] dataset_F;
 	private double holeDist_DimSetting;
+
+	private int targetSetParaNO = 1;
 
 
 
@@ -2098,13 +2112,15 @@ public class VisonController{
 		//para.dimPixel_mm = dimSetting_offset.getText()
 
 		pObj.portNo = portNoSpin.getValue().intValue();
-		pObj.delly = dellySpinner.getValue().intValue();
 		pObj.cameraID = camIDspinner.getValue().intValue();
 		pObj.adc_thresh = Integer.valueOf(adc_thresh_value.getText());
 		pObj.cameraHeight = Integer.valueOf(capH_text.getText());
 		pObj.cameraWidth = Integer.valueOf(capW_text.getText());
 		pObj.adcFlg = adc_flg.isSelected();
 
+		para.delly = dellySpinner.getValue().intValue();
+		para.trigger_2nd_chk = this.trigger_2nd_chk.isSelected();
+		para.delly2 = dellySpinner2.getValue().intValue();
 
 		objOut.writeObject(pObj);
 		objOut.flush();
@@ -2193,7 +2209,9 @@ public class VisonController{
     	setBtnPara();
 
     	portNoSpin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 9,pObj.portNo,1));
-    	dellySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 900,pObj.delly,5));
+    	dellySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 900,para.delly,1));
+    	dellySpinner2.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 900,para.delly2,1));
+
     	camIDspinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 9,pObj.cameraID,1));
     	adc_thresh_value.setText( String.valueOf(pObj.adc_thresh));
     	capH_text.setText( String.valueOf(pObj.cameraHeight));
@@ -2960,173 +2978,38 @@ public class VisonController{
     		Platform.runLater( () ->this.info2.appendText("offsetは数値で入力してください\n"));
     	}
     }
+
+
+    /**
+     * セッティングモード時　パラメータを設定するショットパラを選択する
+     * @param event
+     */
+    @FXML
+    void onPara_12st_shot_change(ActionEvent event) {
+    	if(targetSetParaNO == 1) {
+    		targetSetParaNO = 2;
+        	Platform.runLater( () ->para_12st_shot.setText("2nd."));
+        	Platform.runLater( () ->para_12st_shot1.setText("2nd."));
+        	Platform.runLater( () ->para_12st_shot11.setText("2nd."));
+        	Platform.runLater( () ->para_12st_shot.setSelected(true));
+        	Platform.runLater( () ->para_12st_shot1.setSelected(true));
+        	Platform.runLater( () ->para_12st_shot11.setSelected(true));
+
+    	}else{
+    		targetSetParaNO = 1;
+        	Platform.runLater( () ->para_12st_shot.setText("1st."));
+        	Platform.runLater( () ->para_12st_shot1.setText("1st."));
+        	Platform.runLater( () ->para_12st_shot11.setText("1st."));
+        	Platform.runLater( () ->para_12st_shot.setSelected(false));
+        	Platform.runLater( () ->para_12st_shot1.setSelected(false));
+        	Platform.runLater( () ->para_12st_shot11.setSelected(false));
+    	}
+
+
+    }
+
     @FXML
     void initialize() {
-        assert info1 != null : "fx:id=\"info1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert getInfoBtn != null : "fx:id=\"getInfoBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert imgORG != null : "fx:id=\"imgORG\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert imgGLAY != null : "fx:id=\"imgGLAY\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert sliderDetecPara4 != null : "fx:id=\"sliderDetecPara4\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert sliderDetecPara5 != null : "fx:id=\"sliderDetecPara5\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert sliderDetecPara6 != null : "fx:id=\"sliderDetecPara6\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert sliderDetecPara7 != null : "fx:id=\"sliderDetecPara7\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert sliderDetecPara8 != null : "fx:id=\"sliderDetecPara8\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert sliderDetecPara9 != null : "fx:id=\"sliderDetecPara9\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert textFieldDetecPara4 != null : "fx:id=\"textFieldDetecPara4\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert textFieldDetecPara5 != null : "fx:id=\"textFieldDetecPara5\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert textFieldDetecPara6 != null : "fx:id=\"textFieldDetecPara6\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert textFieldDetecPara7 != null : "fx:id=\"textFieldDetecPara7\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert textFieldDetecPara8 != null : "fx:id=\"textFieldDetecPara8\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert textFieldDetecPara9 != null : "fx:id=\"textFieldDetecPara9\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert move_up_btn != null : "fx:id=\"move_up_btn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert move_left_btn != null : "fx:id=\"move_left_btn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert move_right_btn != null : "fx:id=\"move_right_btn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert move_down_btn != null : "fx:id=\"move_down_btn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert zoomValue_slider != null : "fx:id=\"zoomValue_slider\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert move_speed_slider != null : "fx:id=\"move_speed_slider\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert testBtn != null : "fx:id=\"testBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri1_btn != null : "fx:id=\"okuri1_btn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri2_btn != null : "fx:id=\"okuri2_btn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri3_btn != null : "fx:id=\"okuri3_btn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri4_btn != null : "fx:id=\"okuri4_btn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri1_label != null : "fx:id=\"okuri1_label\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri2_label != null : "fx:id=\"okuri2_label\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri3_label != null : "fx:id=\"okuri3_label\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri4_label != null : "fx:id=\"okuri4_label\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri1_judg != null : "fx:id=\"okuri1_judg\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri2_judg != null : "fx:id=\"okuri2_judg\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri3_judg != null : "fx:id=\"okuri3_judg\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri4_judg != null : "fx:id=\"okuri4_judg\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert judg != null : "fx:id=\"judg\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert preset1 != null : "fx:id=\"preset1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert preset2 != null : "fx:id=\"preset2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert preset3 != null : "fx:id=\"preset3\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert preset4 != null : "fx:id=\"preset4\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert stopTest != null : "fx:id=\"stopTest\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert trigBtn != null : "fx:id=\"trigBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert saveBtn != null : "fx:id=\"saveBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert loadBtn != null : "fx:id=\"loadBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri1_n != null : "fx:id=\"okuri1_n\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri2_n != null : "fx:id=\"okuri2_n\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri3_n != null : "fx:id=\"okuri3_n\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert okuri4_n != null : "fx:id=\"okuri4_n\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert gauusianCheck != null : "fx:id=\"gauusianCheck\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dilateCheck != null : "fx:id=\"dilateCheck\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert gauusianSliderX != null : "fx:id=\"gauusianSliderX\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dilateSliderN != null : "fx:id=\"dilateSliderN\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert gauusianSliderY != null : "fx:id=\"gauusianSliderY\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert gauusianSliderK != null : "fx:id=\"gauusianSliderA\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert threshholdCheck != null : "fx:id=\"threshholdCheck\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert threshholdSlider != null : "fx:id=\"threshholdSlider\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert threshholdLabel != null : "fx:id=\"threshholdLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert setVeriBtn1 != null : "fx:id=\"setVeriBtn1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert setVeriBtn2 != null : "fx:id=\"setVeriBtn2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert setVeriBtn3 != null : "fx:id=\"setVeriBtn3\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert setVeriBtn4 != null : "fx:id=\"setVeriBtn4\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert threshhold_Inverse != null : "fx:id=\"threshhold_Inverse\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert triggerBtn != null : "fx:id=\"triggerBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert outTriggerBtn != null : "fx:id=\"outTriggerBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert aTriggerBtn != null : "fx:id=\"autoTriggerBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert imgGLAY1 != null : "fx:id=\"imgGLAY1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert imgGLAY2 != null : "fx:id=\"imgGLAY2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert imgGLAY3 != null : "fx:id=\"imgGLAY3\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert fpsLabel != null : "fx:id=\"fpsLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert triggerCCircle != null : "fx:id=\"triggerCCircle\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert clearBtn != null : "fx:id=\"clearBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ngImageBtn != null : "fx:id=\"ngImageBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ngCounterLabel != null : "fx:id=\"ngCounterLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert imgSaveFlg != null : "fx:id=\"imgSaveFlg\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert demoMode != null : "fx:id=\"demoMode\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert info2 != null : "fx:id=\"info2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert lockBtn != null : "fx:id=\"lockBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert lockShape1 != null : "fx:id=\"lockShape1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert lockShape4 != null : "fx:id=\"lockShape4\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert lockShape2 != null : "fx:id=\"lockShape2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert lockShape3 != null : "fx:id=\"lockShape3\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert lockShape5 != null : "fx:id=\"lockShape5\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert imgNG != null : "fx:id=\"imgNG\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert outTrigDisableChk != null : "fx:id=\"outTrigDisableChk\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert FilterViewMode != null : "fx:id=\"FilterViewMode\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert portNoSpin != null : "fx:id=\"portNoSpin\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert zoomLabel != null : "fx:id=\"zoomLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dellySpinner != null : "fx:id=\"dellySpinner\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert camIDspinner != null : "fx:id=\"camIDspinner\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert capW_text != null : "fx:id=\"capW_text\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert capH_text != null : "fx:id=\"capH_text\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert GPIO_STATUS_PIN0 != null : "fx:id=\"GPIO_STATUS_PIN0\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert GPIO_STATUS_PIN1 != null : "fx:id=\"GPIO_STATUS_PIN1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert GPIO_STATUS_PIN3 != null : "fx:id=\"GPIO_STATUS_PIN3\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert imgSaveFlg_all != null : "fx:id=\"imgSaveFlg_all\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert OKImageBtn != null : "fx:id=\"OKImageBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert accordion_1 != null : "fx:id=\"accordion_1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert throughImageChk != null : "fx:id=\"throughImageChk\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert throughImageChk != null : "fx:id=\"throughImageChk\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert shotImgBtn != null : "fx:id=\"shotImgBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert shotImgBtn_chess != null : "fx:id=\"shotImgBtn_chess\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert cameraCalib != null : "fx:id=\"cameraCalib\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert calibDataDel != null : "fx:id=\"calibDataDel\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert adc_thresh_value != null : "fx:id=\"adc_thresh_value\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert adc_flg != null : "fx:id=\"adc_flg\" was not injected: check your FXML file 'Sample2.fxml'.";
-        //パターンマッチング関係
-        assert ptm_setting_accordion != null : "fx:id=\"ptm_setting_accordion\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_set_pt1 != null : "fx:id=\"ptm_set_pt1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_set_pt2 != null : "fx:id=\"ptm_set_pt2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_set_pt3 != null : "fx:id=\"ptm_set_pt3\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_set_pt4 != null : "fx:id=\"ptm_set_pt4\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_set_para1 != null : "fx:id=\"ptm_set_para1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_set_para2 != null : "fx:id=\"ptm_set_para2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_set_para3 != null : "fx:id=\"ptm_set_para3\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_set_para4 != null : "fx:id=\"ptm_set_para4\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_pt1_enable != null : "fx:id=\"ptm_pt1_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_pt2_enable != null : "fx:id=\"ptm_pt2_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_pt3_enable != null : "fx:id=\"ptm_pt3_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_pt4_enable != null : "fx:id=\"ptm_pt4_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_img1 != null : "fx:id=\"ptm_img1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_img2 != null : "fx:id=\"ptm_img2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_img3 != null : "fx:id=\"ptm_img3\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_img4 != null : "fx:id=\"ptm_img4\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert debugImg != null : "fx:id=\"debugImg\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert whiteRatioLabel != null : "fx:id=\"whiteRatioLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert blackRatioLabel != null : "fx:id=\"blackRatioLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert whiteRatioMaxSp != null : "fx:id=\"whiteRatioMaxSp\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert whiteRatioMinSp != null : "fx:id=\"whiteRatioMinSp\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dimensionBtn != null : "fx:id=\"dimensionBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_okuriImg_1 != null : "fx:id=\"dim_okuriImg_1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_set_para1 != null : "fx:id=\"dim_set_para1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_1_enable != null : "fx:id=\"dim_1_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_poke_1 != null : "fx:id=\"dim_poke_1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_set_para2 != null : "fx:id=\"dim_set_para2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_offset_F_1 != null : "fx:id=\"dim_offset_F_1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_offset_P2_1 != null : "fx:id=\"dim_offset_P2_1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_offset_E_1 != null : "fx:id=\"dim_offset_E_1\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_okuriImg_2 != null : "fx:id=\"dim_okuriImg_2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_set_para3 != null : "fx:id=\"dim_set_para3\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_set_para4 != null : "fx:id=\"dim_set_para4\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_poke_2 != null : "fx:id=\"dim_poke_2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_2_enable != null : "fx:id=\"dim_2_enable\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_offset_F_2 != null : "fx:id=\"dim_offset_F_2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_offset_P2_2 != null : "fx:id=\"dim_offset_P2_2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dim_offset_E_2 != null : "fx:id=\"dim_offset_E_2\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dimSettingBtn != null : "fx:id=\"dimSettingBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dimSetting_offset != null : "fx:id=\"dimSetting_offset\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dimSettingLabel != null : "fx:id=\"dimSettingLabel\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ReTestBtn != null : "fx:id=\"ReTestBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert getExproBtn != null : "fx:id=\"getExproBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert setExproBtn != null : "fx:id=\"setExproBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert cameraExpro != null : "fx:id=\"cameraExpro\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert getGainBtn != null : "fx:id=\"getGainBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert setGainBtn != null : "fx:id=\"setGainBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert cameraGain != null : "fx:id=\"cameraGain\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert count_label != null : "fx:id=\"count_label\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert ptm_disableChk != null : "fx:id=\"ptm_disableChk\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert holeAnalysisBtn != null : "fx:id=\"holeAnalysisBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert whiteAreaBtn != null : "fx:id=\"whiteAreaBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert paraInitBtn != null : "fx:id=\"paraInitBtn\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert holeDispChk != null : "fx:id=\"holeDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert patternDispChk != null : "fx:id=\"patternDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dimensionDispChk != null : "fx:id=\"dimensionDispChk\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dataTabpane != null : "fx:id=\"dataTabpane\" was not injected: check your FXML file 'Sample2.fxml'.";
-        assert dimChartValueLable != null : "fx:id=\"dimChartValueLable\" was not injected: check your FXML file 'Sample2.fxml'.";
 
         //クラス変数の初期化
         rects = Collections.synchronizedList(new ArrayList<>());

@@ -12,6 +12,7 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -52,8 +53,8 @@
                               <DropShadow />
                            </effect>
                         </CheckBox>
-                        <Spinner fx:id="dellySpinner" initialValue="50" layoutX="294.0" layoutY="49.0" prefHeight="25.0" prefWidth="69.0" />
-                        <Label layoutX="232.0" layoutY="53.0" text="Delly(mSec)">
+                        <Spinner fx:id="dellySpinner" initialValue="50" layoutX="636.0" layoutY="25.0" prefHeight="25.0" prefWidth="69.0" />
+                        <Label layoutX="564.0" layoutY="30.0" text="1st.Delly(mSec)">
                            <font>
                               <Font size="10.0" />
                            </font>
@@ -71,11 +72,6 @@
                         </Button>
                         <Button fx:id="saveBtn" layoutX="19.0" layoutY="203.0" mnemonicParsing="false" onAction="#saveAllPara" text="SAVE" />
                         <Button fx:id="loadBtn" layoutX="68.0" layoutY="203.0" mnemonicParsing="false" onAction="#loadAllPara" text="LOAD" />
-                        <Button fx:id="triggerBtn" layoutX="95.0" layoutY="134.0" mnemonicParsing="false" onAction="#onTrigger" text="ManualTrigger">
-                           <font>
-                              <Font size="11.0" />
-                           </font>
-                        </Button>
                         <Button fx:id="aTriggerBtn" layoutX="15.0" layoutY="134.0" mnemonicParsing="false" onAction="#onTrigger" text="AutoTrigger">
                            <font>
                               <Font size="11.0" />
@@ -108,6 +104,13 @@
                            </effect>
                         </CheckBox>
                         <Button fx:id="paraInitBtn" layoutX="705.0" layoutY="216.0" mnemonicParsing="false" onAction="#onParaInitBtn" text="初期化" />
+                        <Spinner fx:id="dellySpinner2" initialValue="50" layoutX="636.0" layoutY="60.0" prefHeight="25.0" prefWidth="69.0" />
+                        <Label layoutX="560.0" layoutY="65.0" text="2nd.Delly(mSec)">
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Label>
+                        <CheckBox fx:id="trigger_2nd_chk" layoutX="713.0" layoutY="61.0" mnemonicParsing="false" text="有効" />
                      </children>
                   </AnchorPane>
             </content>
@@ -254,6 +257,11 @@
                         <Spinner fx:id="whiteRatioMinSp" layoutX="688.0" layoutY="190.0" prefHeight="25.0" prefWidth="70.0" />
                         <Label layoutX="623.0" layoutY="194.0" text="白面積下限" />
                         <Button fx:id="whiteAreaBtn" layoutX="613.0" layoutY="132.0" mnemonicParsing="false" onAction="#onWhiteAreaBtn" text="適用" />
+                        <ToggleButton fx:id="para_12st_shot" layoutX="674.0" layoutY="2.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </ToggleButton>
                      </children>
                   </AnchorPane>
             </content>
@@ -279,6 +287,11 @@
                         <CheckBox fx:id="ptm_pt2_enable" layoutX="173.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
                         <CheckBox fx:id="ptm_pt3_enable" layoutX="346.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
                         <CheckBox fx:id="ptm_pt4_enable" layoutX="519.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <ToggleButton fx:id="para_12st_shot1" layoutX="681.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </ToggleButton>
                      </children></AnchorPane>
             </content>
           </TitledPane>
@@ -326,6 +339,11 @@
                            </font>
                         </Label>
                         <Label layoutX="623.0" layoutY="116.0" prefHeight="17.0" prefWidth="36.0" text="μm" />
+                        <ToggleButton fx:id="para_12st_shot11" layoutX="681.0" layoutY="-1.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </ToggleButton>
                      </children></AnchorPane>
               </content>
             </TitledPane>
@@ -557,5 +575,10 @@
             <Font name="System Bold" size="14.0" />
          </font>
       </Label>
+      <Button fx:id="triggerBtn" layoutX="1103.0" layoutY="394.0" mnemonicParsing="false" onAction="#onTrigger" text="マニュアルテスト">
+         <font>
+            <Font size="11.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>

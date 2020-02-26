@@ -6,7 +6,6 @@ public class preSet implements Serializable{
 	parameter[] para;
 	int select;
 	int portNo;
-	int delly;
 	int cameraID;
 	int adc_thresh;
 	int cameraWidth,cameraHeight;
@@ -19,7 +18,6 @@ public class preSet implements Serializable{
 
 	public preSet() {
 		portNo = 4;
-		delly = 550;
 
 		para = new parameter[4];
 		for(int i=0;i<4;i++) {

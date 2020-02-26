@@ -10,6 +10,10 @@ import java.io.Serializable;
  *
  */
 public class parameter implements Serializable {
+	public boolean trigger_2nd_chk;
+	public int delly;
+	public int delly2;
+
 	final int hole_arrySize = 5;
 	double hole_zoom;
 	double[] hole_viewRect;
@@ -98,6 +102,9 @@ public class parameter implements Serializable {
 	public boolean[] dim_Enable;
 
 	public parameter() {
+		delly = 550;
+		delly2 = 50;
+
 		hole_zoom = 1.0;
 		hole_viewRect = new double[hole_arrySize];
 		hole_cntHoleTh = new int[hole_arrySize];
