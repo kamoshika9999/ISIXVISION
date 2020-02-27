@@ -10,6 +10,7 @@ import java.io.Serializable;
  *
  */
 public class parameter implements Serializable {
+	//シャッタータイミング
 	public boolean trigger_2nd_chk;
 	public int delly;
 	public int delly2;
