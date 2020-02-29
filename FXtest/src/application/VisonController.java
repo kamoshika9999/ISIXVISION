@@ -27,14 +27,12 @@ import org.jfree.chart.ChartColor;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.fx.interaction.ChartMouseEventFX;
 import org.jfree.chart.fx.interaction.ChartMouseListenerFX;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.opencv.calib3d.Calib3d;
@@ -67,10 +65,13 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -509,6 +510,16 @@ public class VisonController{
     private Label dimSettingLabel;
     @FXML
     private Button dimensionBtn;
+    @FXML
+    private TableView<Dim_itemValue> dim_table;
+    @FXML
+    private TableColumn dim_table_item;
+    @FXML
+    private TableColumn dim_table_P2;
+    @FXML
+    private TableColumn dim_table_F;
+    @FXML
+    private TableColumn dim_table_E;
 
     //カメラ関係
     @FXML
@@ -784,7 +795,7 @@ public class VisonController{
 				distortionCoefficients = calibrationMats.get("DistortionCoefficients");//歪み係数
 			}
 		}
-		source_video = new VideoCapture("./test2.mp4" );//デモモード用動画
+		source_video = new VideoCapture("./test.mp4" );//デモモード用動画
 		double video_width = source_video.get( Videoio.CAP_PROP_FRAME_WIDTH ); // 横幅を取得
 		double video_height = source_video.get( Videoio.CAP_PROP_FRAME_HEIGHT ); // 縦幅を取得
 		double video_frame_count = source_video.get( Videoio.CAP_PROP_FRAME_COUNT ); // フレーム数を取得
@@ -1129,6 +1140,13 @@ public class VisonController{
     		srcMat = saveImgMat.clone();
     	}
     	if( srcMat.width() < 1) return;
+
+
+    	//サブピクセル化
+    	//Mat tmpMat = new Mat();
+    	//Imgproc.getRectSubPix(srcMat, new Size(1920,1080), new Point(1920/2,1080/2), tmpMat);
+    	//System.out.println("SUBPixelSize="+tmpMat.width()+" : "+tmpMat.height());
+
     	try {
 	    	if( this.triggerCCircle.getFill() != Color.YELLOW) {
 	    		Platform.runLater( () ->this.triggerCCircle.setFill(Color.YELLOW));
@@ -1251,7 +1269,13 @@ public class VisonController{
 	            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
 	            		new Scalar(0,255,0),3);
 	        }else{
-	        	if(draggingRect.width >0 && draggingRect.height > 0 && settingModeFlg){
+	    		if( srcMat.width() < draggingRect.x+draggingRect.width) {
+	    			draggingRect.width = srcMat.width() - draggingRect.x;
+	    		}
+	    		if( srcMat.height() < draggingRect.y+draggingRect.height) {
+	    			draggingRect.height = srcMat.height() - draggingRect.y;
+	    		}
+	    		if(draggingRect.width >0 && draggingRect.height > 0 && settingModeFlg){
 	        		Mat fillterAftterMatRoi = fillterAftterMat.submat(
 		        			draggingRect.y,
 		        			draggingRect.y + draggingRect.height,
@@ -1475,23 +1499,32 @@ public class VisonController{
        		if( dimFlg ) {
         	for(int g=0;g<2;g++) {
         		if( ((g==0 && dim_1_enable.isSelected()) || ((g==1) && dim_2_enable.isSelected())) && shotCnt>0) {
-        			int g2 =g;
-	        		double p2_x0 = dim_templateMatchingObj.resultValue[g*2].centerPositionX.get(0);
-	        		double p2_x1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionX.get(0);
-	        		double P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
-	        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
-	        		double f_y1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionY.get(0);
-	        		double F = Math.abs(f_y0 - f_y1)*para.dimPixel_mm+para.dim_offset_F[g];
+        			double P2 = 0.0;
+        			double F = 0.0;
+        			if( dim_templateMatchingObj.resultValue[g*2].cnt == 1 &&
+        					dim_templateMatchingObj.resultValue[g*2+1].cnt == 1) {
+		        		double p2_x0 = dim_templateMatchingObj.resultValue[g*2].centerPositionX.get(0);
+		        		double p2_x1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionX.get(0);
+		        		P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
+		        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
+		        		double f_y1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionY.get(0);
+		        		F = Math.abs(f_y0 - f_y1)*para.dimPixel_mm+para.dim_offset_F[g];
+        			}
+        			final int g2 =g;
 
-        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,P2));
-	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,F));
-
+        			final double _P2 =Double.valueOf(String.format("%.2f",P2)).doubleValue();
+        			final double _F = Double.valueOf(String.format("%.2f",F)).doubleValue();
+        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,_P2));
+	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,_F));
+	        		//寸法表示テーブルの更新
+	        		Platform.runLater( () ->dim_table.getItems().get(g2).P2Property().set(_P2));
+	        		Platform.runLater( () ->dim_table.getItems().get(g2).FProperty().set(_F));
 
 	        		//軸の設定更新
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getDomainAxis()).
-																setRange(shotCnt<=100?0:shotCnt-100,shotCnt));
+																setRange(shotCnt<=50?0:shotCnt-50,shotCnt));
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getDomainAxis()).
-	        													setRange(shotCnt<=100?0:shotCnt-100,shotCnt));
+	        													setRange(shotCnt<=50?0:shotCnt-50,shotCnt));
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getRangeAxis()).
 							setRange(1.8,2.2));
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
@@ -2485,6 +2518,13 @@ public class VisonController{
 		}else {
 			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
 		}
+		//寸法表示テーブルの更新
+		Platform.runLater( () ->dim_table.getItems().get(0).P2Property().set(0.0));
+		Platform.runLater( () ->dim_table.getItems().get(0).FProperty().set(0.0));
+		Platform.runLater( () ->dim_table.getItems().get(0).EProperty().set(0.0));
+		Platform.runLater( () ->dim_table.getItems().get(1).P2Property().set(0.0));
+		Platform.runLater( () ->dim_table.getItems().get(1).FProperty().set(0.0));
+		Platform.runLater( () ->dim_table.getItems().get(1).EProperty().set(0.0));
 
 		shotCnt= 0;
     }
@@ -3027,6 +3067,14 @@ public class VisonController{
         dataset_P2 = new XYSeriesCollection[2];
         dataset_F = new XYSeriesCollection[2];
         chartFact();
+        //寸法表示用テーブル
+        dim_table_item.setCellValueFactory(new PropertyValueFactory<Dim_itemValue,String>("item"));
+        dim_table_P2.setCellValueFactory(new PropertyValueFactory<Dim_itemValue,Double>("P2"));
+        dim_table_F.setCellValueFactory(new PropertyValueFactory<Dim_itemValue,Double>("F"));
+        dim_table_E.setCellValueFactory(new PropertyValueFactory<Dim_itemValue,Double>("E"));
+   		Platform.runLater( () ->dim_table.getItems().clear());
+		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("①列",0.0,0.0,0.0)));
+		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("②列",0.0,0.0,0.0)));
 
 		//イニシャルinfo2の内容保存
 		initInfo2 = this.info2.getText();
@@ -3137,15 +3185,15 @@ public class VisonController{
     	JFreeChart chart = ChartFactory.createXYLineChart(title,categoryAxisLabel,valueAxisLabel,
                 dataset,//データーセット
                 PlotOrientation.VERTICAL,//値の軸方向
-                true,//凡例
+                false,//凡例
                 false,//tooltips
                 false);//urls
         // 背景色を設定
     	chart.setBackgroundPaint(ChartColor.WHITE);
 
         // 凡例の設定
-        LegendTitle lt = chart.getLegend();
-        lt.setFrame(new BlockBorder(1d, 2d, 3d, 4d, ChartColor.WHITE));
+        //LegendTitle lt = chart.getLegend();
+        //lt.setFrame(new BlockBorder(1d, 2d, 3d, 4d, ChartColor.WHITE));
 
         XYPlot plot = (XYPlot) chart.getPlot();
         // 背景色
@@ -3165,18 +3213,18 @@ public class VisonController{
         // 横軸の設定
         NumberAxis xAxis = (NumberAxis)plot.getDomainAxis();
         xAxis.setAutoRange(false);
-        xAxis.setRange(1,200);
+        xAxis.setRange(1,50);
         // 縦軸の設定
         NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
         yAxis.setAutoRange(false);
         yAxis.setRange(lower,upper);
 
         // プロットをつける
-        XYLineAndShapeRenderer  renderer = new XYLineAndShapeRenderer();
+        XYLineAndShapeRenderer  renderer = new XYLineAndShapeRenderer(true,false);
         plot.setRenderer(renderer);
         //renderer.setDefaultShapesVisible(true);
         //renderer.setDefaultShapesFilled(true);
-        // プロットのサイズ
+        //プロットのサイズ
         Stroke stroke = new BasicStroke(1.0f);
         renderer.setSeriesStroke(0, stroke);
 		//色

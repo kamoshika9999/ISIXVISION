@@ -580,6 +580,12 @@ public class PtmView {
 		Mat orgMat = ptmSrcMat.clone();
 		Mat ptarnMat = templateMatchingInstance.tmpara.paternMat[0];//登録パターンMatの参照を入れる
 
+		if( orgMat.width() < draggingRect.x+draggingRect.width) {
+			draggingRect.width = orgMat.width() - draggingRect.x;
+		}
+		if( orgMat.height() < draggingRect.y+draggingRect.height) {
+			draggingRect.height = orgMat.height() - draggingRect.y;
+		}
 		Imgproc.rectangle(orgMat,
         		new Point(draggingRect.x,draggingRect.y),
         		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
@@ -699,49 +705,6 @@ public class PtmView {
 	}
     @FXML
     void initialize() {
-        assert detectionAreaSet != null : "fx:id=\"detectionAreaSet\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert gauusianSliderX != null : "fx:id=\"gauusianSliderX\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert dilateCheck != null : "fx:id=\"dilateCheck\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert dilateSliderN != null : "fx:id=\"dilateSliderN\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert gauusianSliderY != null : "fx:id=\"gauusianSliderY\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert gauusianSliderA != null : "fx:id=\"gauusianSliderA\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert threshholdCheck != null : "fx:id=\"threshholdCheck\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert threshholdSlider != null : "fx:id=\"threshholdSlider\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert threshhold_Inverse != null : "fx:id=\"threshhold_Inverse\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert gauusianCheck != null : "fx:id=\"gauusianCheck\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert erodeCheck != null : "fx:id=\"erodeCheck\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert erodeSliderN != null : "fx:id=\"erodeSliderN\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert cannyCheck != null : "fx:id=\"cannyCheck\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert cannyThresh1 != null : "fx:id=\"cannyThresh1\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert cannyThresh2 != null : "fx:id=\"cannyThresh1\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert threshholdLabel1 != null : "fx:id=\"threshholdLabel1\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert threshholdLabel11 != null : "fx:id=\"threshholdLabel11\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptm_sp != null : "fx:id=\"ptm_sp\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptmThreshSliderN != null : "fx:id=\"threshSliderN\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert threshLabel != null : "fx:id=\"threshLabel\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptmInfo != null : "fx:id=\"ptmInfo\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptmConfirm != null : "fx:id=\"ptmConfirm\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptmCancel != null : "fx:id=\"ptmCancel\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptmTest != null : "fx:id=\"ptmTest\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptmReturn != null : "fx:id=\"ptmReturn\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert patternSet != null : "fx:id=\"patternSet\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert move_up_btn != null : "fx:id=\"move_up_btn\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert move_left_btn != null : "fx:id=\"move_left_btn\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert move_right_btn != null : "fx:id=\"move_right_btn\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert move_down_btn != null : "fx:id=\"move_down_btn\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert zoomValue_slider != null : "fx:id=\"zoomValue_slider\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert move_speed_slider != null : "fx:id=\"move_speed_slider\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert zoomLabel != null : "fx:id=\"zoomLabel\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptmMainView != null : "fx:id=\"ptmMainView\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptmSubView != null : "fx:id=\"ptmSubView\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptmSubViewDst != null : "fx:id=\"ptmSubViewDst\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert ptmMainViewDst != null : "fx:id=\"ptmMainViewDst\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert detectCntLabel != null : "fx:id=\"detectCntLabel\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert detectRationMax != null : "fx:id=\"detectRationMax\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert detectRationMin != null : "fx:id=\"detectRationMin\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert detectRationAve != null : "fx:id=\"detectRationAve\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert scaleSlider != null : "fx:id=\"scaleSlider\" was not injected: check your FXML file 'ptmView.fxml'.";
-        assert scaleValue != null : "fx:id=\"scaleValue\" was not injected: check your FXML file 'ptmView.fxml'.";
 
         moveDraggingPoint[0] = new Point();//ドラッグ移動始点
         moveDraggingPoint[1] = new Point();//ドラッグ移動終点

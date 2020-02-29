@@ -9,6 +9,8 @@
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
@@ -24,7 +26,6 @@
 
 <AnchorPane fx:id="aPane" accessibleRole="TEXT_FIELD" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeypressed" pickOnBounds="false" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.VisonController">
    <children>
-      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="91.0" layoutX="854.0" layoutY="244.0" stroke="BLACK" strokeType="INSIDE" width="302.0" />
       <Accordion fx:id="accordion_1" layoutY="350.0" prefHeight="343.0" prefWidth="768.0">
         <panes>
           <TitledPane text="Hard Setting /SAVE /LOAD /Other">
@@ -247,7 +248,7 @@
                         </Button>
                         <CheckBox fx:id="gauusianCheck" layoutX="18.0" layoutY="113.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Gauusian" />
                         <Label layoutX="525.0" layoutY="113.0" text="Label" />
-                        <ImageView fx:id="debugImg" fitHeight="102.0" fitWidth="102.0" layoutX="653.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="debugImg" fitHeight="102.0" fitWidth="102.0" layoutX="653.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" smooth="false" />
                         <Label layoutX="656.0" layoutY="126.0" text="白MAX" />
                         <Label layoutX="656.0" layoutY="144.0" text="白MIN" />
                         <Label fx:id="blackRatioLabel" layoutX="695.0" layoutY="144.0" prefHeight="17.0" prefWidth="57.0" text="0" />
@@ -349,8 +350,9 @@
             </TitledPane>
         </panes>
       </Accordion>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="91.0" layoutX="854.0" layoutY="244.0" stroke="BLACK" strokeType="INSIDE" width="302.0" />
       <Label fx:id="info1" layoutX="124.0" prefHeight="38.0" prefWidth="343.0" text="infomation" wrapText="true" />
-      <ImageView fx:id="imgORG" fitHeight="240.0" fitWidth="320.0" layoutX="4.0" layoutY="64.0" onMouseDragged="#mouseDragged" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" onScroll="#onWheel" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="64.0">
+      <ImageView fx:id="imgORG" fitHeight="240.0" fitWidth="320.0" layoutX="4.0" layoutY="64.0" onMouseDragged="#mouseDragged" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" onScroll="#onWheel" pickOnBounds="true" preserveRatio="true" smooth="false" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="64.0">
          <image>
             <Image url="file:./IMG_20191216_162108.jpg" />
          </image>
@@ -484,7 +486,7 @@
          </font>
       </Label>
       <CheckBox fx:id="imgSaveFlg" layoutX="744.0" layoutY="315.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
-      <TextArea fx:id="info2" layoutX="690.0" layoutY="11.0" prefHeight="157.0" prefWidth="502.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;OPENCV 4.2  JAVAFX11.0 JRE13.0 &#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimisionMeseruADD&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="872.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;OPENCV 4.2  JAVAFX11.0 JRE13.0 &#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimisionMeseruADD&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />
@@ -580,5 +582,13 @@
             <Font size="11.0" />
          </font>
       </Button>
+      <TableView fx:id="dim_table" layoutX="683.0" layoutY="11.0" prefHeight="152.0" prefWidth="188.0">
+        <columns>
+            <TableColumn fx:id="dim_table_item" editable="false" prefWidth="48.0" resizable="false" sortable="false" text="列" />
+          <TableColumn fx:id="dim_table_P2" editable="false" prefWidth="45.0" resizable="false" sortable="false" text="P2" />
+          <TableColumn fx:id="dim_table_F" editable="false" minWidth="0.0" prefWidth="45.0" resizable="false" sortable="false" text="F" />
+            <TableColumn fx:id="dim_table_E" editable="false" minWidth="0.0" prefWidth="45.0" resizable="false" sortable="false" text="E" />
+        </columns>
+      </TableView>
    </children>
 </AnchorPane>

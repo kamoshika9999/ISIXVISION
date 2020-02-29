@@ -28,9 +28,6 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.block.BlockBorder;
-import org.jfree.chart.fx.ChartViewer;
-import org.jfree.chart.fx.interaction.ChartMouseEventFX;
-import org.jfree.chart.fx.interaction.ChartMouseListenerFX;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -51,8 +48,6 @@ import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -2249,7 +2244,7 @@ public class VisonController2{
     	loadPtmImg();
 
         //パターンマッチング用パラメータ設定
-    	ptm_patternMatchParaSet();
+    	//ptm_patternMatchParaSet();
 
 
     	//寸法測定部
@@ -2268,8 +2263,8 @@ public class VisonController2{
     /**
      * パターンマッチング用パラメータ設定
      */
-    private void ptm_patternMatchParaSet() {
-    	parameter para = pObj.para[pObj.select];
+    private void ptm_patternMatchParaSet(int shotNo) {
+    	parameter para = pObj.para[shotNo][pObj.select];
         for(int i=0;i<ptm_tmpara.arrayCnt;i++) {
         	ptm_tmpara.matchingTreshDetectCnt[i] = para.ptm_fil_detectionCnt[i];
         	ptm_tmpara.matchingThresh[i] = para.ptm_threshValue[i];
@@ -2298,8 +2293,8 @@ public class VisonController2{
     /**
      * 寸法測定用パターンマッチングパラメータ設定
      */
-    private void dim_patternMatchParaSet() {
-    	parameter para = pObj.para[pObj.select];
+    private void dim_patternMatchParaSet(int shotNo) {
+    	parameter para = pObj.para[shotNo][pObj.select];
         for(int i=0;i<dim_tmpara.arrayCnt;i++) {
         	dim_tmpara.matchingTreshDetectCnt[i] = para.dim_fil_detectionCnt[i];
         	dim_tmpara.matchingThresh[i] = para.dim_threshValue[i];
@@ -2337,39 +2332,43 @@ public class VisonController2{
     			return;
     		}
     	}
-    	for( int i=0;i<4;i++) {
-    		for( int j=0;j<4;j++) {
-    	    	Mat tmpMat = Imgcodecs.imread(
-    	    			"./ptm_image/ptm"+String.format("_%d_%d", i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
-    	    	if( tmpMat.width() > 0 &&  pObj.para[i].ptm_Enable[j]) {
-    	    		 ptm_ImgMat[i][j] = new Mat();
-    	    		 ptm_ImgMat[i][j] = tmpMat.clone();
-    	    	}else {
-    	    		ptm_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3,new Scalar(0));
-    	    	}
-    		}
+    	for( int shotNo=0;shotNo<2;shotNo++) {
+	    	for( int i=0;i<4;i++) {
+	    		for( int j=0;j<4;j++) {
+	    	    	Mat tmpMat = Imgcodecs.imread(
+	    	    			"./ptm_image/ptm"+String.format("_%d_%d_%d",shotNo,i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
+	    	    	if( tmpMat.width() > 0 &&  pObj.para[shotNo][i].ptm_Enable[j]) {
+	    	    		 ptm_ImgMat[i][j] = new Mat();
+	    	    		 ptm_ImgMat[i][j] = tmpMat.clone();
+	    	    	}else {
+	    	    		ptm_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3,new Scalar(0));
+	    	    	}
+	    		}
+	    	}
     	}
     	updateImageView(ptm_img1, Utils.mat2Image(ptm_ImgMat[pObj.select][0]));
     	updateImageView(ptm_img2, Utils.mat2Image(ptm_ImgMat[pObj.select][1]));
     	updateImageView(ptm_img3, Utils.mat2Image(ptm_ImgMat[pObj.select][2]));
     	updateImageView(ptm_img4, Utils.mat2Image(ptm_ImgMat[pObj.select][3]));
-    	ptm_pt1_enable.setSelected(pObj.para[pObj.select].ptm_Enable[0]);
-    	ptm_pt2_enable.setSelected(pObj.para[pObj.select].ptm_Enable[1]);
-    	ptm_pt3_enable.setSelected(pObj.para[pObj.select].ptm_Enable[2]);
-    	ptm_pt4_enable.setSelected(pObj.para[pObj.select].ptm_Enable[3]);
+    	Platform.runLater(() ->ptm_pt1_enable.setSelected(pObj.para[targetSetParaNO][pObj.select].ptm_Enable[0]));
+    	Platform.runLater(() ->ptm_pt2_enable.setSelected(pObj.para[targetSetParaNO][pObj.select].ptm_Enable[1]));
+    	Platform.runLater(() ->ptm_pt3_enable.setSelected(pObj.para[targetSetParaNO][pObj.select].ptm_Enable[2]));
+    	Platform.runLater(() ->ptm_pt4_enable.setSelected(pObj.para[targetSetParaNO][pObj.select].ptm_Enable[3]));
 
     	//寸法測定用画像
-    	for( int i=0;i<4;i++) {
-    		for( int j=0;j<4;j++) {
-    	    	Mat tmpMat = Imgcodecs.imread(
-    	    			"./ptm_image/dim"+String.format("_%d_%d", i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
-    	    	if( tmpMat.width() > 0 && pObj.para[pObj.select].dim_rectsDetection[0].width>1) {
-    	    		 dim_ImgMat[i][j] = new Mat();
-    	    		 dim_ImgMat[i][j] = tmpMat.clone();
-    	    	}else {
-    	    		dim_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3,new Scalar(0));
-    	    	}
-    		}
+    	for( int shotNo=0;shotNo<2;shotNo++) {
+	    	for( int i=0;i<4;i++) {
+	    		for( int j=0;j<4;j++) {
+	    	    	Mat tmpMat = Imgcodecs.imread(
+	    	    			"./ptm_image/dim"+String.format("_%d_%d_%d", shotNo,i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
+	    	    	if( tmpMat.width() > 0 && pObj.para[shotNo][pObj.select].dim_rectsDetection[0].width>1) {
+	    	    		 dim_ImgMat[i][j] = new Mat();
+	    	    		 dim_ImgMat[i][j] = tmpMat.clone();
+	    	    	}else {
+	    	    		dim_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3,new Scalar(0));
+	    	    	}
+	    		}
+	    	}
     	}
     	updateImageView(dim_okuriImg_1, Utils.mat2Image(dim_ImgMat[pObj.select][0]));
     	updateImageView(dim_poke_1, Utils.mat2Image(dim_ImgMat[pObj.select][1]));
@@ -2400,7 +2399,7 @@ public class VisonController2{
     		pObj.select = 3;
     		Platform.runLater(() ->preset4.setTextFill( Color.BLUE ));
     	}
-    	draggingRect = (Rectangle)pObj.para[pObj.select].hole_rects[4].clone();
+    	draggingRect = (Rectangle)pObj.para[targetSetParaNO][pObj.select].hole_rects[4].clone();
 
     	setBtnPara();
     }
@@ -2529,7 +2528,7 @@ public class VisonController2{
         	updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	}else {
             //パターンマッチング用パラメータ設定
-        	ptm_patternMatchParaSet();
+        	ptm_patternMatchParaSet(targetSetParaNO);
 
     		Platform.runLater(() ->this.accordion_1.setDisable(false));
         	settingModeFlg = true;
@@ -2561,12 +2560,14 @@ public class VisonController2{
      * @param event
      */
     void onShotImg(ActionEvent event) {
-    	SaveshotImg(srcMat, "shot");
+    	SaveshotImg(firstSrcMat, "shot");
+    	SaveshotImg(secondScrMat, "shot");
     }
 
     @FXML
     void onShotImg_chess(ActionEvent event) {
-    	SavechessImg(srcMat, "chessbord");
+    	SavechessImg(firstSrcMat, "chessbord");
+    	SaveshotImg(secondScrMat, "chessbord");
     }
     @FXML
     void onCalbdataDel(ActionEvent event) {
@@ -2659,7 +2660,7 @@ public class VisonController2{
     	}else {
     		return;
     	}
-
+/*
     	parameter para = pObj.para[pObj.select];
 
 		//パラメーターを渡す
@@ -2740,7 +2741,7 @@ public class VisonController2{
 		}
         //パターンマッチング用パラメータ設定
     	ptm_patternMatchParaSet();
-
+*/
     }
 
     /**
@@ -2749,6 +2750,7 @@ public class VisonController2{
      */
     @FXML
     void onPtmSetImage(ActionEvent e) {
+    	/*
     	if( saveImgUseFlg ) {
     		Platform.runLater(() ->info2.appendText("保存画像を使用してパターンの登録はできません\n"));
     		return;
@@ -2775,7 +2777,7 @@ public class VisonController2{
     	}
         //パターンマッチング用パラメータ設定
     	ptm_patternMatchParaSet();
-
+*/
     }
 
     @FXML
@@ -2796,6 +2798,7 @@ public class VisonController2{
     }
     //寸法測定メソッド群
     //登録パターンなどの詳細設定
+    /*
     @FXML
     void onDimSetPara(ActionEvent e) {
     	Button obj = (Button)e.getSource();
@@ -2912,7 +2915,7 @@ public class VisonController2{
 	    	pObj.para[pObj.select].dimPixel_mm = pixel_mm;
     	}
     }
-
+*/
     @FXML
     /**
      * グラフ表示
@@ -2983,6 +2986,7 @@ public class VisonController2{
      * 寸法オフセットのチェンジリスナー
      * @param event
      */
+    /*
     @FXML
     void onDimOffsetChange(KeyEvent  e) {
     	String p2_offset_1 = dim_offset_P2_1.getText();
@@ -3005,6 +3009,7 @@ public class VisonController2{
     		Platform.runLater( () ->this.info2.appendText("offsetは数値で入力してください\n"));
     	}
     }
+    */
 
 
     /**
@@ -3053,11 +3058,11 @@ public class VisonController2{
         chartTab_F = new Tab[2];
         dataset_P2 = new XYSeriesCollection[2];
         dataset_F = new XYSeriesCollection[2];
-        chartFact();
+        //chartFact();
 
 		//イニシャルinfo2の内容保存
 		initInfo2 = this.info2.getText();
-
+/*
 		loadAllPara();
 		dim_patternMatchParaSet();
 
@@ -3151,6 +3156,7 @@ public class VisonController2{
 			dataTabpane.getTabs().add(chartTab_P2[i]);
 	        dataTabpane.getTabs().add(chartTab_F[i]);
         }
+        */
     }
     /**
      * グラフの雛形作成

@@ -50,7 +50,6 @@ public class templateMatching {
 		}
 
 		for(int n=0;n<c_tmpara.arrayCnt;n++) {
-			resultValue[n].cnt = 0;
 			if( c_tmpara.ptmEnable[n] ) {
 				if( !settingFlg) {
 					c_areaMat = areaMat.clone();
@@ -120,10 +119,6 @@ public class templateMatching {
 						c_tmpara.detectionRects[n].x+c_tmpara.detectionRects[n].width
 						);
 
-				boolean flg2;
-				double rt;
-				List<Point> finedPoint = new ArrayList<>();
-				finedPoint.add(new Point(10000,10000));//冗長判定回避用のダミーデーター
 
 				if( areaRoi.width() > c_tmpara.paternMat[n].width() && areaRoi.height() > c_tmpara.paternMat[n].height() ) {
 
@@ -140,65 +135,74 @@ public class templateMatching {
 
 			    	int tmpPtWidth =  (int)((double)c_tmpara.paternMat[n].width() * (2.0/3.0));//テンプレート画像の2/3近傍チェック用
 			    	int tmpPtHeight = (int)((double)c_tmpara.paternMat[n].height()* (2.0/3.0));
+					double rt;
+					boolean flg2;
+			    	List<Double> finedPointThresh = new ArrayList<Double>();
+					List<Point> finedPoint = new ArrayList<>();
 			    	for (int i=0;i<result.rows();i++) {
 			    		for (int j=0;j<result.cols();j++) {
 			    			rt = result.get(i, j)[0];
 			    			if ( rt > 0) {
-			    				//近傍に検出エリアが無いか確認 テンプレート画像の2/3近傍
-				    			flg2=false;
-			    				for(Point p:finedPoint) {
+			    				flg2 = false;
+			    				//近傍に検出済パターンが無いか確認 テンプレート画像サイズ2/3近傍
+			    				for( int k=0;k<finedPoint.size();k++) {
+			    					Point p = finedPoint.get(k);
 			    					if( p.x  + tmpPtWidth > j && p.x - tmpPtWidth < j &&
 			    							p.y  + tmpPtHeight > i && p.y - tmpPtHeight < i) {
-			    						flg2 = true;
-			    						break;
+			    						if(rt > finedPointThresh.get(k)) {
+				    						//近傍あり、閾値が上回る為入れ替え
+				    						p.x = j;
+				    						p.y = i;
+				    						finedPointThresh.set(k,rt);
+			    						}
+				    					flg2 = true;
 			    					}
 			    				}
-		    					if( !flg2 ){
-		    						resultValue[n].cnt++;
-		    						finedPoint.add(new Point(j,i));
-		    						if(patternDispChk) {
-			    	    		    	Imgproc.rectangle(dstRoi,new Point(j*c_tmpara.scale[n],i*c_tmpara.scale[n]),
-			    	    		    			new Point((j+c_tmpara.paternMat[n].width())*c_tmpara.scale[n],
-			    	    		    			(i+c_tmpara.paternMat[n].height())*c_tmpara.scale[n]),
-			    	    		    			new Scalar(0,255,255),3);
-										Imgproc.putText(dstRoi,
-												String.format("%.3f", rt),
-												new Point(j*c_tmpara.scale[n],i*c_tmpara.scale[n]),
-												Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),7);
-		    						}
-		    	    		    	resultValue[n].x.add((int)((c_tmpara.detectionRects[n].x+j)*c_tmpara.scale[n]));//X座標格納
-		    	    		    	resultValue[n].y.add((int)((c_tmpara.detectionRects[n].y+i)*c_tmpara.scale[n]));//y座標格納
-		    	    		    	resultValue[n].ratio.add(rt);//マッチング度格納
-		    	    		    	resultValue[n].detectMax = resultValue[n].detectMax<rt?rt:resultValue[n].detectMax;
-		    	    		    	resultValue[n].detectMin = resultValue[n].detectMin>rt?rt:resultValue[n].detectMin;
-		    	    		    	resultValue[n].detectAve += rt;
-		    	    		    	//パターン中心計算
-		    	    		    	resultValue[n].centerPositionX.add((int)(
-		    	    		    			c_tmpara.detectionRects[n].x*c_tmpara.scale[n] +
-		    	    		    			j*c_tmpara.scale[n]+
-		    	    		    			c_tmpara.paternMat[n].width()*c_tmpara.scale[n]/2));
-		    	    		    	resultValue[n].centerPositionY.add((int)(
-		    	    		    			c_tmpara.detectionRects[n].y*c_tmpara.scale[n] +
-		    	    		    			i*c_tmpara.scale[n]+
-		    	    		    			c_tmpara.paternMat[n].height()*c_tmpara.scale[n]/2));
-		    	    		    	//十字マーク表示
-		    	    		    	int orgX = resultValue[n].centerPositionX.get(resultValue[n].cnt-1);
-		    	    		    	int orgY = resultValue[n].centerPositionY.get(resultValue[n].cnt-1);
-		    	    		    	Imgproc.line(dstMat,new Point(orgX-20,orgY-20),new Point(orgX+20,orgY+20),
-		    	    		    					new Scalar(0,200,200),3);
-		    	    		    	Imgproc.line(dstMat,new Point(orgX+20,orgY-20),new Point(orgX-20,orgY+20),
-    	    		    							new Scalar(0,200,200),3);
-
-		    	    		    	j = (int) (j + c_tmpara.paternMat[n].cols() + tmpPtWidth);
-		    	    		    	break;
-		    					}
+			    				//近傍に無い場合で見つかったのでリストに追加
+			    				if( !flg2 ) {
+			    					finedPoint.add(new Point(j,i));
+			    					finedPointThresh.add(rt);
+			    				}
 			    			}
 			    		}
-			   		 }
-				}else {
-					System.out.println("検出エリアサイズよりパターンサイズが大きく検査出来ない");
-				}
+			    	}
+					resultValue[n].cnt = finedPoint.size();
+			    	for(int i=0;i<finedPoint.size();i++) {
+	    		    	Point p= finedPoint.get(i);
+	    		    	double ratio = finedPointThresh.get(i);
 
+	    		    	if(patternDispChk)Imgproc.rectangle(dstRoi,new Point(p.x*c_tmpara.scale[n],p.y*c_tmpara.scale[n]),
+	    		    			new Point((p.x+c_tmpara.paternMat[n].width())*c_tmpara.scale[n],
+	    		    			(p.y+c_tmpara.paternMat[n].height())*c_tmpara.scale[n]),
+	    		    			new Scalar(0,255,255),3);
+	    		    	if(patternDispChk)Imgproc.putText(dstRoi,
+								String.format("%.3f", ratio),
+								new Point(p.x*c_tmpara.scale[n],p.y*c_tmpara.scale[n]),
+								Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),7);
+	    		    	resultValue[n].x.add((int)((c_tmpara.detectionRects[n].x+p.x)*c_tmpara.scale[n]));//X座標格納
+	    		    	resultValue[n].y.add((int)((c_tmpara.detectionRects[n].y+p.y)*c_tmpara.scale[n]));//y座標格納
+	    		    	resultValue[n].ratio.add(ratio);//マッチング度格納
+	    		    	resultValue[n].detectMax = resultValue[n].detectMax<ratio?ratio:resultValue[n].detectMax;
+	    		    	resultValue[n].detectMin = resultValue[n].detectMin>ratio?ratio:resultValue[n].detectMin;
+	    		    	resultValue[n].detectAve += finedPointThresh.get(i);
+	    		    	//パターン中心計算
+	    		    	resultValue[n].centerPositionX.add((int)(
+	    		    			c_tmpara.detectionRects[n].x*c_tmpara.scale[n] +
+	    		    			p.x*c_tmpara.scale[n]+
+	    		    			c_tmpara.paternMat[n].width()*c_tmpara.scale[n]/2));
+	    		    	resultValue[n].centerPositionY.add((int)(
+	    		    			c_tmpara.detectionRects[n].y*c_tmpara.scale[n] +
+	    		    			p.y*c_tmpara.scale[n]+
+	    		    			c_tmpara.paternMat[n].height()*c_tmpara.scale[n]/2));
+	    		    	//十字マーク表示
+	    		    	int orgX = resultValue[n].centerPositionX.get(i);
+	    		    	int orgY = resultValue[n].centerPositionY.get(i);
+	    		    	if(patternDispChk)Imgproc.line(dstMat,new Point(orgX-20,orgY-20),new Point(orgX+20,orgY+20),
+	    		    					new Scalar(0,200,200),3);
+	    		    	if(patternDispChk)Imgproc.line(dstMat,new Point(orgX+20,orgY-20),new Point(orgX-20,orgY+20),
+		    							new Scalar(0,200,200),3);
+			   		 }
+				}
 				resultValue[n].detectAve /= (double)resultValue[n].cnt;
 				if( resultValue[n].cnt != c_tmpara.matchingTreshDetectCnt[n] ) {
 					resultFlg = false;
