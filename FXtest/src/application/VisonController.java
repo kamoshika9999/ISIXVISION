@@ -177,7 +177,9 @@ public class VisonController{
 	public Mat[][] dim_ImgMat = new Mat[4][4];//[presetNo][dim1～dim4]
 	private TMpara dim_tmpara = new TMpara();
 	private templateMatching dim_templateMatchingObj;
-
+	private double[] P2_sum = new double[2];
+	private double[] F_sum = new double[2];
+	private double[] E_sum = new double[2];
 
 	@FXML
     private Spinner<Integer> dellySpinner;
@@ -699,7 +701,7 @@ public class VisonController{
     @FXML
     void onWheel(ScrollEvent e) {
     	Rectangle2D rect = imgORG.getViewport();
-    	double zoomStep = 0.01;
+    	double zoomStep = 0.02;
     	double imgWidth = imgORG.getImage().getWidth();//に格納されているイメージの幅
 
     	if( e.getDeltaY() < 0) {
@@ -1506,19 +1508,29 @@ public class VisonController{
 		        		double p2_x0 = dim_templateMatchingObj.resultValue[g*2].centerPositionX.get(0);
 		        		double p2_x1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionX.get(0);
 		        		P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
+		        		P2_sum[g] += P2;
 		        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
 		        		double f_y1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionY.get(0);
 		        		F = Math.abs(f_y0 - f_y1)*para.dimPixel_mm+para.dim_offset_F[g];
+		        		F_sum[g] += F;
         			}
         			final int g2 =g;
 
         			final double _P2 =Double.valueOf(String.format("%.2f",P2)).doubleValue();
         			final double _F = Double.valueOf(String.format("%.2f",F)).doubleValue();
+        			final double P2_ave = P2_sum[g]/shotCnt;
+        			final double F_ave = F_sum[g]/shotCnt;
+        			final double _P2_ave = Double.valueOf(String.format("%.2f",P2_ave)).doubleValue();
+        			final double _F_ave = Double.valueOf(String.format("%.2f",F_ave)).doubleValue();
+
         			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,_P2));
 	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,_F));
 	        		//寸法表示テーブルの更新
-	        		Platform.runLater( () ->dim_table.getItems().get(g2).P2Property().set(_P2));
-	        		Platform.runLater( () ->dim_table.getItems().get(g2).FProperty().set(_F));
+	        		Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(_P2));
+	        		Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(_F));
+	        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(_P2_ave));
+	        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).FProperty().set(_F_ave));
+
 
 	        		//軸の設定更新
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getDomainAxis()).
@@ -1550,8 +1562,8 @@ public class VisonController{
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
-		        		final String infoText = fileString +"\n";
-		        		Platform.runLater( () ->info2.appendText(infoText));
+		        		//final String infoText = fileString +"\n";
+		        		//Platform.runLater( () ->info2.appendText(infoText));
 		        	}
 		        	if( ngCnt < 999) ngCnt++;
 
@@ -1824,8 +1836,8 @@ public class VisonController{
      */
     @FXML
     void onWhiteAreaLabelClicked(MouseEvent event) {
-    	int max = (int)(Double.valueOf(whiteRatioLabel.getText())*1.1);
-    	int min = (int)(Double.valueOf(blackRatioLabel.getText())*0.9);
+    	int max = (int)(Double.valueOf(whiteRatioLabel.getText())*1.2);
+    	int min = (int)(Double.valueOf(blackRatioLabel.getText())*0.8);
     	Platform.runLater( () ->whiteRatioMaxSp.setValueFactory(
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,
 				max,
@@ -2525,6 +2537,9 @@ public class VisonController{
 		Platform.runLater( () ->dim_table.getItems().get(1).P2Property().set(0.0));
 		Platform.runLater( () ->dim_table.getItems().get(1).FProperty().set(0.0));
 		Platform.runLater( () ->dim_table.getItems().get(1).EProperty().set(0.0));
+		P2_sum[0] = 0;P2_sum[1] = 0;
+		F_sum[0] = 0;F_sum[1] = 0;
+		E_sum[0] = 0;E_sum[1] = 0;
 
 		shotCnt= 0;
     }
@@ -3074,7 +3089,9 @@ public class VisonController{
         dim_table_E.setCellValueFactory(new PropertyValueFactory<Dim_itemValue,Double>("E"));
    		Platform.runLater( () ->dim_table.getItems().clear());
 		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("①列",0.0,0.0,0.0)));
+		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("ave.",0.0,0.0,0.0)));
 		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("②列",0.0,0.0,0.0)));
+		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("ave.",0.0,0.0,0.0)));
 
 		//イニシャルinfo2の内容保存
 		initInfo2 = this.info2.getText();

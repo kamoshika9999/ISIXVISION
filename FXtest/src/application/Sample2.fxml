@@ -38,7 +38,7 @@
                            </font>
                         </Label>
                         <Spinner fx:id="portNoSpin" initialValue="4" layoutX="294.0" layoutY="16.0" max="9" min="1" prefHeight="25.0" prefWidth="70.0" />
-                        <CheckBox fx:id="outTrigDisableChk" layoutX="14.0" layoutY="17.0" mnemonicParsing="false" onAction="#onOutTrigDisableChk" selected="true" text="出力トリガ無効">
+                        <CheckBox fx:id="outTrigDisableChk" layoutX="14.0" layoutY="17.0" mnemonicParsing="false" onAction="#onOutTrigDisableChk" text="出力トリガ無効">
                            <font>
                               <Font size="13.0" />
                            </font>
@@ -248,7 +248,7 @@
                         </Button>
                         <CheckBox fx:id="gauusianCheck" layoutX="18.0" layoutY="113.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Gauusian" />
                         <Label layoutX="525.0" layoutY="113.0" text="Label" />
-                        <ImageView fx:id="debugImg" fitHeight="102.0" fitWidth="102.0" layoutX="653.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" smooth="false" />
+                        <ImageView fx:id="debugImg" fitHeight="91.0" fitWidth="102.0" layoutX="653.0" layoutY="36.0" pickOnBounds="true" preserveRatio="true" smooth="false" />
                         <Label layoutX="656.0" layoutY="126.0" text="白MAX" />
                         <Label layoutX="656.0" layoutY="144.0" text="白MIN" />
                         <Label fx:id="blackRatioLabel" layoutX="695.0" layoutY="144.0" prefHeight="17.0" prefWidth="57.0" text="0" />
@@ -258,7 +258,7 @@
                         <Spinner fx:id="whiteRatioMinSp" layoutX="688.0" layoutY="190.0" prefHeight="25.0" prefWidth="70.0" />
                         <Label layoutX="623.0" layoutY="194.0" text="白面積下限" />
                         <Button fx:id="whiteAreaBtn" layoutX="613.0" layoutY="132.0" mnemonicParsing="false" onAction="#onWhiteAreaBtn" text="適用" />
-                        <ToggleButton fx:id="para_12st_shot" layoutX="674.0" layoutY="2.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
+                        <ToggleButton fx:id="para_12st_shot" disable="true" layoutX="674.0" layoutY="2.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
                            <font>
                               <Font name="System Bold" size="13.0" />
                            </font>
@@ -288,7 +288,7 @@
                         <CheckBox fx:id="ptm_pt2_enable" layoutX="173.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
                         <CheckBox fx:id="ptm_pt3_enable" layoutX="346.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
                         <CheckBox fx:id="ptm_pt4_enable" layoutX="519.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
-                        <ToggleButton fx:id="para_12st_shot1" layoutX="681.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
+                        <ToggleButton fx:id="para_12st_shot1" disable="true" layoutX="681.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
                            <font>
                               <Font name="System Bold" size="13.0" />
                            </font>
@@ -340,7 +340,7 @@
                            </font>
                         </Label>
                         <Label layoutX="623.0" layoutY="116.0" prefHeight="17.0" prefWidth="36.0" text="μm" />
-                        <ToggleButton fx:id="para_12st_shot11" layoutX="681.0" layoutY="-1.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
+                        <ToggleButton fx:id="para_12st_shot11" disable="true" layoutX="681.0" layoutY="-1.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
                            <font>
                               <Font name="System Bold" size="13.0" />
                            </font>
@@ -401,7 +401,7 @@
             <Font size="36.0" />
          </font>
       </Label>
-      <Label layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver2.3" textFill="#0a22d7">
+      <Label layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver2.4" textFill="#0a22d7">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
@@ -486,7 +486,7 @@
          </font>
       </Label>
       <CheckBox fx:id="imgSaveFlg" layoutX="744.0" layoutY="315.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
-      <TextArea fx:id="info2" layoutX="872.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;OPENCV 4.2  JAVAFX11.0 JRE13.0 &#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimisionMeseruADD&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="872.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />
@@ -582,7 +582,7 @@
             <Font size="11.0" />
          </font>
       </Button>
-      <TableView fx:id="dim_table" layoutX="683.0" layoutY="11.0" prefHeight="152.0" prefWidth="188.0">
+      <TableView fx:id="dim_table" layoutX="683.0" layoutY="11.0" prefHeight="152.0" prefWidth="188.0" style="-fx-border-color: black;-fx-border-width: 1;">
         <columns>
             <TableColumn fx:id="dim_table_item" editable="false" prefWidth="48.0" resizable="false" sortable="false" text="列" />
           <TableColumn fx:id="dim_table_P2" editable="false" prefWidth="45.0" resizable="false" sortable="false" text="P2" />
