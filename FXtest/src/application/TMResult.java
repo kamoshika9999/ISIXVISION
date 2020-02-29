@@ -6,9 +6,11 @@ import java.util.List;
 public class TMResult {
 	public List<Integer> x = new ArrayList<Integer>();
 	public List<Integer> y =new ArrayList<Integer>();
+	public List<Double> x_subPixel = new ArrayList<Double>();
+	public List<Double> y_subPixel =new ArrayList<Double>();
 	public List<Double> ratio =new ArrayList<Double>();
-	public List<Integer> centerPositionX = new ArrayList<Integer>();
-	public List<Integer> centerPositionY = new ArrayList<Integer>();
+	public List<Double> centerPositionX = new ArrayList<Double>();
+	public List<Double> centerPositionY = new ArrayList<Double>();
 
 
 	public int cnt = 0;//検出数

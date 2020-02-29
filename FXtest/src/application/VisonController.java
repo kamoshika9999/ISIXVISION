@@ -1507,6 +1507,8 @@ public class VisonController{
         					dim_templateMatchingObj.resultValue[g*2+1].cnt == 1) {
 		        		double p2_x0 = dim_templateMatchingObj.resultValue[g*2].centerPositionX.get(0);
 		        		double p2_x1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionX.get(0);
+		        		//System.out.println("X0 = " + String.format("%.4f", p2_x0));
+		        		//System.out.println("X1 = " + String.format("%.4f", p2_x1));
 		        		P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
 		        		P2_sum[g] += P2;
 		        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
@@ -1534,15 +1536,18 @@ public class VisonController{
 
 	        		//軸の設定更新
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getDomainAxis()).
-																setRange(shotCnt<=50?0:shotCnt-50,shotCnt));
+																setRange(shotCnt<=200?0:shotCnt-200,shotCnt));
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getDomainAxis()).
-	        													setRange(shotCnt<=50?0:shotCnt-50,shotCnt));
+	        													setRange(shotCnt<=200?0:shotCnt-200,shotCnt));
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getRangeAxis()).
 							setRange(1.8,2.2));
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
 							setRange(11.3,11.7));
         		}
         	}
+       		}else {
+       			Platform.runLater( () ->this.info2.appendText("寸法測定に失敗しました\n"));
+       			Platform.runLater( () ->this.info2.appendText("登録領域が画像端ギリギリすぎると推定します。\n"));
        		}
 
 	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
@@ -3230,7 +3235,7 @@ public class VisonController{
         // 横軸の設定
         NumberAxis xAxis = (NumberAxis)plot.getDomainAxis();
         xAxis.setAutoRange(false);
-        xAxis.setRange(1,50);
+        xAxis.setRange(1,200);
         // 縦軸の設定
         NumberAxis yAxis = (NumberAxis)plot.getRangeAxis();
         yAxis.setAutoRange(false);

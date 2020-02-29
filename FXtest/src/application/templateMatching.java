@@ -130,7 +130,7 @@ public class templateMatching {
 			    	}
 			    	Imgproc.matchTemplate(areaRoi, c_tmpara.paternMat[n], result, Imgproc.TM_CCOEFF_NORMED);
 			    	//結果から相関係数がしきい値以下を削除（０にする）
-			    	Imgproc.threshold(result, result,c_tmpara.matchingThresh[n],1.0, Imgproc.THRESH_TOZERO);
+			    	//Imgproc.threshold(result, result,c_tmpara.matchingThresh[n],1.0, Imgproc.THRESH_TOZERO);
 
 
 			    	int tmpPtWidth =  (int)((double)c_tmpara.paternMat[n].width() * (2.0/3.0));//テンプレート画像の2/3近傍チェック用
@@ -142,7 +142,7 @@ public class templateMatching {
 			    	for (int i=0;i<result.rows();i++) {
 			    		for (int j=0;j<result.cols();j++) {
 			    			rt = result.get(i, j)[0];
-			    			if ( rt > 0) {
+			    			if ( rt > c_tmpara.matchingThresh[n]) {
 			    				flg2 = false;
 			    				//近傍に検出済パターンが無いか確認 テンプレート画像サイズ2/3近傍
 			    				for( int k=0;k<finedPoint.size();k++) {
@@ -166,6 +166,37 @@ public class templateMatching {
 			    			}
 			    		}
 			    	}
+			    	//サブピクセル精度計測
+		    		int _i=0;
+			    	try {
+				    	for(int i=0;i<finedPoint.size();i++) {
+				    		_i = i;
+				    		double x,y;
+				    		double r0,r1,r2;
+	
+				    		//ｘを求める {(R(+1) - R(-1)}/{2*R(-1) - 4*R(0) + 2*R(+1)} * -1
+				    		r0=result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
+				    		r1=result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x-1 )[0];//R(-1)
+				    		r2=result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x+1 )[0];//R(+1)
+				    		x = finedPoint.get(i).x + (r2-r1)/(2*r1-4*r0+2*r2) * -1;
+				    		//yを求める {(R(+1) - R(-1)}/{2*R(-1) - 4*R(0) + 2*R(+1)} * -1
+				    		r0=result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
+				    		r1=result.get( (int)finedPoint.get(i).y-1, (int)finedPoint.get(i).x )[0];//R(-1)
+				    		r2=result.get( (int)finedPoint.get(i).y+1, (int)finedPoint.get(i).x )[0];//R(+1)
+				    		y = finedPoint.get(i).y + (r2-r1)/(2*r1-4*r0+2*r2) * -1;
+	
+				    		resultValue[n].x_subPixel.add(x);
+				    		resultValue[n].y_subPixel.add(y);
+	
+				    	}
+			    	}catch(Exception e) {
+			    		System.out.println("サブピクセル計測失敗　寸法測定分解能低下の為、計測しません");
+			    		resultFlg = false;
+			    		resultValue[n].x_subPixel.add(finedPoint.get(_i).x );
+			    		resultValue[n].y_subPixel.add(finedPoint.get(_i).y);
+		    		
+			    	}
+
 					resultValue[n].cnt = finedPoint.size();
 			    	for(int i=0;i<finedPoint.size();i++) {
 	    		    	Point p= finedPoint.get(i);
@@ -186,17 +217,17 @@ public class templateMatching {
 	    		    	resultValue[n].detectMin = resultValue[n].detectMin>ratio?ratio:resultValue[n].detectMin;
 	    		    	resultValue[n].detectAve += finedPointThresh.get(i);
 	    		    	//パターン中心計算
-	    		    	resultValue[n].centerPositionX.add((int)(
+	    		    	resultValue[n].centerPositionX.add(
 	    		    			c_tmpara.detectionRects[n].x*c_tmpara.scale[n] +
-	    		    			p.x*c_tmpara.scale[n]+
-	    		    			c_tmpara.paternMat[n].width()*c_tmpara.scale[n]/2));
-	    		    	resultValue[n].centerPositionY.add((int)(
+	    		    			resultValue[n].x_subPixel.get(i)*c_tmpara.scale[n]+
+	    		    			c_tmpara.paternMat[n].width()*c_tmpara.scale[n]/2);
+	    		    	resultValue[n].centerPositionY.add(
 	    		    			c_tmpara.detectionRects[n].y*c_tmpara.scale[n] +
-	    		    			p.y*c_tmpara.scale[n]+
-	    		    			c_tmpara.paternMat[n].height()*c_tmpara.scale[n]/2));
+	    		    			resultValue[n].y_subPixel.get(i)*c_tmpara.scale[n]+
+	    		    			c_tmpara.paternMat[n].height()*c_tmpara.scale[n]/2);
 	    		    	//十字マーク表示
-	    		    	int orgX = resultValue[n].centerPositionX.get(i);
-	    		    	int orgY = resultValue[n].centerPositionY.get(i);
+	    		    	int orgX = (int)( resultValue[n].centerPositionX.get(i).doubleValue() );
+	    		    	int orgY = (int)( resultValue[n].centerPositionY.get(i).doubleValue() );
 	    		    	if(patternDispChk)Imgproc.line(dstMat,new Point(orgX-20,orgY-20),new Point(orgX+20,orgY+20),
 	    		    					new Scalar(0,200,200),3);
 	    		    	if(patternDispChk)Imgproc.line(dstMat,new Point(orgX+20,orgY-20),new Point(orgX-20,orgY+20),
