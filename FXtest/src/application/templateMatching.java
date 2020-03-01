@@ -128,10 +128,10 @@ public class templateMatching {
 			    	if(c_tmpara.paternMat[n].type() == CvType.CV_8UC3) {
 			        	Imgproc.cvtColor(c_tmpara.paternMat[n], c_tmpara.paternMat[n], Imgproc.COLOR_BGR2GRAY);//グレースケール化
 			    	}
+
 			    	Imgproc.matchTemplate(areaRoi, c_tmpara.paternMat[n], result, Imgproc.TM_CCOEFF_NORMED);
 			    	//結果から相関係数がしきい値以下を削除（０にする）
 			    	//Imgproc.threshold(result, result,c_tmpara.matchingThresh[n],1.0, Imgproc.THRESH_TOZERO);
-
 
 			    	int tmpPtWidth =  (int)((double)c_tmpara.paternMat[n].width() * (2.0/3.0));//テンプレート画像の2/3近傍チェック用
 			    	int tmpPtHeight = (int)((double)c_tmpara.paternMat[n].height()* (2.0/3.0));
@@ -166,6 +166,31 @@ public class templateMatching {
 			    			}
 			    		}
 			    	}
+			    	/*
+		            // 出力ファイルの作成
+			    	try {
+			            FileWriter f = new FileWriter("./gdata.csv", false);
+			            PrintWriter p = new PrintWriter(new BufferedWriter(f));
+
+			    		for(int y=0;y<result.rows();y++) {
+			    			for(int x=0;x<result.cols();x++) {
+			    				p.print(String.valueOf(x)+","+String.valueOf(y)+","+
+			    						String.format("%.6f", result.get(y,x)[0]));
+				                p.println();    // 改行
+			    			}
+			                p.println();    // 改行
+			    		}
+
+			            // ファイルに書き出し閉じる
+			            p.close();
+
+			            System.out.println("ファイル出力完了！");
+
+			        } catch (IOException ex) {
+			            ex.printStackTrace();
+			        }
+			        */
+
 			    	//サブピクセル精度計測
 		    		int _i=0;
 			    	try {
@@ -173,7 +198,7 @@ public class templateMatching {
 				    		_i = i;
 				    		double x,y;
 				    		double r0,r1,r2;
-	
+
 				    		//ｘを求める {(R(+1) - R(-1)}/{2*R(-1) - 4*R(0) + 2*R(+1)} * -1
 				    		r0=result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
 				    		r1=result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x-1 )[0];//R(-1)
@@ -184,17 +209,17 @@ public class templateMatching {
 				    		r1=result.get( (int)finedPoint.get(i).y-1, (int)finedPoint.get(i).x )[0];//R(-1)
 				    		r2=result.get( (int)finedPoint.get(i).y+1, (int)finedPoint.get(i).x )[0];//R(+1)
 				    		y = finedPoint.get(i).y + (r2-r1)/(2*r1-4*r0+2*r2) * -1;
-	
+
 				    		resultValue[n].x_subPixel.add(x);
 				    		resultValue[n].y_subPixel.add(y);
-	
+
 				    	}
 			    	}catch(Exception e) {
 			    		System.out.println("サブピクセル計測失敗　寸法測定分解能低下の為、計測しません");
 			    		resultFlg = false;
 			    		resultValue[n].x_subPixel.add(finedPoint.get(_i).x );
 			    		resultValue[n].y_subPixel.add(finedPoint.get(_i).y);
-		    		
+
 			    	}
 
 					resultValue[n].cnt = finedPoint.size();
