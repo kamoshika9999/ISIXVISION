@@ -93,5 +93,6 @@
             <Font name="System Bold" size="14.0" />
          </font>
       </Label>
+      <Button fx:id="rinearnData" layoutX="981.0" layoutY="486.0" mnemonicParsing="false" onAction="#rinearnDataUpdate" prefHeight="25.0" prefWidth="140.0" text="Rinearn解析" />
    </children>
 </AnchorPane>

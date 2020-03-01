@@ -14,6 +14,7 @@ public class templateMatching {
 
 	public TMResult[] resultValue;//検出結果が保存される
 	public TMpara tmpara;
+	public Mat result;
 
 	/**
 	 * コンストラクタ
@@ -122,7 +123,7 @@ public class templateMatching {
 
 				if( areaRoi.width() > c_tmpara.paternMat[n].width() && areaRoi.height() > c_tmpara.paternMat[n].height() ) {
 
-			    	Mat result = new Mat(areaRoi.rows() - c_tmpara.paternMat[n].rows() + 1,
+			    	result = new Mat(areaRoi.rows() - c_tmpara.paternMat[n].rows() + 1,
 			    			areaRoi.cols() - c_tmpara.paternMat[n].cols() + 1, CvType.CV_32FC1);
 				    //テンプレートマッチ実行（TM_CCOEFF_NORMED：相関係数＋正規化）
 			    	if(c_tmpara.paternMat[n].type() == CvType.CV_8UC3) {

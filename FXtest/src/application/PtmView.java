@@ -10,6 +10,8 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import com.rinearn.graph3d.RinearnGraph3D;
+
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -170,6 +172,13 @@ public class PtmView {
     @FXML
     private Label scaleValue;
 	private templateMatching templateMatchingInstance;
+
+	@FXML
+	private Button rinearnData;
+	private RinearnGraph3D RinearnGraph3Dgraph;
+	private boolean rinearnFlg = false;
+
+
 
     private void patternMatchParaSet() {
     	TMpara tmpara = new TMpara( 1 );
@@ -395,6 +404,8 @@ public class PtmView {
 		Scene scene = ((Node) event.getSource()).getScene();
 		Window window = scene.getWindow();
 		window.hide();
+		if(RinearnGraph3Dgraph!=null)
+			RinearnGraph3Dgraph.dispose();
     }
 
     @FXML
@@ -650,6 +661,7 @@ public class PtmView {
     		//テンプレートマッチング
     		templateMatchingInstance.detectPattern(areaMat,orgMat,true,true);//実行し結果を表示用Matに上書き
 
+
 	    	final int tmp_cnt = templateMatchingInstance.resultValue[0].cnt;
 	    	final double tmp_detectMax = templateMatchingInstance.resultValue[0].detectMax;
 	    	final double tmp_detectMin = templateMatchingInstance.resultValue[0].detectMin;
@@ -703,6 +715,48 @@ public class PtmView {
 		rePaint();
 
 	}
+
+	@FXML
+	private void rinearnDataUpdate(ActionEvent e) {
+		try {
+			if( rinearnFlg ) {
+				//Rinearnグラフ生成
+				if(templateMatchingInstance.result!=null && RinearnGraph3Dgraph!=null) {
+		    		Mat rt = templateMatchingInstance.result;
+		    		double[] rin_x = new double[rt.width()*rt.height()];
+		    		double[] rin_y = new double[rt.width()*rt.height()];
+		    		double[] rin_z = new double[rt.width()*rt.height()];
+		    		int rin_cnt =0;
+		    		for(int i=0;i<rt.width();i++) {
+		    			for(int j=0;j<rt.height();j++) {
+		    				rin_x[rin_cnt] = i;
+		    				rin_y[rin_cnt] = j;
+		    				rin_z[rin_cnt] = rt.get(j, i)[0];
+			    			rin_cnt++;
+		    			}
+
+		    		}
+		    		RinearnGraph3Dgraph.setData(rin_x, rin_y, rin_z);
+		            //RinearnGraph3Dgraph.setOptionSelected(RinearnGraph3DOptionItem.POINT, false);
+		            //RinearnGraph3Dgraph.setOptionSelected(RinearnGraph3DOptionItem.MESH, true);
+		            // 範囲設定
+		            RinearnGraph3Dgraph.setZRange(-1.0, 1.0);
+				}
+			}else {
+				rinearnFlg=true;
+		        RinearnGraph3Dgraph = new RinearnGraph3D();
+		        while(RinearnGraph3Dgraph==null) {}
+
+			}
+
+		}catch(java.lang.NullPointerException ex) {
+			//System.out.println(ex);
+	        RinearnGraph3Dgraph = new RinearnGraph3D();
+	        while(RinearnGraph3Dgraph==null) {}
+	        rinearnFlg=true;
+		}
+	}
+
     @FXML
     void initialize() {
 
@@ -729,11 +783,13 @@ public class PtmView {
 
         setSlider();
 
+
         try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+
         rePaint();
 
     }
