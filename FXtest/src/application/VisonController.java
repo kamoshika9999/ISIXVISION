@@ -1518,15 +1518,17 @@ public class VisonController{
         			}
         			final int g2 =g;
 
-        			final double _P2 =Double.valueOf(String.format("%.2f",P2)).doubleValue();
-        			final double _F = Double.valueOf(String.format("%.2f",F)).doubleValue();
+        			final double _P2 =Double.valueOf(String.format("%.3f",P2)).doubleValue();
+        			final double _F = Double.valueOf(String.format("%.3f",F)).doubleValue();
         			final double P2_ave = P2_sum[g]/shotCnt;
         			final double F_ave = F_sum[g]/shotCnt;
-        			final double _P2_ave = Double.valueOf(String.format("%.2f",P2_ave)).doubleValue();
-        			final double _F_ave = Double.valueOf(String.format("%.2f",F_ave)).doubleValue();
-
-        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,_P2));
-	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,_F));
+        			final double _P2_ave = Double.valueOf(String.format("%.3f",P2_ave)).doubleValue();
+        			final double _F_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
+        			
+        			final double P2_final = P2;
+        			final double F_final = F;
+        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,P2_final));
+	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,F_final));
 	        		//寸法表示テーブルの更新
 	        		Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(_P2));
 	        		Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(_F));
@@ -1815,6 +1817,7 @@ public class VisonController{
 		int  r = (int)v[2];
 		if( x-r-offset < 0 || y-r-offset<0 || x-r-offset+r+r+offset>judgeAreaMat.width() || y-r-offset+r+r+offset>judgeAreaMat.height() ) {
 			result = false;
+			Platform.runLater(() ->info2.appendText("穴検出エリアが狭すぎ、面積判定ができません。\n"));
 		}else {
 	  		roi = judgeAreaMat.submat(new Rect( x-r-offset, y-r-offset, r+r+offset, r+r+offset));
 	  		whiteArea = Core.countNonZero(roi);

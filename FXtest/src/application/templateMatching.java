@@ -244,11 +244,11 @@ public class templateMatching {
 	    		    	resultValue[n].detectAve += finedPointThresh.get(i);
 	    		    	//パターン中心計算
 	    		    	resultValue[n].centerPositionX.add(
-	    		    			c_tmpara.detectionRects[n].x*c_tmpara.scale[n] +
+	    		    			(double)c_tmpara.detectionRects[n].x*c_tmpara.scale[n] +
 	    		    			resultValue[n].x_subPixel.get(i)*c_tmpara.scale[n]+
 	    		    			c_tmpara.paternMat[n].width()*c_tmpara.scale[n]/2);
 	    		    	resultValue[n].centerPositionY.add(
-	    		    			c_tmpara.detectionRects[n].y*c_tmpara.scale[n] +
+	    		    			(double)c_tmpara.detectionRects[n].y*c_tmpara.scale[n] +
 	    		    			resultValue[n].y_subPixel.get(i)*c_tmpara.scale[n]+
 	    		    			c_tmpara.paternMat[n].height()*c_tmpara.scale[n]/2);
 	    		    	//十字マーク表示
