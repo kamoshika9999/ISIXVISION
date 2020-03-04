@@ -1269,7 +1269,7 @@ public class VisonController{
 	            Imgproc.rectangle(mainViewMat,
 	            		new Point(draggingRect.x,draggingRect.y),
 	            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
-	            		new Scalar(0,255,0),3);
+	            		new Scalar(0,255,0),2);
 	        }else{
 	    		if( srcMat.width() < draggingRect.x+draggingRect.width) {
 	    			draggingRect.width = srcMat.width() - draggingRect.x;
@@ -1328,7 +1328,7 @@ public class VisonController{
 		            Imgproc.rectangle(mainViewMat,
 		            		new Point(draggingRect.x,draggingRect.y),
 		            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
-		            		new Scalar(0,255,0),4);
+		            		new Scalar(0,255,0),2);
 	        	}
 	        }
 

@@ -11,6 +11,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import com.rinearn.graph3d.RinearnGraph3D;
+import com.rinearn.graph3d.RinearnGraph3DOptionItem;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -723,22 +724,20 @@ public class PtmView {
 				//Rinearnグラフ生成
 				if(templateMatchingInstance.result!=null && RinearnGraph3Dgraph!=null) {
 		    		Mat rt = templateMatchingInstance.result;
-		    		double[] rin_x = new double[rt.width()*rt.height()];
-		    		double[] rin_y = new double[rt.width()*rt.height()];
-		    		double[] rin_z = new double[rt.width()*rt.height()];
-		    		int rin_cnt =0;
+		    		double[][] rin_x = new double[rt.width()][rt.height()];
+		    		double[][] rin_y = new double[rt.width()][rt.height()];
+		    		double[][] rin_z = new double[rt.width()][rt.height()];
 		    		for(int i=0;i<rt.width();i++) {
 		    			for(int j=0;j<rt.height();j++) {
-		    				rin_x[rin_cnt] = i;
-		    				rin_y[rin_cnt] = j;
-		    				rin_z[rin_cnt] = rt.get(j, i)[0];
-			    			rin_cnt++;
+		    				rin_x[i][j] = i;
+		    				rin_y[i][j] = j;
+		    				rin_z[i][j] = rt.get(j, i)[0];
 		    			}
 
 		    		}
 		    		RinearnGraph3Dgraph.setData(rin_x, rin_y, rin_z);
-		            //RinearnGraph3Dgraph.setOptionSelected(RinearnGraph3DOptionItem.POINT, false);
-		            //RinearnGraph3Dgraph.setOptionSelected(RinearnGraph3DOptionItem.MESH, true);
+		            RinearnGraph3Dgraph.setOptionSelected(RinearnGraph3DOptionItem.POINT, false);
+		            RinearnGraph3Dgraph.setOptionSelected(RinearnGraph3DOptionItem.MESH, true);
 		            // 範囲設定
 		            RinearnGraph3Dgraph.setZRange(-1.0, 1.0);
 				}

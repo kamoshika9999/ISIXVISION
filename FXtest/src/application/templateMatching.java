@@ -131,6 +131,7 @@ public class templateMatching {
 			    	}
 
 			    	Imgproc.matchTemplate(areaRoi, c_tmpara.paternMat[n], result, Imgproc.TM_CCOEFF_NORMED);
+
 			    	//結果から相関係数がしきい値以下を削除（０にする）
 			    	//Imgproc.threshold(result, result,c_tmpara.matchingThresh[n],1.0, Imgproc.THRESH_TOZERO);
 
