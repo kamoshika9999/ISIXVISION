@@ -1518,12 +1518,12 @@ public class VisonController{
         			}
         			final int g2 =g;
 
-        			final double _P2 =Double.valueOf(String.format("%.4f",P2)).doubleValue();
-        			final double _F = Double.valueOf(String.format("%.4f",F)).doubleValue();
+        			final double _P2 =Double.valueOf(String.format("%.3f",P2)).doubleValue();
+        			final double _F = Double.valueOf(String.format("%.3f",F)).doubleValue();
         			final double P2_ave = P2_sum[g]/shotCnt;
         			final double F_ave = F_sum[g]/shotCnt;
-        			final double _P2_ave = Double.valueOf(String.format("%.4f",P2_ave)).doubleValue();
-        			final double _F_ave = Double.valueOf(String.format("%.4f",F_ave)).doubleValue();
+        			final double _P2_ave = Double.valueOf(String.format("%.3f",P2_ave)).doubleValue();
+        			final double _F_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
         			
         			final double P2_final = P2;
         			final double F_final = F;
