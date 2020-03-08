@@ -142,30 +142,29 @@ public class templateMatching {
 
 			    	//正規化
 			    	Core.normalize(result,result,0.0,1.0,Core.NORM_MINMAX);
-			    	
+
 			    	//結果から相関係数がしきい値以下を削除（０にする）
 			    	//Imgproc.threshold(result, result,c_tmpara.matchingThresh[n],1.0, Imgproc.THRESH_TOZERO);
 
-			    	int tmpPtWidth =  (int)((double)c_tmpara.paternMat[n].width() * (2.0/3.0));//テンプレート画像の2/3近傍チェック用
-			    	int tmpPtHeight = (int)((double)c_tmpara.paternMat[n].height()* (2.0/3.0));
+			    	int tmpPtWidth =  (int)((double)c_tmpara.paternMat[n].width() * (9.0/10.0));//テンプレート画像の9/10近傍チェック用
+			    	int tmpPtHeight = (int)((double)c_tmpara.paternMat[n].height()* (9.0/10.0));
 					double rt;
 					boolean flg2;
 			    	List<Double> finedPointThresh = new ArrayList<Double>();
 					List<Point> finedPoint = new ArrayList<>();
-			    	for (int i=0;i<result.rows();i++) {
-			    		for (int j=0;j<result.cols();j++) {
-			    			rt = 1-result.get(i, j)[0];
+			    	for (int t_y=0;t_y<result.rows();t_y++) {
+			    		for (int t_x=0;t_x<result.cols();t_x++) {
+			    			rt = 1-result.get(t_y, t_x)[0];
 			    			if ( rt > c_tmpara.matchingThresh[n]) {
 			    				flg2 = false;
-			    				//近傍に検出済パターンが無いか確認 テンプレート画像サイズ2/3近傍
+			    				//近傍に検出済パターンが無いか確認
 			    				for( int k=0;k<finedPoint.size();k++) {
 			    					Point p = finedPoint.get(k);
-			    					if( p.x  + tmpPtWidth > j && p.x - tmpPtWidth < j &&
-			    							p.y  + tmpPtHeight > i && p.y - tmpPtHeight < i) {
+			    					if( p.x  + tmpPtWidth > t_x && p.x - tmpPtWidth < t_x &&
+			    							p.y  + tmpPtHeight > t_y && p.y - tmpPtHeight < t_y) {
 			    						if(rt > finedPointThresh.get(k)) {
 				    						//近傍あり、閾値が上回る為入れ替え
-				    						p.x = j;
-				    						p.y = i;
+			    							finedPoint.set(k, new Point(t_x,t_y));
 				    						finedPointThresh.set(k,rt);
 			    						}
 				    					flg2 = true;
@@ -173,7 +172,7 @@ public class templateMatching {
 			    				}
 			    				//近傍に無い場合で見つかったのでリストに追加
 			    				if( !flg2 ) {
-			    					finedPoint.add(new Point(j,i));
+			    					finedPoint.add(new Point(t_x,t_y));
 			    					finedPointThresh.add(rt);
 			    				}
 			    			}
@@ -182,34 +181,33 @@ public class templateMatching {
 
 			    	//サブピクセル精度計測
 		    		int _i=0;
-			    	try {
 				    	for(int i=0;i<finedPoint.size();i++) {
-				    		_i = i;
-				    		double x,y;
-				    		double r0,r1,r2;
+					    	try {
+					    		_i = i;
+					    		double x,y;
+					    		double r0,r1,r2;
 
-				    		//ｘを求める {(R(-1) - R(+1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
-				    		r0=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
-				    		r1=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x-1 )[0];//R(-1)
-				    		r2=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x+1 )[0];//R(+1)
-				    		x = finedPoint.get(i).x + (r1-r2)/(2*r1-4*r0+2*r2);
-				    		//yを求める {(R(+1) - R(-1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
-				    		r0=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
-				    		r1=1-result.get( (int)finedPoint.get(i).y-1, (int)finedPoint.get(i).x )[0];//R(-1)
-				    		r2=1-result.get( (int)finedPoint.get(i).y+1, (int)finedPoint.get(i).x )[0];//R(+1)
-				    		y = finedPoint.get(i).y + (r1-r2)/(2*r1-4*r0+2*r2);
+					    		//ｘを求める {(R(-1) - R(+1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
+					    		r0=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
+					    		r1=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x-1 )[0];//R(-1)
+					    		r2=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x+1 )[0];//R(+1)
+					    		x = finedPoint.get(i).x + (r1-r2)/(2*r1-4*r0+2*r2);
+					    		//yを求める {(R(+1) - R(-1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
+					    		r0=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
+					    		r1=1-result.get( (int)finedPoint.get(i).y-1, (int)finedPoint.get(i).x )[0];//R(-1)
+					    		r2=1-result.get( (int)finedPoint.get(i).y+1, (int)finedPoint.get(i).x )[0];//R(+1)
+					    		y = finedPoint.get(i).y + (r1-r2)/(2*r1-4*r0+2*r2);
 
-				    		resultValue[n].x_subPixel.add(x);
-				    		resultValue[n].y_subPixel.add(y);
+					    		resultValue[n].x_subPixel.add(x);
+					    		resultValue[n].y_subPixel.add(y);
 
+					    	}catch(Exception e) {
+					    		System.out.println("サブピクセル計測失敗　寸法測定分解能低下の為、計測しません");
+					    		resultFlg = false;
+					    		resultValue[n].x_subPixel.add(finedPoint.get(_i).x );
+					    		resultValue[n].y_subPixel.add(finedPoint.get(_i).y);
+					    	}
 				    	}
-			    	}catch(Exception e) {
-			    		System.out.println("サブピクセル計測失敗　寸法測定分解能低下の為、計測しません");
-			    		resultFlg = false;
-			    		resultValue[n].x_subPixel.add(finedPoint.get(_i).x );
-			    		resultValue[n].y_subPixel.add(finedPoint.get(_i).y);
-
-			    	}
 
 					resultValue[n].cnt = finedPoint.size();
 			    	for(int i=0;i<finedPoint.size();i++) {
