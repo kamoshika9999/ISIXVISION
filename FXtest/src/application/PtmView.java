@@ -248,7 +248,7 @@ public class PtmView {
     void onDragDone(MouseEvent event) {
 
     	Platform.runLater(() ->threshLabel.setText(
-    			String.format("%.1f",this.ptmThreshSliderN.getValue())));
+    			String.format("%.3f",this.ptmThreshSliderN.getValue())));
 
         rePaint();
     }
@@ -752,7 +752,7 @@ public class PtmView {
 
 		Platform.runLater(() ->ptmThreshSliderN.setValue(arg_ptmThreshSliderN));
 		Platform.runLater(() ->threshLabel.setText(String.valueOf(arg_ptmThreshSliderN)));
-    	Platform.runLater(() ->threshLabel.setText(String.format("%.1f",this.ptmThreshSliderN.getValue())));
+    	Platform.runLater(() ->threshLabel.setText(String.format("%.3f",this.ptmThreshSliderN.getValue())));
 
 		Platform.runLater(() ->ptm_sp.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,
 				999,arg_detectionCnt,1)));

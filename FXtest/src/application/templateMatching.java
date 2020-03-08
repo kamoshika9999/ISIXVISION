@@ -3,6 +3,7 @@ package application;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -137,9 +138,11 @@ public class templateMatching {
 			    	//Imgproc.matchTemplate(areaRoi, c_tmpara.paternMat[n], result,
 			    	//		Imgproc.TM_CCOEFF_NORMED,c_tmpara.ptm_ptmMat_mask[n]);
 			    	Imgproc.matchTemplate(areaRoi, c_tmpara.paternMat[n], result,
-			    			Imgproc.TM_CCORR_NORMED,c_tmpara.ptm_ptmMat_mask[n]);
+			    			Imgproc.TM_SQDIFF,c_tmpara.ptm_ptmMat_mask[n]);
 
-
+			    	//正規化
+			    	Core.normalize(result,result,0.0,1.0,Core.NORM_MINMAX);
+			    	
 			    	//結果から相関係数がしきい値以下を削除（０にする）
 			    	//Imgproc.threshold(result, result,c_tmpara.matchingThresh[n],1.0, Imgproc.THRESH_TOZERO);
 
@@ -151,7 +154,7 @@ public class templateMatching {
 					List<Point> finedPoint = new ArrayList<>();
 			    	for (int i=0;i<result.rows();i++) {
 			    		for (int j=0;j<result.cols();j++) {
-			    			rt = result.get(i, j)[0];
+			    			rt = 1-result.get(i, j)[0];
 			    			if ( rt > c_tmpara.matchingThresh[n]) {
 			    				flg2 = false;
 			    				//近傍に検出済パターンが無いか確認 テンプレート画像サイズ2/3近傍
@@ -186,14 +189,14 @@ public class templateMatching {
 				    		double r0,r1,r2;
 
 				    		//ｘを求める {(R(-1) - R(+1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
-				    		r0=result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
-				    		r1=result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x-1 )[0];//R(-1)
-				    		r2=result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x+1 )[0];//R(+1)
+				    		r0=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
+				    		r1=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x-1 )[0];//R(-1)
+				    		r2=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x+1 )[0];//R(+1)
 				    		x = finedPoint.get(i).x + (r1-r2)/(2*r1-4*r0+2*r2);
 				    		//yを求める {(R(+1) - R(-1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
-				    		r0=result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
-				    		r1=result.get( (int)finedPoint.get(i).y-1, (int)finedPoint.get(i).x )[0];//R(-1)
-				    		r2=result.get( (int)finedPoint.get(i).y+1, (int)finedPoint.get(i).x )[0];//R(+1)
+				    		r0=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
+				    		r1=1-result.get( (int)finedPoint.get(i).y-1, (int)finedPoint.get(i).x )[0];//R(-1)
+				    		r2=1-result.get( (int)finedPoint.get(i).y+1, (int)finedPoint.get(i).x )[0];//R(+1)
 				    		y = finedPoint.get(i).y + (r1-r2)/(2*r1-4*r0+2*r2);
 
 				    		resultValue[n].x_subPixel.add(x);
