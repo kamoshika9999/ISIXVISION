@@ -2,7 +2,11 @@ package application;
 
 import java.awt.Rectangle;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 
 /**
  * テンプレートマッチングに使用する構造体クラス
@@ -18,20 +22,23 @@ public class TMpara implements Cloneable{
 	public Rectangle[] detectionRects;//パターンマッチング検出エリア
 	public double[] scale;//パターンマッチングの検出に使用するスケール倍率の逆数
 
-	boolean[] ptm_fil_gauusianCheck;
-	double[] ptm_fil_gauusianX;
-	double[] ptm_fil_gauusianY;
-	double[] ptm_fil_gauusianValue;
-	boolean[] ptm_fil_threshholdCheck;
-	boolean[] ptm_fil_threshhold_Invers;
-	double[] ptm_fil_threshholdValue;
-	boolean[] ptm_fil_dilateCheck;
-	double[] ptm_fil_dilateValue;
-	boolean[] ptm_fil_erodeCheck;
-	double[] ptm_fil_erodeValue;
-	boolean[] ptm_fil_cannyCheck;
-	double[] ptm_fil_cannyThresh1;
-	double[] ptm_fil_cannyThresh2;
+	public boolean[] ptm_fil_gauusianCheck;
+	public double[] ptm_fil_gauusianX;
+	public double[] ptm_fil_gauusianY;
+	public double[] ptm_fil_gauusianValue;
+	public boolean[] ptm_fil_threshholdCheck;
+	public boolean[] ptm_fil_threshhold_Invers;
+	public double[] ptm_fil_threshholdValue;
+	public boolean[] ptm_fil_dilateCheck;
+	public double[] ptm_fil_dilateValue;
+	public boolean[] ptm_fil_erodeCheck;
+	public double[] ptm_fil_erodeValue;
+	public boolean[] ptm_fil_cannyCheck;
+	public double[] ptm_fil_cannyThresh1;
+	public double[] ptm_fil_cannyThresh2;
+
+	public Rectangle[] ptm_ptmMat_mask_rect;
+	public Mat[] ptm_ptmMat_mask;
 
 
 	public TMpara() {
@@ -56,6 +63,11 @@ public class TMpara implements Cloneable{
 		ptm_fil_cannyCheck = new boolean[arrayCnt];
 		ptm_fil_cannyThresh1 = new double[arrayCnt];
 		ptm_fil_cannyThresh2 = new double[arrayCnt];
+
+		ptm_ptmMat_mask_rect = new Rectangle[arrayCnt];
+		ptm_ptmMat_mask = new Mat[arrayCnt];
+
+
 	}
 
 	public TMpara(int arg_arrayCnt) {
@@ -81,7 +93,12 @@ public class TMpara implements Cloneable{
 		ptm_fil_erodeValue = new double[arrayCnt];
 		ptm_fil_cannyCheck = new boolean[arrayCnt];
 		ptm_fil_cannyThresh1 = new double[arrayCnt];
-		ptm_fil_cannyThresh2 = new double[arrayCnt];	}
+		ptm_fil_cannyThresh2 = new double[arrayCnt];
+
+		ptm_ptmMat_mask_rect = new Rectangle[arrayCnt];
+		ptm_ptmMat_mask = new Mat[arrayCnt];
+
+	}
 
 	@Override
     public TMpara clone() {
@@ -107,10 +124,30 @@ public class TMpara implements Cloneable{
 		b.ptm_fil_cannyThresh1 = this.ptm_fil_cannyThresh1;
 		b.ptm_fil_cannyThresh2 = this.ptm_fil_cannyThresh2;
 
+
         for(int i=0;i<this.arrayCnt;i++ ) {
             b.paternMat[i] = (Mat)this.paternMat[i].clone();
+            b.ptm_ptmMat_mask[i] = (Mat)this.ptm_ptmMat_mask[i].clone();
+            b.ptm_ptmMat_mask_rect[i] = (Rectangle)this.ptm_ptmMat_mask_rect[i].clone();
             b.detectionRects[i] = (Rectangle)this.detectionRects[i].clone();
         }
         return b;
+    }
+
+
+    //テンプレートマッチング用マスクMat作成
+    public void createMaskMat() {
+		for(int i=0;i<ptm_ptmMat_mask_rect.length;i++) {
+			ptm_ptmMat_mask[i] = new Mat(paternMat[i].height(),paternMat[i].width(),CvType.CV_8UC1,new Scalar(255));
+			if(ptm_ptmMat_mask_rect[i] != null) {
+		    	if( ptm_ptmMat_mask_rect[i].width > 1 && ptm_ptmMat_mask_rect[i].height > 1 ) {
+			    	Imgproc.rectangle(ptm_ptmMat_mask[i],
+			    			new Point(ptm_ptmMat_mask_rect[i].x,ptm_ptmMat_mask_rect[i].y),
+			    			new Point(ptm_ptmMat_mask_rect[i].x+ptm_ptmMat_mask_rect[i].width,
+			    					ptm_ptmMat_mask_rect[i].y+ptm_ptmMat_mask_rect[i].height),
+			    			new Scalar(0),Imgproc.FILLED);
+		    	}
+			}
+		}
     }
 }

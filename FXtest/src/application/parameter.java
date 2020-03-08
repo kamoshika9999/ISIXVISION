@@ -44,6 +44,9 @@ public class parameter implements Serializable {
 
 	final int ptm_arrySize = 4;
 	String[] ptm_FileName;//パターンマッチングの登録Mat
+	Rectangle[] ptm_templatRect;//テンプレートの切り出し位置
+	Rectangle[] ptm_ptmMat_mask_rect;////x,y:テンプレートからの相対位置 width,height:矩形サイズ
+
 	boolean[] ptm_Enable;//パターンマッチング有効無効フラグ
 	int[] ptm_DetectCnt;//検出数
 	public Rectangle[] ptm_rectsDetection;//検出エリア
@@ -78,6 +81,9 @@ public class parameter implements Serializable {
 
 	final int dim_arrySize = 4;
 	String[] dim_FileName;//パターンマッチングの登録Mat
+	Rectangle[] dim_templatRect;//テンプレートの切り出し位置
+	Rectangle[] dim_ptmMat_mask_rect;////x,y:テンプレートからの相対位置 width,height:矩形サイズ
+
 	int[] dim_DetectCnt;//検出数 1個固定
 	public Rectangle[] dim_rectsDetection;//検出エリア
 	double[] dim_detectionScale;//パターンマッチングの検出に使用するスケール倍率の逆数
@@ -167,7 +173,14 @@ public class parameter implements Serializable {
 		ptm_threshValue = new double[ptm_arrySize];
 		ptm_zoomValue_slider = new double[ptm_arrySize];
 		ptm_rectsDetection = new Rectangle[ptm_arrySize];
+		//マスク処理用
+		ptm_templatRect = new Rectangle[ptm_arrySize];
+		ptm_ptmMat_mask_rect = new Rectangle[ptm_arrySize];
 		//--------------寸法測定------------------------
+		//マスク処理用
+		dim_templatRect = new Rectangle[ptm_arrySize];
+		dim_ptmMat_mask_rect = new Rectangle[ptm_arrySize];
+
 		dim_DetectCnt = new int[dim_arrySize];
 		dim_fil_detectionCnt = new int[dim_arrySize];
 		dim_detectionScale = new double[dim_arrySize];
@@ -246,8 +259,14 @@ public class parameter implements Serializable {
 
 			ptm_threshValue[i] = 0.8;
 			ptm_zoomValue_slider[i] = 0.3;
+
+			ptm_templatRect[i] = new Rectangle();
+			ptm_ptmMat_mask_rect[i] = new Rectangle();
 		}
 		for(int i=0;i<dim_arrySize;i++) {
+			dim_templatRect[i] = new Rectangle();
+			dim_ptmMat_mask_rect[i] = new Rectangle();
+
 			dim_DetectCnt[i] = 1;
 			dim_detectionScale[i] = 3;
 			dim_rectsDetection[i] = new Rectangle();

@@ -31,6 +31,8 @@ public class templateMatching {
 			resultValue[i] = new TMResult();
 	}
 
+
+
 	/**
 	 *  パターン検出処理
 	 * @param areaMat 8UC1
@@ -108,6 +110,8 @@ public class templateMatching {
 						1/c_tmpara.scale[n],1/c_tmpara.scale[n],Imgproc.INTER_AREA );
 				Imgproc.resize(c_tmpara.paternMat[n],c_tmpara.paternMat[n], new Size(),
 						1/c_tmpara.scale[n],1/c_tmpara.scale[n],Imgproc.INTER_AREA );
+				Imgproc.resize(c_tmpara.ptm_ptmMat_mask[n],c_tmpara.ptm_ptmMat_mask[n], new Size(),
+						1/c_tmpara.scale[n],1/c_tmpara.scale[n],Imgproc.INTER_AREA );
 
 				c_tmpara.detectionRects[n].x /= c_tmpara.scale[n];
 				c_tmpara.detectionRects[n].y /= c_tmpara.scale[n];
@@ -130,7 +134,10 @@ public class templateMatching {
 			        	Imgproc.cvtColor(c_tmpara.paternMat[n], c_tmpara.paternMat[n], Imgproc.COLOR_BGR2GRAY);//グレースケール化
 			    	}
 
-			    	Imgproc.matchTemplate(areaRoi, c_tmpara.paternMat[n], result, Imgproc.TM_CCOEFF_NORMED);
+			    	//Imgproc.matchTemplate(areaRoi, c_tmpara.paternMat[n], result,
+			    	//		Imgproc.TM_CCOEFF_NORMED,c_tmpara.ptm_ptmMat_mask[n]);
+			    	Imgproc.matchTemplate(areaRoi, c_tmpara.paternMat[n], result,
+			    			Imgproc.TM_CCORR_NORMED,c_tmpara.ptm_ptmMat_mask[n]);
 
 
 			    	//結果から相関係数がしきい値以下を削除（０にする）
@@ -243,6 +250,7 @@ public class templateMatching {
 					resultFlg = false;
 				}
 			}
+
 		}
 		return resultFlg;
 	}

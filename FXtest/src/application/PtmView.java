@@ -52,7 +52,12 @@ public class PtmView {
 
 	public static Mat ptmSrcMat; //メインビューに表示する画像 判定される画像
 	public static Mat arg_ptmMat;//フォルダに保存されているテンプレート画像
+	public static Rectangle arg_ptm_templatRect;
+	public static Rectangle arg_ptmMat_mask_rect;
+
 	private Mat tmp_ptmMat;//決定される前のテンプレート画像 このクラス内でのみ判定に使われる画像
+	private Rectangle tmp_ptm_templatRect;
+	private Rectangle tmp_ptmMat_mask_rect;
 
 	public static int arg_detectionCnt;//探索する画像の数
 	public static double arg_detectionScale;
@@ -172,6 +177,9 @@ public class PtmView {
     private Slider scaleSlider;
     @FXML
     private Label scaleValue;
+    @FXML
+    private Button maskSet;
+
 	private templateMatching templateMatchingInstance;
 
 	@FXML
@@ -196,6 +204,8 @@ public class PtmView {
     	tmpara.detectionRects[0] = tmp_rectsDetection;
     	tmpara.scale[0] = scaleSlider.getValue();
 
+    	tmpara.ptm_ptmMat_mask_rect[0] = (Rectangle)tmp_ptmMat_mask_rect.clone();
+    	tmpara.createMaskMat();//マスク画像作成
     	/*
     	//PtmView.javaではフィルタ適用後にtmplateMatching.javaを呼び出す為設定しない
     	boolean[]ptm_fil_gauusianCheck;
@@ -348,7 +358,11 @@ public class PtmView {
     				draggingRect.x,
     				draggingRect.x+draggingRect.width);
     		tmp_ptmMat = roi.clone();
+    		tmp_ptmMat_mask_rect = new Rectangle(0,0,0,0);
+
             updateImageView(ptmSubView,Utils.mat2Image(tmp_ptmMat));
+            tmp_ptm_templatRect = (Rectangle)draggingRect.clone();
+
         	Platform.runLater(() ->ptmInfo.appendText("登録画像が更新されました\n"));
         	draggingRect.width =0;
         	draggingRect.height =0;
@@ -361,6 +375,27 @@ public class PtmView {
     void onPtmCancel(ActionEvent event) {
     	confimFlg = false;
     	setSlider();
+    }
+
+    @FXML
+    void onMaskSet(ActionEvent event) {
+    	int width = tmp_ptmMat.width();
+    	int height = tmp_ptmMat.height();
+
+    	if( width > draggingRect.width && height > draggingRect.height) {
+    		int left = draggingRect.x - tmp_ptm_templatRect.x;
+    		int top = draggingRect.y - tmp_ptm_templatRect.y;
+
+    		tmp_ptmMat_mask_rect = new Rectangle(left,top,draggingRect.width,draggingRect.height);
+    	}
+		//マスク領域塗りつぶし
+    	Mat disp_ptmMat = tmp_ptmMat.clone();
+    	Imgproc.rectangle(disp_ptmMat,
+    			new Point(tmp_ptmMat_mask_rect.x,tmp_ptmMat_mask_rect.y),
+    			new Point(tmp_ptmMat_mask_rect.x+tmp_ptmMat_mask_rect.width,tmp_ptmMat_mask_rect.y+tmp_ptmMat_mask_rect.height),
+    			new Scalar(0),Imgproc.FILLED);
+        updateImageView(ptmSubView,Utils.mat2Image(disp_ptmMat));
+		rePaint();
     }
 
     @FXML
@@ -396,6 +431,8 @@ public class PtmView {
 
     	arg_detectionScale = scaleSlider.getValue();
 
+    	arg_ptmMat_mask_rect = (Rectangle)tmp_ptmMat_mask_rect.clone();
+    	arg_ptm_templatRect = (Rectangle)tmp_ptm_templatRect.clone();
     	Platform.runLater(() ->ptmInfo.appendText("確定されました\n"));
 
     }
@@ -511,7 +548,7 @@ public class PtmView {
 
     	Platform.runLater(() ->zoomValue_slider.setValue( viewOrgZoom));
     	Platform.runLater(() ->zoomLabel.setText(String.format("%.2f",viewOrgZoom)));
-    	Platform.runLater(() ->this.scaleValue.setText(String.format("%.2f",scaleSlider.getValue())));
+    	Platform.runLater(() ->scaleValue.setText(String.format("%.2f",scaleSlider.getValue())));
     	rePaint();
     }
 
@@ -675,6 +712,14 @@ public class PtmView {
 
 		updateImageView(ptmMainView,Utils.mat2Image(orgMat));
 		updateImageView(ptmMainViewDst,Utils.mat2Image(areaMat));
+
+		double scale = templateMatchingInstance.tmpara.scale[0];
+    	Imgproc.rectangle(ptarnMat,
+    			new Point(tmp_ptmMat_mask_rect.x/scale,tmp_ptmMat_mask_rect.y/scale),
+    			new Point((tmp_ptmMat_mask_rect.x+tmp_ptmMat_mask_rect.width)/scale,
+    					(tmp_ptmMat_mask_rect.y+tmp_ptmMat_mask_rect.height)/scale),
+    			new Scalar(0),Imgproc.FILLED);
+
 		updateImageView(ptmSubViewDst,Utils.mat2Image(ptarnMat));
 
 	}
@@ -743,7 +788,7 @@ public class PtmView {
 		            // 範囲設定
 		            RinearnGraph3Dgraph.setZRange(0.0, 1.0);
 				}
-				
+
 			}else {
 				rinearnFlg=true;
 		        RinearnGraph3Dgraph = new RinearnGraph3D();
@@ -784,9 +829,20 @@ public class PtmView {
     	ptmMainView.setViewport(vRect);
     	ptmMainViewDst.setViewport(vRect);
 
-    	tmp_ptmMat = arg_ptmMat.clone();
     	updateImageView(ptmMainView,Utils.mat2Image(ptmSrcMat));
-        updateImageView(ptmSubView,Utils.mat2Image(tmp_ptmMat));
+
+    	//マスク画像
+    	tmp_ptmMat = arg_ptmMat.clone();
+
+    	tmp_ptm_templatRect = (Rectangle)arg_ptm_templatRect.clone();
+    	tmp_ptmMat_mask_rect = (Rectangle)arg_ptmMat_mask_rect.clone();
+    	Mat disp_ptmMat = tmp_ptmMat.clone();
+    	Imgproc.rectangle(disp_ptmMat,
+    			new Point(tmp_ptmMat_mask_rect.x,tmp_ptmMat_mask_rect.y),
+    			new Point(tmp_ptmMat_mask_rect.x+tmp_ptmMat_mask_rect.width,
+    					tmp_ptmMat_mask_rect.y+tmp_ptmMat_mask_rect.height),
+    			new Scalar(0),Imgproc.FILLED);
+        updateImageView(ptmSubView,Utils.mat2Image(disp_ptmMat));
 
         if( arg_rectsDetection != null ) {
         	tmp_rectsDetection = (Rectangle)arg_rectsDetection.clone();

@@ -797,7 +797,7 @@ public class VisonController{
 				distortionCoefficients = calibrationMats.get("DistortionCoefficients");//歪み係数
 			}
 		}
-		source_video = new VideoCapture("./test.mp4" );//デモモード用動画
+		source_video = new VideoCapture("./test4.mp4" );//デモモード用動画
 		double video_width = source_video.get( Videoio.CAP_PROP_FRAME_WIDTH ); // 横幅を取得
 		double video_height = source_video.get( Videoio.CAP_PROP_FRAME_HEIGHT ); // 縦幅を取得
 		double video_frame_count = source_video.get( Videoio.CAP_PROP_FRAME_COUNT ); // フレーム数を取得
@@ -1524,7 +1524,7 @@ public class VisonController{
         			final double F_ave = F_sum[g]/shotCnt;
         			final double _P2_ave = Double.valueOf(String.format("%.3f",P2_ave)).doubleValue();
         			final double _F_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
-        			
+
         			final double P2_final = P2;
         			final double F_final = F;
         			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,P2_final));
@@ -1565,7 +1565,7 @@ public class VisonController{
 		        	Platform.runLater( () ->judg.setText("NG"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.RED));
 		        	//画像保存
-		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
+		        	if( imgSaveFlg.isSelected() && shotCnt > ngCnt+3 && ngCnt < saveMax_ng && !settingModeFlg) {
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
@@ -2318,6 +2318,8 @@ public class VisonController{
         ptm_tmpara.ptm_fil_cannyCheck = para.ptm_fil_cannyCheck;
         ptm_tmpara.ptm_fil_cannyThresh1 = para.ptm_fil_cannyThresh1;
         ptm_tmpara.ptm_fil_cannyThresh2 = para.ptm_fil_cannyThresh2;
+        ptm_tmpara.ptm_ptmMat_mask_rect = para.ptm_ptmMat_mask_rect;
+        ptm_tmpara.createMaskMat();
 
         ptm_templateMatchingObj = new templateMatching(ptm_tmpara);
     }
@@ -2348,6 +2350,8 @@ public class VisonController{
         dim_tmpara.ptm_fil_cannyCheck = para.dim_fil_cannyCheck;
         dim_tmpara.ptm_fil_cannyThresh1 = para.dim_fil_cannyThresh1;
         dim_tmpara.ptm_fil_cannyThresh2 = para.dim_fil_cannyThresh2;
+        dim_tmpara.ptm_ptmMat_mask_rect = para.dim_ptmMat_mask_rect;
+        dim_tmpara.createMaskMat();
 
         dim_templateMatchingObj = new templateMatching(dim_tmpara);
     }
@@ -2702,6 +2706,10 @@ public class VisonController{
 		PtmView.ptmSrcMat = srcMat.clone();
 
 		PtmView.arg_ptmMat = ptm_ImgMat[pObj.select][selectBtn].clone();
+
+		PtmView.arg_ptmMat_mask_rect = para.ptm_ptmMat_mask_rect[selectBtn];
+		PtmView.arg_ptm_templatRect = para.ptm_templatRect[selectBtn];
+
 		PtmView.arg_detectionCnt = para.ptm_fil_detectionCnt[selectBtn];
 
 		PtmView.arg_gauusianCheck = para.ptm_fil_gauusianCheck[selectBtn];
@@ -2729,6 +2737,9 @@ public class VisonController{
 
 		PtmView.arg_detectionScale = para.ptm_detectionScale[selectBtn];//検出倍率の逆数
 
+
+
+
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("ptmView.fxml"));
 		AnchorPane root = null;
 		try {
@@ -2746,6 +2757,9 @@ public class VisonController{
 
 		if( PtmView.confimFlg ) {
 			ptm_ImgMat[pObj.select][selectBtn] = PtmView.arg_ptmMat;
+			para.ptm_ptmMat_mask_rect[selectBtn] = PtmView.arg_ptmMat_mask_rect;
+			para.ptm_templatRect[selectBtn] = PtmView.arg_ptm_templatRect;
+
 			updateImageView(iv, Utils.mat2Image(ptm_ImgMat[pObj.select][selectBtn]));
 
 			para.ptm_fil_detectionCnt[selectBtn] = PtmView.arg_detectionCnt;
@@ -2779,7 +2793,9 @@ public class VisonController{
 
     }
 
-    /**
+
+
+	/**
      * 画像パターンの登録
      * @param event
      */
@@ -2859,6 +2875,10 @@ public class VisonController{
 		PtmView.ptmSrcMat = srcMat.clone();
 
 		PtmView.arg_ptmMat = dim_ImgMat[pObj.select][selectBtn].clone();
+
+		PtmView.arg_ptmMat_mask_rect = para.dim_ptmMat_mask_rect[selectBtn];
+		PtmView.arg_ptm_templatRect = para.dim_templatRect[selectBtn];
+
 		PtmView.arg_detectionCnt = para.dim_fil_detectionCnt[selectBtn];
 
 		PtmView.arg_gauusianCheck = para.dim_fil_gauusianCheck[selectBtn];
@@ -2904,6 +2924,8 @@ public class VisonController{
 		if( PtmView.confimFlg ) {
 			dim_ImgMat[pObj.select][selectBtn] = PtmView.arg_ptmMat;
 			updateImageView(iv, Utils.mat2Image(dim_ImgMat[pObj.select][selectBtn]));
+			para.dim_ptmMat_mask_rect[selectBtn] = PtmView.arg_ptmMat_mask_rect;
+			para.dim_templatRect[selectBtn] = PtmView.arg_ptm_templatRect;
 
 			para.dim_fil_detectionCnt[selectBtn] = PtmView.arg_detectionCnt;
 
