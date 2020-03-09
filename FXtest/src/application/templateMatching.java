@@ -146,8 +146,10 @@ public class templateMatching {
 			    	//結果から相関係数がしきい値以下を削除（０にする）
 			    	//Imgproc.threshold(result, result,c_tmpara.matchingThresh[n],1.0, Imgproc.THRESH_TOZERO);
 
-			    	int tmpPtWidth =  (int)((double)c_tmpara.paternMat[n].width() * (9.0/10.0));//テンプレート画像の9/10近傍チェック用
-			    	int tmpPtHeight = (int)((double)c_tmpara.paternMat[n].height()* (9.0/10.0));
+			    	int tmpPtWidth =  (int)c_tmpara.paternMat[n].width();
+			    	int tmpPtHeight = (int)c_tmpara.paternMat[n].height();
+			    	int w1,h1;
+			    	double IOU;
 					double rt;
 					boolean flg2;
 			    	List<Double> finedPointThresh = new ArrayList<Double>();
@@ -160,8 +162,19 @@ public class templateMatching {
 			    				//近傍に検出済パターンが無いか確認
 			    				for( int k=0;k<finedPoint.size();k++) {
 			    					Point p = finedPoint.get(k);
-			    					if( p.x  + tmpPtWidth > t_x && p.x - tmpPtWidth < t_x &&
-			    							p.y  + tmpPtHeight > t_y && p.y - tmpPtHeight < t_y) {
+			    					
+			    					if( p.x >= t_x ) {
+			    						w1 = (int)(tmpPtWidth - (p.x - t_x)); 
+			    					}else {
+			    						w1 = (int)(tmpPtWidth - (t_x - p.x) );
+			    					}
+			    					if( p.y >= t_y ) {
+			    						h1 = (int)(tmpPtHeight - (p.y - t_y)); 
+			    					}else {
+			    						h1 = (int)(tmpPtHeight - (t_y - p.y));
+			    					}
+			    					IOU = (double)(w1*h1) / (double)( tmpPtWidth * tmpPtHeight );
+			    					if( IOU > 0.1 ) {
 			    						if(rt > finedPointThresh.get(k)) {
 				    						//近傍あり、閾値が上回る為入れ替え
 			    							finedPoint.set(k, new Point(t_x,t_y));
