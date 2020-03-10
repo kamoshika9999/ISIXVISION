@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.opencv.core.Core;
+import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -149,34 +150,49 @@ public class templateMatching {
 			    	int tmpPtWidth =  (int)c_tmpara.paternMat[n].width();
 			    	int tmpPtHeight = (int)c_tmpara.paternMat[n].height();
 			    	int w1,h1;
-			    	double IOU;
+			    	double IOU = 0;
 					double rt;
 					boolean flg2;
 			    	List<Double> finedPointThresh = new ArrayList<Double>();
 					List<Point> finedPoint = new ArrayList<>();
-			    	for (int t_y=0;t_y<result.rows();t_y++) {
-			    		for (int t_x=0;t_x<result.cols();t_x++) {
-			    			rt = 1-result.get(t_y, t_x)[0];
+
+	    			MinMaxLocResult mmr = Core.minMaxLoc(result);
+	    			Point maxLoc = mmr.maxLoc;
+	    			finedPoint.add(maxLoc);
+	    			finedPointThresh.add(mmr.maxVal);
+	    			result.put((int)maxLoc.y,(int)maxLoc.x,0.0);
+
+	    			while(true) {
+	    				mmr = Core.minMaxLoc(result);
+	    				if( mmr.maxVal == 0.0 ) break;
+
+	    				int i = 0;
+	    				for( Point p:finedPoint ) {
+    						w1 = (int)(tmpPtWidth - Math.abs(p.x - mmr.maxLoc.x));
+    						w1 = w1<0?0:w1;
+    						h1 = (int)(tmpPtHeight - Math.abs(p.y - mmr.maxLoc.y));
+    						h1 = h1<0?0:h1;
+	    					IOU = (double)(w1*h1) / (double)( tmpPtWidth * tmpPtHeight );
+	    				}
+
+	    			}
 			    			if ( rt > c_tmpara.matchingThresh[n]) {
 			    				flg2 = false;
 			    				//近傍に検出済パターンが無いか確認
 			    				for( int k=0;k<finedPoint.size();k++) {
 			    					Point p = finedPoint.get(k);
-			    					
-			    					if( p.x >= t_x ) {
-			    						w1 = (int)(tmpPtWidth - (p.x - t_x)); 
-			    					}else {
-			    						w1 = (int)(tmpPtWidth - (t_x - p.x) );
-			    					}
-			    					if( p.y >= t_y ) {
-			    						h1 = (int)(tmpPtHeight - (p.y - t_y)); 
-			    					}else {
-			    						h1 = (int)(tmpPtHeight - (t_y - p.y));
-			    					}
+		    						w1 = (int)(tmpPtWidth - Math.abs(p.x - t_x));
+		    						w1 = w1<0?0:w1;
+		    						h1 = (int)(tmpPtHeight - Math.abs(p.y - t_y));
+		    						h1 = h1<0?0:h1;
 			    					IOU = (double)(w1*h1) / (double)( tmpPtWidth * tmpPtHeight );
-			    					if( IOU > 0.1 ) {
+
+			    					if( IOU > 0.05 ) {
 			    						if(rt > finedPointThresh.get(k)) {
 				    						//近傍あり、閾値が上回る為入れ替え
+					    					String IOU_str = String.format("%.3f",IOU);
+					    					String rt_str = String.format("%.3f",rt);
+					    					System.out.println("k="+k+"  rt="+rt_str+"  IOU="+IOU_str+"  t_x="+t_x+"  t_y="+t_y);
 			    							finedPoint.set(k, new Point(t_x,t_y));
 				    						finedPointThresh.set(k,rt);
 			    						}
