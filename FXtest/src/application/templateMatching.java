@@ -156,6 +156,16 @@ public class templateMatching {
 			    	List<Double> finedPointThresh = new ArrayList<Double>();
 					List<Point> finedPoint = new ArrayList<>();
 
+					//検出結果Matをリストへ変換
+					List<Point> result_point = new ArrayList<Point>();
+					List<Double> result_value = new ArrayList<Double>();
+					for( int y = 0;y<result.height();y++ ) {
+						for( int x = 0;x<result.width();x++ ) {
+							result_point.
+
+					}
+
+
 	    			MinMaxLocResult mmr = Core.minMaxLoc(result);
 	    			Point maxLoc = mmr.maxLoc;
 	    			finedPoint.add(maxLoc);
