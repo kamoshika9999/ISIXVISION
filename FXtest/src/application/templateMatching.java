@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.opencv.core.Core;
-import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -127,7 +126,8 @@ public class templateMatching {
 						);
 
 
-				if( areaRoi.width() > c_tmpara.paternMat[n].width() && areaRoi.height() > c_tmpara.paternMat[n].height() ) {
+				if( areaRoi.width() > c_tmpara.paternMat[n].width()
+						&& areaRoi.height() > c_tmpara.paternMat[n].height() ) {
 
 			    	result = new Mat(areaRoi.rows() - c_tmpara.paternMat[n].rows() + 1,
 			    			areaRoi.cols() - c_tmpara.paternMat[n].cols() + 1, CvType.CV_32FC1);
@@ -151,94 +151,74 @@ public class templateMatching {
 			    	int tmpPtHeight = (int)c_tmpara.paternMat[n].height();
 			    	int w1,h1;
 			    	double IOU = 0;
-					double rt;
-					boolean flg2;
 			    	List<Double> finedPointThresh = new ArrayList<Double>();
-					List<Point> finedPoint = new ArrayList<>();
+					List<Point> finedPoint = new ArrayList<Point>();
 
+					//**********************************************************************
+					//Non Maximum Suppression処理 resultのスコアはTM_SQDIFFの為逆数を取る
+					//**********************************************************************
 					//検出結果Matをリストへ変換
 					List<Point> result_point = new ArrayList<Point>();
 					List<Double> result_value = new ArrayList<Double>();
 					for( int y = 0;y<result.height();y++ ) {
 						for( int x = 0;x<result.width();x++ ) {
-							result_point.
-
+							if( 1-result.get(y,x)[0] > c_tmpara.matchingThresh[n] ) {
+								result_point.add(new Point(x,y));
+								result_value.add( 1 - result.get(y,x)[0] );//逆数を取って入力
+							}
+						}
 					}
 
-
-	    			MinMaxLocResult mmr = Core.minMaxLoc(result);
-	    			Point maxLoc = mmr.maxLoc;
-	    			finedPoint.add(maxLoc);
-	    			finedPointThresh.add(mmr.maxVal);
-	    			result.put((int)maxLoc.y,(int)maxLoc.x,0.0);
-
-	    			while(true) {
-	    				mmr = Core.minMaxLoc(result);
-	    				if( mmr.maxVal == 0.0 ) break;
-
-	    				int i = 0;
-	    				for( Point p:finedPoint ) {
-    						w1 = (int)(tmpPtWidth - Math.abs(p.x - mmr.maxLoc.x));
-    						w1 = w1<0?0:w1;
-    						h1 = (int)(tmpPtHeight - Math.abs(p.y - mmr.maxLoc.y));
-    						h1 = h1<0?0:h1;
+					while(true) {
+	   					int result_size = result_point.size();
+	   					if( result_size == 0) break;
+						//スコアが一番高い矩形番号を抽出
+	   					int max_No = arrayMax(result_value);
+	   					//スコアが一番高い矩形を出力へ移す
+	   					double t_x = result_point.get(max_No).x;
+	   					double t_y = result_point.get(max_No).y;
+	   					finedPoint.add(new Point(t_x,t_y));
+	   					finedPointThresh.add(result_value.get(max_No));
+	   					result_point.remove(max_No);
+	   					result_value.remove(max_No);
+	   					//入力に残っている各矩形のIOUを計算　閾値以上を入力から削除する
+	   					for(int i=0;i<result_size-1;i++){
+							w1 = (int)(tmpPtWidth - Math.abs(result_point.get(i).x - t_x));
+							w1 = w1<0?0:w1;
+							h1 = (int)(tmpPtHeight - Math.abs(result_point.get(i).y - t_y));
+							h1 = h1<0?0:h1;
 	    					IOU = (double)(w1*h1) / (double)( tmpPtWidth * tmpPtHeight );
+	    					if( IOU > 0.05 ) {
+	    	   					result_point.remove(i);
+	    	   					result_value.remove(i);
+	    	   					result_size--;
+	    	   					i--;
+	    					}
 	    				}
-
-	    			}
-			    			if ( rt > c_tmpara.matchingThresh[n]) {
-			    				flg2 = false;
-			    				//近傍に検出済パターンが無いか確認
-			    				for( int k=0;k<finedPoint.size();k++) {
-			    					Point p = finedPoint.get(k);
-		    						w1 = (int)(tmpPtWidth - Math.abs(p.x - t_x));
-		    						w1 = w1<0?0:w1;
-		    						h1 = (int)(tmpPtHeight - Math.abs(p.y - t_y));
-		    						h1 = h1<0?0:h1;
-			    					IOU = (double)(w1*h1) / (double)( tmpPtWidth * tmpPtHeight );
-
-			    					if( IOU > 0.05 ) {
-			    						if(rt > finedPointThresh.get(k)) {
-				    						//近傍あり、閾値が上回る為入れ替え
-					    					String IOU_str = String.format("%.3f",IOU);
-					    					String rt_str = String.format("%.3f",rt);
-					    					System.out.println("k="+k+"  rt="+rt_str+"  IOU="+IOU_str+"  t_x="+t_x+"  t_y="+t_y);
-			    							finedPoint.set(k, new Point(t_x,t_y));
-				    						finedPointThresh.set(k,rt);
-			    						}
-				    					flg2 = true;
-			    					}
-			    				}
-			    				//近傍に無い場合で見つかったのでリストに追加
-			    				if( !flg2 ) {
-			    					finedPoint.add(new Point(t_x,t_y));
-			    					finedPointThresh.add(rt);
-			    				}
-			    			}
-			    		}
-			    	}
+					}
+					//**********************************************************************
 
 			    	//サブピクセル精度計測
 		    		int _i=0;
 				    	for(int i=0;i<finedPoint.size();i++) {
 					    	try {
 					    		_i = i;
-					    		double x,y;
+					    		double x,y1;
 					    		double r0,r1,r2;
 
 					    		//ｘを求める {(R(-1) - R(+1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
-					    		r0=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
-					    		r1=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x-1 )[0];//R(-1)
-					    		r2=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x+1 )[0];//R(+1)
+					    		r0= 1 - result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
+					    		r1= 1 - result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x-1 )[0];//R(-1)
+					    		r2= 1 - result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x+1 )[0];//R(+1)
 					    		x = finedPoint.get(i).x + (r1-r2)/(2*r1-4*r0+2*r2);
 					    		//yを求める {(R(+1) - R(-1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
-					    		r0=1-result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
-					    		r1=1-result.get( (int)finedPoint.get(i).y-1, (int)finedPoint.get(i).x )[0];//R(-1)
-					    		r2=1-result.get( (int)finedPoint.get(i).y+1, (int)finedPoint.get(i).x )[0];//R(+1)
-					    		y = finedPoint.get(i).y + (r1-r2)/(2*r1-4*r0+2*r2);
+					    		r0= 1 - result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
+					    		r1= 1 - result.get( (int)finedPoint.get(i).y-1, (int)finedPoint.get(i).x )[0];//R(-1)
+					    		r2= 1 - result.get( (int)finedPoint.get(i).y+1, (int)finedPoint.get(i).x )[0];//R(+1)
+					    		y1 = finedPoint.get(i).y + (r1-r2)/(2*r1-4*r0+2*r2);
 
 					    		resultValue[n].x_subPixel.add(x);
-					    		resultValue[n].y_subPixel.add(y);
+					    		resultValue[n].y_subPixel.add(y1);
 
 					    	}catch(Exception e) {
 					    		System.out.println("サブピクセル計測失敗　寸法測定分解能低下の為、計測しません");
@@ -290,9 +270,24 @@ public class templateMatching {
 					resultFlg = false;
 				}
 			}
-
 		}
 		return resultFlg;
 	}
+
+	//**********************************************************************
+	//Non Maximum Suppression処理用
+	//**********************************************************************
+	private int arrayMax(List<Double> ar) {
+		double max = 0;
+		int max_No = 0;
+		for( int i=0;i<ar.size();i++) {
+			if( ar.get(i) > max ) {
+				max = ar.get(i);
+				max_No = i;
+			}
+		}
+		return max_No;
+	}
+
 
 }

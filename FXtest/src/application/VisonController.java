@@ -558,6 +558,8 @@ public class VisonController{
 
 	private int targetSetParaNO = 1;
 
+    @FXML
+    private Button setting_csv_out;
 
 
 
@@ -1844,8 +1846,8 @@ public class VisonController{
      */
     @FXML
     void onWhiteAreaLabelClicked(MouseEvent event) {
-    	int max = (int)(Double.valueOf(whiteRatioLabel.getText())*1.2);
-    	int min = (int)(Double.valueOf(blackRatioLabel.getText())*0.8);
+    	int max = (int)(Double.valueOf(whiteRatioLabel.getText())*1.3);
+    	int min = (int)(Double.valueOf(blackRatioLabel.getText())*0.7);
     	Platform.runLater( () ->whiteRatioMaxSp.setValueFactory(
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,
 				max,
@@ -1997,6 +1999,14 @@ public class VisonController{
 		para.hole_whiteAreaMax[4] = whiteRatioMaxSp.getValue();
 		para.hole_whiteAreaMin[4] = whiteRatioMinSp.getValue();
 
+    	//寸法測定部
+    	Platform.runLater( () ->dimSettingLabel.setText(String.format("%.0f μm/pixel", para.dimPixel_mm*1000)));
+    	Platform.runLater( () ->dim_offset_P2_1.setText(String.valueOf(para.dim_offset_P2[0])));
+    	Platform.runLater( () ->dim_offset_F_1.setText(String.valueOf(para.dim_offset_F[0])));
+    	Platform.runLater( () ->dim_offset_E_1.setText(String.valueOf(para.dim_offset_E[0])));
+    	Platform.runLater( () ->dim_offset_P2_2.setText(String.valueOf(para.dim_offset_P2[1])));
+    	Platform.runLater( () ->dim_offset_F_2.setText(String.valueOf(para.dim_offset_F[1])));
+    	Platform.runLater( () ->dim_offset_E_2.setText(String.valueOf(para.dim_offset_E[1])));
 
 		setSlidbar();
     }
@@ -2291,6 +2301,12 @@ public class VisonController{
 
     }
 
+    //設定をCSVファイルへ書き出す
+    @FXML
+    void onCSVout(ActionEvent event) {
+    	Platform.runLater( () ->this.info2.appendText("設定をCSVファイルへ書き出し（未実装)\n"));
+    }
+
     /**
      * パターンマッチング用パラメータ設定
      */
@@ -2433,6 +2449,14 @@ public class VisonController{
     	draggingRect = (Rectangle)pObj.para[pObj.select].hole_rects[4].clone();
 
     	setBtnPara();
+
+    	//パターンマッチング部
+    	loadPtmImg();
+
+        //パターンマッチング用パラメータ設定
+    	ptm_patternMatchParaSet();
+
+
     }
     @FXML
     void onCheckBtn(ActionEvent event) {
