@@ -129,23 +129,25 @@ public class templateMatching {
 				if( areaRoi.width() > c_tmpara.paternMat[n].width()
 						&& areaRoi.height() > c_tmpara.paternMat[n].height() ) {
 
+					//テンプレートマッチングの結果を格納するMatを準備
 			    	result = new Mat(areaRoi.rows() - c_tmpara.paternMat[n].rows() + 1,
 			    			areaRoi.cols() - c_tmpara.paternMat[n].cols() + 1, CvType.CV_32FC1);
-				    //テンプレートマッチ実行（TM_CCOEFF_NORMED：相関係数＋正規化）
+			    	//テンプレートがカラーの場合グレースケールへ変換
 			    	if(c_tmpara.paternMat[n].type() == CvType.CV_8UC3) {
 			        	Imgproc.cvtColor(c_tmpara.paternMat[n], c_tmpara.paternMat[n], Imgproc.COLOR_BGR2GRAY);//グレースケール化
 			    	}
-
-			    	//Imgproc.matchTemplate(areaRoi, c_tmpara.paternMat[n], result,
-			    	//		Imgproc.TM_CCOEFF_NORMED,c_tmpara.ptm_ptmMat_mask[n]);
+				    //テンプレートマッチ実行（ SSD：マッチング最良値は極小値をとる）
 			    	Imgproc.matchTemplate(areaRoi, c_tmpara.paternMat[n], result,
 			    			Imgproc.TM_SQDIFF,c_tmpara.ptm_ptmMat_mask[n]);
-
+			    	//そのままでは完全一致していないにも関わらず、極小値を正規化すると
+			    	//resuleへマッチング最良値である0.0が格納されてしまう。
+			    	//座標(0,0)へ0を格納してから正規化し前記を補正する
+			    	Imgproc.rectangle(result, new Point(0,0),new Point(0,0),new Scalar(0,0,0),1);
 			    	//正規化
 			    	Core.normalize(result,result,0.0,1.0,Core.NORM_MINMAX);
+			    	//正規化後に座標(0,0)へ1.0を代入し、完全不一致とする
+			    	Imgproc.rectangle(result, new Point(0,0),new Point(0,0),new Scalar(1,0,0),1);
 
-			    	//結果から相関係数がしきい値以下を削除（０にする）
-			    	//Imgproc.threshold(result, result,c_tmpara.matchingThresh[n],1.0, Imgproc.THRESH_TOZERO);
 
 			    	int tmpPtWidth =  (int)c_tmpara.paternMat[n].width();
 			    	int tmpPtHeight = (int)c_tmpara.paternMat[n].height();
@@ -162,7 +164,7 @@ public class templateMatching {
 					List<Double> result_value = new ArrayList<Double>();
 					for( int y = 0;y<result.height();y++ ) {
 						for( int x = 0;x<result.width();x++ ) {
-							if( 1-result.get(y,x)[0] > c_tmpara.matchingThresh[n] ) {
+							if( 1 - result.get(y,x)[0] > c_tmpara.matchingThresh[n] ) {
 								result_point.add(new Point(x,y));
 								result_value.add( 1 - result.get(y,x)[0] );//逆数を取って入力
 							}
@@ -173,7 +175,14 @@ public class templateMatching {
 	   					int result_size = result_point.size();
 	   					if( result_size == 0) break;
 						//スコアが一番高い矩形番号を抽出
-	   					int max_No = arrayMax(result_value);
+	   					int max_No = 0;
+		   					double max_value = 0;
+		   					for( int i=0;i<result_value.size();i++) {
+		   						if( result_value.get(i) > max_value ) {
+		   							max_value = result_value.get(i);
+		   							max_No = i;
+		   						}
+		   					}
 	   					//スコアが一番高い矩形を出力へ移す
 	   					double t_x = result_point.get(max_No).x;
 	   					double t_y = result_point.get(max_No).y;
@@ -191,8 +200,8 @@ public class templateMatching {
 	    					if( IOU > 0.05 ) {
 	    	   					result_point.remove(i);
 	    	   					result_value.remove(i);
-	    	   					result_size--;
-	    	   					i--;
+	    	   					result_size--;//リストをリムーブする為　もう少しましな方法は無いか？
+	    	   					i--;//リストをリムーブする為　もう少しましな方法は無いか？
 	    					}
 	    				}
 					}
@@ -273,21 +282,4 @@ public class templateMatching {
 		}
 		return resultFlg;
 	}
-
-	//**********************************************************************
-	//Non Maximum Suppression処理用
-	//**********************************************************************
-	private int arrayMax(List<Double> ar) {
-		double max = 0;
-		int max_No = 0;
-		for( int i=0;i<ar.size();i++) {
-			if( ar.get(i) > max ) {
-				max = ar.get(i);
-				max_No = i;
-			}
-		}
-		return max_No;
-	}
-
-
 }
