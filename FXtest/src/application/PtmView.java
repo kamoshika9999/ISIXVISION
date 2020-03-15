@@ -187,6 +187,8 @@ public class PtmView {
 	private RinearnGraph3D RinearnGraph3Dgraph;
 	private boolean rinearnFlg = false;
 
+    @FXML
+    private CheckBox dispEntryAreaChk;
 
 
     private void patternMatchParaSet() {
@@ -528,7 +530,7 @@ public class PtmView {
     		viewOrgZoom = zoomValue_slider.getValue();
     	}
     	*/
-    	
+
 
     	double minX = rect.getMinX();
     	double minY = rect.getMinY();
@@ -595,8 +597,11 @@ public class PtmView {
     	dragingFlg = true;
     	draggingRect.x = (int)(ptmMainView.getViewport().getMinX() + e.getX()/(zoom));
     	draggingRect.y = (int)(ptmMainView.getViewport().getMinY() + e.getY()/(zoom));
+    	draggingRect.width=0;
+    	draggingRect.height=0;
 
         onZoomSlider(null);
+        rePaint();
     }
 
     @FXML
@@ -699,8 +704,15 @@ public class PtmView {
     		threshhold[0] = ptmThreshSliderN.getValue();
 
     		//テンプレートマッチング
-    		templateMatchingInstance.detectPattern(areaMat,orgMat,true,true);//実行し結果を表示用Matに上書き
+    		templateMatchingInstance.detectPattern(areaMat,orgMat,true,!dispEntryAreaChk.isSelected());
 
+    		if(dispEntryAreaChk.isSelected()) {
+	    		Imgproc.rectangle(orgMat,
+	    				new Point(tmp_ptm_templatRect.x,tmp_ptm_templatRect.y),
+	    				new Point(tmp_ptm_templatRect.x+tmp_ptm_templatRect.width,
+	    						tmp_ptm_templatRect.y+tmp_ptm_templatRect.height),
+	    				new Scalar(255,127,127),3);
+    		}
 
 	    	final int tmp_cnt = templateMatchingInstance.resultValue[0].cnt;
 	    	final double tmp_detectMax = templateMatchingInstance.resultValue[0].detectMax;
@@ -815,6 +827,12 @@ public class PtmView {
 	        rinearnFlg=true;
 		}
 	}
+
+	@FXML
+    void onDispEntryArea(MouseEvent event) {
+		rePaint();
+    }
+
 
     @FXML
     void initialize() {

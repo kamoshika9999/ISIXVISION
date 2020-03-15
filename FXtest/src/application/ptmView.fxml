@@ -95,5 +95,6 @@
       </Label>
       <Button fx:id="rinearnData" layoutX="981.0" layoutY="486.0" mnemonicParsing="false" onAction="#rinearnDataUpdate" prefHeight="25.0" prefWidth="140.0" text="Rinearn解析" />
       <Button fx:id="maskSet" layoutX="1051.0" layoutY="20.0" mnemonicParsing="false" onAction="#onMaskSet" text="マスク領域" />
+      <CheckBox fx:id="dispEntryAreaChk" layoutX="203.0" layoutY="33.0" mnemonicParsing="false" onMouseClicked="#onDispEntryArea" selected="true" text="登録領域表示" />
    </children>
 </AnchorPane>
