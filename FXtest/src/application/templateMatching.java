@@ -55,6 +55,8 @@ public class templateMatching {
 
 		for(int n=0;n<c_tmpara.arrayCnt;n++) {
 			if( c_tmpara.ptmEnable[n] ) {
+				int searchCnt = 1;
+
 				if( !settingFlg) {
 					c_areaMat = areaMat.clone();
 				}else {
@@ -143,6 +145,8 @@ public class templateMatching {
 			    	//resuleへマッチング最良値である0.0が格納されてしまう。
 			    	//座標(0,0)へ0を格納してから正規化し前記を補正する
 			    	Imgproc.rectangle(result, new Point(0,0),new Point(0,0),new Scalar(0,0,0),1);
+			    	//Imgproc.rectangle(result, new Point(1,0),new Point(1,0),
+			    		//	new Scalar(result.width()*result.height()*(255^2),0,0),1);
 			    	//正規化
 			    	Core.normalize(result,result,0.0,1.0,Core.NORM_MINMAX);
 			    	//正規化後に座標(0,0)へ1.0を代入し、完全不一致とする
@@ -156,9 +160,9 @@ public class templateMatching {
 			    	List<Double> finedPointThresh = new ArrayList<Double>();
 					List<Point> finedPoint = new ArrayList<Point>();
 
-					//**********************************************************************
+					//*************************************************************************************************
 					//Non Maximum Suppression処理 resultのスコアはTM_SQDIFFの為逆数を取る
-					//**********************************************************************
+					//*************************************************************************************************
 					//検出結果Matをリストへ変換
 					List<Point> result_point = new ArrayList<Point>();
 					List<Double> result_value = new ArrayList<Double>();
@@ -205,40 +209,65 @@ public class templateMatching {
 	    					}
 	    				}
 					}
-					//**********************************************************************
-
-			    	//サブピクセル精度計測
-		    		int _i=0;
-				    	for(int i=0;i<finedPoint.size();i++) {
-					    	try {
-					    		_i = i;
-					    		double x,y1;
-					    		double r0,r1,r2;
-
-					    		//ｘを求める {(R(-1) - R(+1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
-					    		r0= 1 - result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
-					    		r1= 1 - result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x-1 )[0];//R(-1)
-					    		r2= 1 - result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x+1 )[0];//R(+1)
-					    		x = finedPoint.get(i).x + (r1-r2)/(2*r1-4*r0+2*r2);
-					    		//yを求める {(R(+1) - R(-1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
-					    		r0= 1 - result.get( (int)finedPoint.get(i).y, (int)finedPoint.get(i).x )[0];//R(0)
-					    		r1= 1 - result.get( (int)finedPoint.get(i).y-1, (int)finedPoint.get(i).x )[0];//R(-1)
-					    		r2= 1 - result.get( (int)finedPoint.get(i).y+1, (int)finedPoint.get(i).x )[0];//R(+1)
-					    		y1 = finedPoint.get(i).y + (r1-r2)/(2*r1-4*r0+2*r2);
-
-					    		resultValue[n].x_subPixel.add(x);
-					    		resultValue[n].y_subPixel.add(y1);
-
-					    	}catch(Exception e) {
-					    		System.out.println("サブピクセル計測失敗　寸法測定分解能低下の為、計測しません");
-					    		resultFlg = false;
-					    		resultValue[n].x_subPixel.add(finedPoint.get(_i).x );
-					    		resultValue[n].y_subPixel.add(finedPoint.get(_i).y);
-					    	}
-				    	}
+					//*************************************************************************************************
 
 					resultValue[n].cnt = finedPoint.size();
-			    	for(int i=0;i<finedPoint.size();i++) {
+					//閾値降順に並べ替え
+					double tmpRatio;
+					Point tmpPoint;
+					for(int i=0;i<finedPoint.size()-1;i++) {
+						for( int j=i+1;j<finedPoint.size();j++) {
+							if( finedPointThresh.get(i) < finedPointThresh.get(j) ) {
+
+								tmpRatio = finedPointThresh.get(i);
+								tmpPoint = finedPoint.get(i);
+
+								finedPointThresh.set(i, finedPointThresh.get(j));
+								finedPointThresh.set(j,tmpRatio);
+								finedPoint.set(i, tmpPoint);
+								finedPoint.set(j, tmpPoint);
+							}
+						}
+					}
+					searchCnt = c_tmpara.matchingTreshDetectCnt[n]>finedPoint.size()?
+										finedPoint.size() : c_tmpara.matchingTreshDetectCnt[n];
+
+					//*************************************************************************************************
+			    	//サブピクセル精度計測
+					//方法:パラボラフィッテング
+					//R(0):検出位置の類似度 R(-1),R(+0):検出位置隣の類似度
+					//類似度の分布は２次関数となることを前提とする
+					//*************************************************************************************************
+		    		int index=0;
+			    	while( index < searchCnt ) {
+				    	try {//検出位置がMat resultの端にあった場合インディックスエラーとなるので例外で処理する
+				    		double x,y;
+				    		double r0,r1,r2;
+
+				    		//ｘを求める {(R(-1) - R(+1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
+				    		r0= 1 - result.get( (int)finedPoint.get(index).y, (int)finedPoint.get(index).x )[0];//R(0)
+				    		r1= 1 - result.get( (int)finedPoint.get(index).y, (int)finedPoint.get(index).x-1 )[0];//R(-1)
+				    		r2= 1 - result.get( (int)finedPoint.get(index).y, (int)finedPoint.get(index).x+1 )[0];//R(+1)
+				    		x = finedPoint.get(index).x + (r1-r2)/(2*r1-4*r0+2*r2);
+				    		//yを求める {(R(+1) - R(-1)}/{2*R(-1) - 4*R(0) + 2*R(+1)}
+				    		r0= 1 - result.get( (int)finedPoint.get(index).y, (int)finedPoint.get(index).x )[0];//R(0)
+				    		r1= 1 - result.get( (int)finedPoint.get(index).y-1, (int)finedPoint.get(index).x )[0];//R(-1)
+				    		r2= 1 - result.get( (int)finedPoint.get(index).y+1, (int)finedPoint.get(index).x )[0];//R(+1)
+				    		y = finedPoint.get(index).y + (r1-r2)/(2*r1-4*r0+2*r2);
+
+				    		resultValue[n].x_subPixel.add(x);
+				    		resultValue[n].y_subPixel.add(y);
+
+				    	}catch(Exception e) {
+				    		System.out.println("サブピクセル計測失敗　寸法測定分解能低下。検出位置がサーチ範囲の端にかかっています。");
+				    		resultValue[n].x_subPixel.add(finedPoint.get(index).x );
+				    		resultValue[n].y_subPixel.add(finedPoint.get(index).y);
+				    	}
+				    	index++;
+			    	}
+					//*************************************************************************************************
+
+			    	for(int i=0;i<searchCnt;i++) {
 	    		    	Point p= finedPoint.get(i);
 	    		    	double ratio = finedPointThresh.get(i);
 
@@ -252,7 +281,7 @@ public class templateMatching {
 								Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),7);
 	    		    	resultValue[n].x.add((int)((c_tmpara.detectionRects[n].x+p.x)*c_tmpara.scale[n]));//X座標格納
 	    		    	resultValue[n].y.add((int)((c_tmpara.detectionRects[n].y+p.y)*c_tmpara.scale[n]));//y座標格納
-	    		    	resultValue[n].ratio.add(ratio);//マッチング度格納
+	    		    	resultValue[n].ratio.add(ratio);//類似度格納
 	    		    	resultValue[n].detectMax = resultValue[n].detectMax<ratio?ratio:resultValue[n].detectMax;
 	    		    	resultValue[n].detectMin = resultValue[n].detectMin>ratio?ratio:resultValue[n].detectMin;
 	    		    	resultValue[n].detectAve += finedPointThresh.get(i);
@@ -265,7 +294,7 @@ public class templateMatching {
 	    		    			(double)c_tmpara.detectionRects[n].y*c_tmpara.scale[n] +
 	    		    			resultValue[n].y_subPixel.get(i)*c_tmpara.scale[n]+
 	    		    			c_tmpara.paternMat[n].height()*c_tmpara.scale[n]/2);
-	    		    	//十字マーク表示
+	    		    	//クロスマーク表示
 	    		    	int orgX = (int)( resultValue[n].centerPositionX.get(i).doubleValue() );
 	    		    	int orgY = (int)( resultValue[n].centerPositionY.get(i).doubleValue() );
 	    		    	if(patternDispChk)Imgproc.line(dstMat,new Point(orgX-20,orgY-20),new Point(orgX+20,orgY+20),
@@ -274,8 +303,8 @@ public class templateMatching {
 		    							new Scalar(0,200,200),3);
 			   		 }
 				}
-				resultValue[n].detectAve /= (double)resultValue[n].cnt;
-				if( resultValue[n].cnt != c_tmpara.matchingTreshDetectCnt[n] ) {
+				resultValue[n].detectAve /= (double)searchCnt;
+				if( resultValue[n].cnt < c_tmpara.matchingTreshDetectCnt[n] ) {
 					resultFlg = false;
 				}
 			}

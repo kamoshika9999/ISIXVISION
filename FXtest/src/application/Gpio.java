@@ -140,6 +140,7 @@ public class Gpio {
                 port.writeString("adc read 1\r");
                 Thread.sleep(sleepTime);
 		        rt = port.readString();
+                Thread.sleep(sleepTime);
 		        if( rt != null)  {
 			        String tmpStr[] = rt.split("\n\r");
 			        String tmprt ="0";

@@ -455,7 +455,7 @@
       </Label>
       <Label layoutX="493.0" layoutY="63.0" text="②threshhold" textFill="#d2ee00" />
       <Label layoutX="332.0" layoutY="183.0" text="③deilate" textFill="#d7ed07" />
-      <Label fx:id="fpsLabel" layoutX="5.0" layoutY="20.0" prefHeight="17.0" prefWidth="90.0" text="FPS" />
+      <Label fx:id="fpsLabel" layoutX="5.0" layoutY="20.0" prefHeight="17.0" prefWidth="174.0" text="FPS" />
       <Circle fx:id="triggerCCircle" fill="LIME" layoutX="668.0" layoutY="23.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" />
       <Button fx:id="clearBtn" layoutX="670.0" layoutY="258.0" mnemonicParsing="false" onAction="#onAllClear" prefHeight="39.0" prefWidth="63.0" text="ALL CLEAR">
          <effect>

@@ -1163,7 +1163,7 @@ public class VisonController{
 	    		fpsEnd = System.currentTimeMillis();
 
 	    		fps = fpsCnt/((fpsEnd - fpsFirst)/1000.0);
-	    		Platform.runLater( () ->fpsLabel.setText(String.format("FPS=%.3f", fps)));
+	    		Platform.runLater( () ->fpsLabel.setText(String.format("FPS=%.3f",fps)));
 
 	    		fpsFirst = System.currentTimeMillis();
 	    		fpsCnt=0;
@@ -2727,7 +2727,7 @@ public class VisonController{
     	parameter para = pObj.para[pObj.select];
 
 		//パラメーターを渡す
-		PtmView.ptmSrcMat = srcMat.clone();
+		PtmView.arg_ptmSrcMat = srcMat.clone();
 
 		PtmView.arg_ptmMat = ptm_ImgMat[pObj.select][selectBtn].clone();
 
@@ -2896,7 +2896,7 @@ public class VisonController{
     	parameter para = pObj.para[pObj.select];
 
 		//パラメーターを渡す
-		PtmView.ptmSrcMat = srcMat.clone();
+		PtmView.arg_ptmSrcMat = srcMat.clone();
 
 		PtmView.arg_ptmMat = dim_ImgMat[pObj.select][selectBtn].clone();
 

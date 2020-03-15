@@ -50,7 +50,7 @@ public class PtmView {
 	double[] threshhold = new double[1];
 
 
-	public static Mat ptmSrcMat; //メインビューに表示する画像 判定される画像
+	public static Mat arg_ptmSrcMat; //メインビューに表示する画像 判定される画像
 	public static Mat arg_ptmMat;//フォルダに保存されているテンプレート画像
 	public static Rectangle arg_ptm_templatRect;
 	public static Rectangle arg_ptmMat_mask_rect;
@@ -193,7 +193,7 @@ public class PtmView {
     	TMpara tmpara = new TMpara( 1 );
 
     	if( ptm_sp.getValue() == null ) {
-    		tmpara.matchingTreshDetectCnt[0] = 0;
+    		tmpara.matchingTreshDetectCnt[0] = 20;
     	}else {
     		tmpara.matchingTreshDetectCnt[0] = ptm_sp.getValue();
     	}
@@ -352,7 +352,7 @@ public class PtmView {
     @FXML
     void onPatternSet(ActionEvent event) {
     	if( this.draggingRect.width > 10 ) {
-    		Mat roi = ptmSrcMat.submat(
+    		Mat roi = arg_ptmSrcMat.submat(
     				draggingRect.y,
     				draggingRect.y+draggingRect.height,
     				draggingRect.x,
@@ -468,7 +468,7 @@ public class PtmView {
     		rePaint();
     	}
     	double fps_ = fps;
-		Platform.runLater( () ->ptmInfo.appendText( String.format("FPS=%.1f", fps_) +"\n"));
+		Platform.runLater( () ->ptmInfo.appendText( String.format("FPS=%.1f\n1shot計測時間=%.0f mSec\n",fps_,1/fps_*1000)));
     	Platform.runLater( () ->ptmInfo.appendText("FPS計測終了\n"));
 
     }
@@ -520,13 +520,15 @@ public class PtmView {
     void onZoomSlider(MouseEvent event) {
     	vRect = ptmMainView.getViewport();
     	Rectangle2D rect = ptmMainView.getViewport();
-    	double imgWidth = ptmMainView.getImage().getWidth();//に格納されているイメージの幅
-    	double imgHeight = ptmMainView.getImage().getHeight();
+    	double imgWidth = arg_ptmSrcMat.width();//ptmMainView.getImage().getWidth();//に格納されているイメージの幅
+    	double imgHeight = arg_ptmSrcMat.height();//ptmMainView.getImage().getHeight();
 
-
+    	/*
     	if( ptmMainView.getFitWidth() < imgWidth * zoomValue_slider.getValue() ) {
     		viewOrgZoom = zoomValue_slider.getValue();
     	}
+    	*/
+    	
 
     	double minX = rect.getMinX();
     	double minY = rect.getMinY();
@@ -568,11 +570,11 @@ public class PtmView {
         double mX = e.getX()/zoom;
         double mY = e.getY()/zoom;
 
-        if( mX > ptmSrcMat.width() ) {
-        	mX = ptmSrcMat.width()-1;
+        if( mX > arg_ptmSrcMat.width() ) {
+        	mX = arg_ptmSrcMat.width()-1;
         }
-        if( mY > ptmSrcMat.height() ) {
-        	mY = ptmSrcMat.height()-1;
+        if( mY > arg_ptmSrcMat.height() ) {
+        	mY = arg_ptmSrcMat.height()-1;
         }
         draggingRect.width = (int)(ptmMainView.getViewport().getMinX() + mX - x);
         draggingRect.height =(int)(ptmMainView.getViewport().getMinY() + mY - y);
@@ -594,7 +596,7 @@ public class PtmView {
     	draggingRect.x = (int)(ptmMainView.getViewport().getMinX() + e.getX()/(zoom));
     	draggingRect.y = (int)(ptmMainView.getViewport().getMinY() + e.getY()/(zoom));
 
-        rePaint();
+        onZoomSlider(null);
     }
 
     @FXML
@@ -625,8 +627,8 @@ public class PtmView {
 
 		templateMatchingInstance.tmpara.matchingThresh[0] = this.ptmThreshSliderN.getValue();
 
-		Mat areaMat = ptmSrcMat.clone();
-		Mat orgMat = ptmSrcMat.clone();
+		Mat areaMat = arg_ptmSrcMat.clone();
+		Mat orgMat = arg_ptmSrcMat.clone();
 		Mat ptarnMat = templateMatchingInstance.tmpara.paternMat[0];//登録パターンMatの参照を入れる
 
 		if( orgMat.width() < draggingRect.x+draggingRect.width) {
@@ -708,10 +710,10 @@ public class PtmView {
 	    	Platform.runLater(() ->detectRationMax.setText(String.format("%.3f",tmp_detectMax)));
 	    	Platform.runLater(() ->detectRationMin.setText(String.format("%.3f",tmp_detectMin)));
 	    	Platform.runLater(() ->detectRationAve.setText(String.format("%.3f",tmp_detectAve)));
+			updateImageView(ptmMainViewDst,Utils.mat2Image(areaMat));
     	}
 
 		updateImageView(ptmMainView,Utils.mat2Image(orgMat));
-		updateImageView(ptmMainViewDst,Utils.mat2Image(areaMat));
 
 		double scale = templateMatchingInstance.tmpara.scale[0];
     	Imgproc.rectangle(ptarnMat,
@@ -756,7 +758,6 @@ public class PtmView {
 
 		Platform.runLater(() ->ptm_sp.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,
 				999,arg_detectionCnt,1)));
-
 
 		rePaint();
 
@@ -822,14 +823,6 @@ public class PtmView {
         moveDraggingPoint[1] = new Point();//ドラッグ移動終点
         moveDragingFlg = false;
 
-        viewOrgZoom = arg_zoomValue_slider;
-        if( viewOrgZoom == 0.0 ) viewOrgZoom = 0.3;
-        vRect = new Rectangle2D( 0,0,ptmMainView.getFitWidth()/viewOrgZoom,
-        										ptmMainView.getFitHeight()/viewOrgZoom);
-    	ptmMainView.setViewport(vRect);
-    	ptmMainViewDst.setViewport(vRect);
-
-    	updateImageView(ptmMainView,Utils.mat2Image(ptmSrcMat));
 
     	//マスク画像
     	tmp_ptmMat = arg_ptmMat.clone();
@@ -837,11 +830,6 @@ public class PtmView {
     	tmp_ptm_templatRect = (Rectangle)arg_ptm_templatRect.clone();
     	tmp_ptmMat_mask_rect = (Rectangle)arg_ptmMat_mask_rect.clone();
     	Mat disp_ptmMat = tmp_ptmMat.clone();
-    	Imgproc.rectangle(disp_ptmMat,
-    			new Point(tmp_ptmMat_mask_rect.x,tmp_ptmMat_mask_rect.y),
-    			new Point(tmp_ptmMat_mask_rect.x+tmp_ptmMat_mask_rect.width,
-    					tmp_ptmMat_mask_rect.y+tmp_ptmMat_mask_rect.height),
-    			new Scalar(0),Imgproc.FILLED);
         updateImageView(ptmSubView,Utils.mat2Image(disp_ptmMat));
 
         if( arg_rectsDetection != null ) {
@@ -851,15 +839,8 @@ public class PtmView {
         }
 
         setSlider();
-
-
-        try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-        rePaint();
+        viewOrgZoom = arg_zoomValue_slider;
+        onZoomSlider(null);
 
     }
 }
