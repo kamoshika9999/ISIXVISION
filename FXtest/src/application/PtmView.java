@@ -712,6 +712,11 @@ public class PtmView {
 	    				new Point(tmp_ptm_templatRect.x+tmp_ptm_templatRect.width,
 	    						tmp_ptm_templatRect.y+tmp_ptm_templatRect.height),
 	    				new Scalar(255,127,127),3);
+	        	Imgproc.rectangle(orgMat,
+	        			new Point(tmp_ptm_templatRect.x+tmp_ptmMat_mask_rect.x,tmp_ptm_templatRect.y+tmp_ptmMat_mask_rect.y),
+	        			new Point(tmp_ptm_templatRect.x+tmp_ptmMat_mask_rect.x+tmp_ptmMat_mask_rect.width,
+	        					tmp_ptm_templatRect.y+tmp_ptmMat_mask_rect.y+tmp_ptmMat_mask_rect.height),
+	        			new Scalar(10,10,10),10);
     		}
 
 	    	final int tmp_cnt = templateMatchingInstance.resultValue[0].cnt;
@@ -844,10 +849,14 @@ public class PtmView {
 
     	//マスク画像
     	tmp_ptmMat = arg_ptmMat.clone();
-
+        
     	tmp_ptm_templatRect = (Rectangle)arg_ptm_templatRect.clone();
     	tmp_ptmMat_mask_rect = (Rectangle)arg_ptmMat_mask_rect.clone();
     	Mat disp_ptmMat = tmp_ptmMat.clone();
+    	Imgproc.rectangle(disp_ptmMat,
+    			new Point(tmp_ptmMat_mask_rect.x,tmp_ptmMat_mask_rect.y),
+    			new Point(tmp_ptmMat_mask_rect.x+tmp_ptmMat_mask_rect.width,tmp_ptmMat_mask_rect.y+tmp_ptmMat_mask_rect.height),
+    			new Scalar(0),Imgproc.FILLED);
         updateImageView(ptmSubView,Utils.mat2Image(disp_ptmMat));
 
         if( arg_rectsDetection != null ) {
