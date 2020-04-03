@@ -90,6 +90,7 @@ public class VisonController{
 	public static boolean debugFlg = false;
 
 	public int shotCnt = 0; //オールクリアしてからのカウント数
+	boolean triggerFlg=true; //シャッター間隔が2秒以上あいた時にセットされる
 
 	final int saveMax_all = 255;
 	final int saveMax_ng = 400;
@@ -747,6 +748,11 @@ public class VisonController{
     	srcMat = new Mat();
     }
 
+    /**
+     * メインループ　初期設定からトリガ取得など
+     * @param event
+     * @throws InterruptedException
+     */
     @FXML
     void onTest(ActionEvent event) throws InterruptedException {
     	demoFlg = false;
@@ -910,6 +916,7 @@ public class VisonController{
 			Runnable triggerLoop = new Runnable() {
 				String rt = "-1";//nullを避ける為-1をいれておく
 				long debugCnt = 0;
+				private long triggerTimer=System.currentTimeMillis();
 
 				@Override
 				public void run() {
@@ -920,6 +927,11 @@ public class VisonController{
 							System.out.println("GPIO READ/WRITE" + debugCnt);
 							debugCnt++;
 						}
+						//生産リスタート時画像保存回避フラグ
+						if( System.currentTimeMillis() - triggerTimer > 2000) {
+							triggerFlg = true;
+						}
+
 						//オールクリア信号受信
 						rt = Gpio.clearSignal();
 						if( rt == "1" ) {
@@ -946,6 +958,7 @@ public class VisonController{
 
 								shutterFlg = true;
 								offShutterFlg = true;
+								triggerTimer=System.currentTimeMillis();
 					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
 					    		//Platform.runLater( () ->info2.appendText("シャッターON"));
 							}
@@ -1567,7 +1580,7 @@ public class VisonController{
 		        	Platform.runLater( () ->judg.setText("NG"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.RED));
 		        	//画像保存
-		        	if( imgSaveFlg.isSelected() && shotCnt > ngCnt+3 && ngCnt < saveMax_ng && !settingModeFlg) {
+		        	if( !triggerFlg && imgSaveFlg.isSelected() && shotCnt > ngCnt+3 && ngCnt < saveMax_ng && !settingModeFlg) {
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
@@ -2538,7 +2551,7 @@ public class VisonController{
     	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
     	Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094;"));
 
-    	Platform.runLater( () ->FileClass.fileClass(new File("./ng_image/")) );
+    	//Platform.runLater( () ->FileClass.fileClass(new File("./ng_image/")) );
     	//Platform.runLater( () ->FileClass.fileClass(new File("./ok_image/")) );
 
     	Platform.runLater(() ->this.imgNG.setImage(null));
@@ -2546,7 +2559,7 @@ public class VisonController{
     	Platform.runLater(() ->info2.clear());
     	Platform.runLater(() ->info2.setText(initInfo2));
     	//Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
-    	Platform.runLater(() ->info2.appendText("NG画像ファイルを全て削除しました。\n"));
+    	//Platform.runLater(() ->info2.appendText("NG画像ファイルを全て削除しました。\n"));
 
     	//チャートデーターのクリア
     	for(int i=0;i<2;i++) {
@@ -2578,6 +2591,7 @@ public class VisonController{
 		E_sum[0] = 0;E_sum[1] = 0;
 
 		shotCnt= 0;
+		triggerFlg=false;
     }
 
     @FXML
