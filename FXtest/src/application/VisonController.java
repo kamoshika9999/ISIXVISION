@@ -907,11 +907,9 @@ public class VisonController{
 		timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
 
 		if( Gpio.openFlg ) {
-			if( Gpio.OkSignalON() ) {
-				Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
-			}else {
-				Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
-			}
+			Gpio.ngSignalON();
+			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+
 			//トリガクラス
 			Runnable triggerLoop = new Runnable() {
 				String rt = "-1";//nullを避ける為-1をいれておく
@@ -928,8 +926,9 @@ public class VisonController{
 							debugCnt++;
 						}
 						//生産リスタート時画像保存回避フラグ
-						if( System.currentTimeMillis() - triggerTimer > 2000) {
+						if( System.currentTimeMillis() - triggerTimer > 1000*60*3) {
 							triggerFlg = true;
+							Gpio.ngSignalON();
 						}
 
 						//オールクリア信号受信
