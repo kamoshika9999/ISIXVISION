@@ -929,9 +929,20 @@ public class VisonController{
 						if( System.currentTimeMillis() - triggerTimer > 1000*60*3) {
 							triggerFlg = true;
 							Gpio.ngSignalON();
-						}
+							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));						}
 
 						//オールクリア信号受信
+						/*
+						try {
+							if( Gpio.useFlg ) {
+								System.out.println("GPIO useFlg=Treu:CLER not signal");
+								Thread.sleep(30);
+							}
+						}catch(Exception e) {
+							System.out.println(e);
+						}
+						*/
+
 						rt = Gpio.clearSignal();
 						if( rt == "1" ) {
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
@@ -943,6 +954,16 @@ public class VisonController{
 						}
 						//シャッター信号受信
 						//readIO ="shutterSignal";
+						/*
+						try {
+							if( Gpio.useFlg ) {
+								Thread.sleep(30);
+								System.out.println("GPIO useFlg=Treu:Shutter not signal");
+							}
+						}catch(Exception e) {
+							System.out.println(e);
+						}
+						*/
 						rt = Gpio.shutterSignal();
 						//Platform.runLater( () ->info1.setText(Gpio.useFlg  + String.valueOf(loopcnt)+  "  GPIO 0(SHUTTER TRIGGER) = " + rt));
 
@@ -1568,7 +1589,10 @@ public class VisonController{
 
 	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
 		        //最終判定
-	        	if(judgCnt==4 && tmFlg ) {
+	        	if( shotCnt < 11) {//10ショットまでは判定無視
+		        	Platform.runLater( () ->judg.setText(String.valueOf(10-shotCnt)));
+		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
+	        	}else if(judgCnt==4 && tmFlg ) {
 		        	Platform.runLater( () ->judg.setText("OK"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
 		        	//画像保存
@@ -1579,7 +1603,7 @@ public class VisonController{
 		        	Platform.runLater( () ->judg.setText("NG"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.RED));
 		        	//画像保存
-		        	if( !triggerFlg && imgSaveFlg.isSelected() && shotCnt > ngCnt+3 && ngCnt < saveMax_ng && !settingModeFlg) {
+		        	if( !triggerFlg && imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
@@ -2589,8 +2613,11 @@ public class VisonController{
 		F_sum[0] = 0;F_sum[1] = 0;
 		E_sum[0] = 0;E_sum[1] = 0;
 
+
 		shotCnt= 0;
 		triggerFlg=false;
+    	Platform.runLater( () ->judg.setText("-"));
+    	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
     }
 
     @FXML

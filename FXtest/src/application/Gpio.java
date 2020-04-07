@@ -123,7 +123,10 @@ public class Gpio {
 			return "0";
 		}
 		//------------------
-		if( useFlg ) return "0";
+		if( useFlg ) {
+			System.out.println("GPIO USE :clearSginal()");
+			return "0";
+		}
 		useFlg = true;
 
 		if( !openFlg ) {
@@ -137,16 +140,17 @@ public class Gpio {
 	        if( adcFlg ) {
 
                 port.purgePort(SerialPort.PURGE_RXCLEAR | SerialPort.PURGE_TXCLEAR);
+                Thread.sleep(sleepTime);
                 port.writeString("adc read 1\r");
                 Thread.sleep(sleepTime);
 		        rt = port.readString();
-                Thread.sleep(sleepTime);
 		        if( rt != null)  {
 			        String tmpStr[] = rt.split("\n\r");
 			        String tmprt ="0";
 			        for( int i=0;i<tmpStr.length;i++ ) {
 			        	if( tmpStr[i].matches(".*read.*") ) {
 			        		tmprt = tmpStr[i+1];
+			        		System.out.println("adc read 1(Clear)="+ tmprt);
 			        		break;
 			        	}
 			        }
@@ -207,7 +211,10 @@ public class Gpio {
 			return "1";
 		}
 		//------------------
-		if( useFlg ) return "0";
+		if( useFlg ) {
+			System.out.println("GPIO USE :shutterSignal");
+			return "0";
+		}
 		useFlg = true;
 
 		if( !openFlg ) {
@@ -229,7 +236,7 @@ public class Gpio {
 			        for( int i=0;i<tmpStr.length;i++ ) {
 			        	if( tmpStr[i].matches(".*read.*") ) {
 			        		tmprt = tmpStr[i+1];
-			        		System.out.println("adc read 0"+ tmprt);
+			        		System.out.println("adc read 0(Shutter)="+ tmprt);
 			        		break;
 			        	}
 			        }
