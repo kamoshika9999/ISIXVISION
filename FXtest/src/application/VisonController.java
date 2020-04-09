@@ -1589,19 +1589,19 @@ public class VisonController{
 
 	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
 		        //最終判定
-	        	if( shotCnt < 11) {//10ショットまでは判定無視
-		        	Platform.runLater( () ->judg.setText(String.valueOf(10-shotCnt)));
-		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
+	        	if( shotCnt < 21 ) { //20ショットまでは判定無視
+		        	Platform.runLater( () ->judg.setText( String.valueOf(20-shotCnt)) );
+		        	Platform.runLater( () ->judg.setTextFill( Color.GREEN) );
 	        	}else if(judgCnt==4 && tmFlg ) {
-		        	Platform.runLater( () ->judg.setText("OK"));
-		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
+		        	Platform.runLater( () ->judg.setText("OK") );
+		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN) );
 		        	//画像保存
 		        	if( this.imgSaveFlg_all.isSelected() ) {
 		        		saveImgOK( saveSrcMat );
 		        	}
 		        }else {
 		        	Platform.runLater( () ->judg.setText("NG"));
-		        	Platform.runLater( () ->judg.setTextFill(Color.RED));
+		        	Platform.runLater( () ->judg.setTextFill(Color.RED) );
 		        	//画像保存
 		        	if( !triggerFlg && imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
 		        		saveImgNG( saveSrcMat,fileString);
