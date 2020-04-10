@@ -112,6 +112,9 @@ public class VisonController{
     public static VideoCapture capObj = new VideoCapture();
 	public static ScheduledExecutorService timer;
 	public static ScheduledExecutorService timer2;
+    //照明キャリブレーション用
+	private static ScheduledExecutorService timerCalib;
+	private boolean calibLiteFlg;//キャリブレーション中か？
 
 	//穴面積判定用
 	private long whiteAreaAverage;
@@ -562,6 +565,11 @@ public class VisonController{
     @FXML
     private Button setting_csv_out;
 
+    @FXML
+    private Button calib_btn;//照明キャリブレーションボタン
+    @FXML
+    private Label calib_label;//キャリブレーション用輝度平均表示
+
 
 
     @FXML
@@ -926,10 +934,16 @@ public class VisonController{
 							debugCnt++;
 						}
 						//生産リスタート時画像保存回避フラグ
-						if( System.currentTimeMillis() - triggerTimer > 1000*60*3) {
+						if( !triggerFlg && System.currentTimeMillis() - triggerTimer > 1000*10) {
 							triggerFlg = true;
 							Gpio.ngSignalON();
-							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));						}
+							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+						}
+						if(	calibLiteFlg ) {
+							Gpio.ngSignalON();
+							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+
+						}
 
 						//オールクリア信号受信
 						/*
@@ -1178,11 +1192,6 @@ public class VisonController{
     	}
     	if( srcMat.width() < 1) return;
 
-
-    	//サブピクセル化
-    	//Mat tmpMat = new Mat();
-    	//Imgproc.getRectSubPix(srcMat, new Size(1920,1080), new Point(1920/2,1080/2), tmpMat);
-    	//System.out.println("SUBPixelSize="+tmpMat.width()+" : "+tmpMat.height());
 
     	try {
 	    	if( this.triggerCCircle.getFill() != Color.YELLOW) {
@@ -1592,7 +1601,7 @@ public class VisonController{
 	        	if( shotCnt < 21 ) { //20ショットまでは判定無視
 		        	Platform.runLater( () ->judg.setText( String.valueOf(20-shotCnt)) );
 		        	Platform.runLater( () ->judg.setTextFill( Color.GREEN) );
-	        	}else if(judgCnt==4 && tmFlg ) {
+	        	}else if(judgCnt==4 && tmFlg ) {//judgCntが穴判定  tmFlgがテンプレートマッチング判定
 		        	Platform.runLater( () ->judg.setText("OK") );
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN) );
 		        	//画像保存
@@ -2615,13 +2624,39 @@ public class VisonController{
 
 
 		shotCnt= 0;
-		triggerFlg=false;
+		triggerFlg=false;//NG画像保存開始
     	Platform.runLater( () ->judg.setText("-"));
     	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
     }
 
+	/**
+	 * 設定モード切替
+	 * @param event
+	 */
     @FXML
     void onSettingModeBtn(ActionEvent event) {
+    	if( !settingModeFlg) {//ロックするときはパスワード不要
+		    FXMLLoader loader = new FXMLLoader(getClass().getResource("passwordDialog.fxml"));
+			AnchorPane root = null;
+			try {
+				root = (AnchorPane) loader.load();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			Scene scene = new Scene(root);
+			Stage stage = new Stage();
+			stage.setScene(scene);
+			stage.setResizable(false);
+			stage.showAndWait();
+			if( PasswordDialogController.flg == false ){//パスワードが不一致の場合
+	    		Platform.runLater(() ->info2.appendText("*********************\n"));
+	    		Platform.runLater(() ->info2.appendText("パスワードが違います\n"));
+	    		Platform.runLater(() ->info2.appendText("*********************\n"));
+	    		return;
+
+			}
+    	}
+
     	if( settingModeFlg ) {
 
     		Platform.runLater(() ->this.accordion_1.setDisable(true));
@@ -2630,6 +2665,7 @@ public class VisonController{
         	Platform.runLater(() ->info1.setText(""));
         	draggingRect = new Rectangle(1,1,1,1);
         	saveImgUseFlg = false;
+        	onCalibLite(null);
         	updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	}else {
             //パターンマッチング用パラメータ設定
@@ -3157,6 +3193,71 @@ public class VisonController{
 
     }
 
+    /**
+     * 照明キャリブレーション開始
+     * @param event
+     */
+    @FXML
+    void onCalibLite(ActionEvent event) {
+
+    	if( calibLiteFlg ) {
+	    	VisonController.timerCalib.shutdown();
+			try {
+				VisonController.timerCalib.awaitTermination(33, TimeUnit.MICROSECONDS);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			calibLiteFlg = false;
+			Platform.runLater(() ->info2.appendText("**************************\n"));
+			Platform.runLater(() ->info2.appendText("照明キャリブレーション終了\n"));
+			Platform.runLater(() ->info2.appendText("**************************\n"));
+			return;
+    	}
+
+    	calibLiteFlg = true;
+		Platform.runLater(() ->info2.appendText("**************************\n"));
+		Platform.runLater(() ->info2.appendText("照明キャリブレーション開始\n"));
+		Platform.runLater(() ->info2.appendText("**************************\n"));
+
+		Runnable calibLiter = new Runnable() {
+			@Override
+			public void run() {
+		    	if( triggerCCircle.getFill() != Color.YELLOW) {
+		    		Platform.runLater( () ->triggerCCircle.setFill(Color.YELLOW));
+		    	}else {
+		    		Platform.runLater( () ->triggerCCircle.setFill(Color.WHITE));
+		    	}
+
+		    	parameter para = pObj.para[pObj.select];
+		    	Double luminanceAverage = 0.0;
+		    	int cnt = 0;
+		    	for( int i=0;i<4;i++) {
+			    	if( para.hole_DetectFlg[i] ) {
+				    	Rectangle r = para.hole_rects[i];//検査範囲
+				    	luminanceAverage += Core.mean(srcMat.submat(new Rect(r.x,r.y,r.width,r.height))).val[0];
+				    	cnt++;
+			    	}
+		    	}
+
+		    	if( cnt > 0 ) {
+		    		luminanceAverage = luminanceAverage / cnt;
+		        	final double d = luminanceAverage;
+		        	final int c = cnt;
+		        	Platform.runLater( () ->calib_label.setText(
+		        			String.format("領域=%d箇所 ",c) +
+		        			String.format("平均輝度=%.1f",d)));
+		    	}else {
+		        	Platform.runLater( () ->calib_label.setText( "領域設定不足"));
+		    	}
+
+			}
+		};
+
+		timerCalib = Executors.newSingleThreadScheduledExecutor();
+		timerCalib.scheduleAtFixedRate(calibLiter, 0, 100, TimeUnit.MILLISECONDS);
+
+
+    }
     @FXML
     void initialize() {
 

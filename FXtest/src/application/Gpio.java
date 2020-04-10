@@ -351,7 +351,7 @@ public class Gpio {
 		try {
 	        port.writeString("\r");
 	        port.writeString("gpio clear 3\r");//IO 3クリア 出力ゼロ
-	        System.out.println("Info: <gpio clear 3> Command sent...");
+	        System.out.println("Info: <gpio clear 3> NG Signal");
 
 	        Thread.sleep(sleepTime );
 	        port.purgePort(SerialPort.PURGE_RXCLEAR & SerialPort.PURGE_TXCLEAR);

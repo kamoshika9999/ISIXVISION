@@ -113,6 +113,26 @@
                         </Label>
                         <CheckBox fx:id="trigger_2nd_chk" layoutX="713.0" layoutY="61.0" mnemonicParsing="false" text="有効" />
                         <Button fx:id="setting_csv_out" layoutX="120.0" layoutY="203.0" mnemonicParsing="false" onAction="#onCSVout" text="CSV" />
+                        <Button fx:id="calib_btn" layoutX="585.0" layoutY="104.0" mnemonicParsing="false" onAction="#onCalibLite" prefHeight="25.0" prefWidth="123.0" text="照明キャリブ(測光)" />
+                        <Label fx:id="calib_label" layoutX="584.0" layoutY="137.0" prefHeight="25.0" prefWidth="174.0" text="0" textAlignment="RIGHT" />
+                        <CheckBox fx:id="imgSaveFlg" layoutX="408.0" layoutY="195.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
+                        <CheckBox fx:id="imgSaveFlg_all" layoutX="409.0" layoutY="216.0" mnemonicParsing="false" text="OK SAVE" />
+                        <Button fx:id="OKImageBtn" layoutX="628.0" layoutY="185.0" mnemonicParsing="false" onAction="#onOKImageBtn" prefHeight="39.0" prefWidth="63.0" text="OK Image Viewer" wrapText="true">
+                           <effect>
+                              <DropShadow color="#3000f0" />
+                           </effect>
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="clearBtn" layoutX="564.0" layoutY="185.0" mnemonicParsing="false" onAction="#onAllClear" prefHeight="39.0" prefWidth="63.0" text="ALL CLEAR">
+                           <effect>
+                              <DropShadow color="#f20000" />
+                           </effect>
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Button>
                      </children>
                   </AnchorPane>
             </content>
@@ -457,14 +477,6 @@
       <Label layoutX="332.0" layoutY="183.0" text="③deilate" textFill="#d7ed07" />
       <Label fx:id="fpsLabel" layoutX="5.0" layoutY="20.0" prefHeight="17.0" prefWidth="174.0" text="FPS" />
       <Circle fx:id="triggerCCircle" fill="LIME" layoutX="668.0" layoutY="23.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" />
-      <Button fx:id="clearBtn" layoutX="670.0" layoutY="258.0" mnemonicParsing="false" onAction="#onAllClear" prefHeight="39.0" prefWidth="63.0" text="ALL CLEAR">
-         <effect>
-            <DropShadow color="#f20000" />
-         </effect>
-         <font>
-            <Font size="10.0" />
-         </font>
-      </Button>
       <Button fx:id="ngImageBtn" layoutX="670.0" layoutY="305.0" mnemonicParsing="false" onAction="#onNgImageBtn" prefHeight="39.0" prefWidth="63.0" text="Ng Image Viewer" wrapText="true">
          <effect>
             <DropShadow color="#3000f0" />
@@ -486,7 +498,6 @@
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <CheckBox fx:id="imgSaveFlg" layoutX="744.0" layoutY="315.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
       <TextArea fx:id="info2" layoutX="872.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
          <effect>
@@ -512,15 +523,6 @@
          </font>
       </CheckBox>
       <Button fx:id="shotImgBtn" layoutX="1097.0" layoutY="344.0" mnemonicParsing="false" onAction="#onShotImg" prefHeight="25.0" prefWidth="90.0" text="ショット撮影" />
-      <CheckBox fx:id="imgSaveFlg_all" layoutX="743.0" layoutY="360.0" mnemonicParsing="false" text="OK SAVE" />
-      <Button fx:id="OKImageBtn" layoutX="670.0" layoutY="350.0" mnemonicParsing="false" onAction="#onOKImageBtn" prefHeight="39.0" prefWidth="63.0" text="OK Image Viewer" wrapText="true">
-         <effect>
-            <DropShadow color="#3000f0" />
-         </effect>
-         <font>
-            <Font size="10.0" />
-         </font>
-      </Button>
       <Button fx:id="dimensionBtn" disable="true" layoutX="836.0" layoutY="396.0" mnemonicParsing="false" onAction="#onDimensionBtn" prefHeight="39.0" prefWidth="63.0" text="Dimension Viewer" wrapText="true">
          <effect>
             <DropShadow color="#3000f0" />
