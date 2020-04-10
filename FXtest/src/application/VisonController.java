@@ -2665,7 +2665,7 @@ public class VisonController{
         	Platform.runLater(() ->info1.setText(""));
         	draggingRect = new Rectangle(1,1,1,1);
         	saveImgUseFlg = false;
-        	onCalibLite(null);
+        	offCalibLite();
         	updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	}else {
             //パターンマッチング用パラメータ設定
@@ -3194,12 +3194,9 @@ public class VisonController{
     }
 
     /**
-     * 照明キャリブレーション開始
-     * @param event
+     * 照明キャリブレーション終了
      */
-    @FXML
-    void onCalibLite(ActionEvent event) {
-
+    void offCalibLite() {
     	if( calibLiteFlg ) {
 	    	VisonController.timerCalib.shutdown();
 			try {
@@ -3211,6 +3208,17 @@ public class VisonController{
 			Platform.runLater(() ->info2.appendText("**************************\n"));
 			Platform.runLater(() ->info2.appendText("照明キャリブレーション終了\n"));
 			Platform.runLater(() ->info2.appendText("**************************\n"));
+    	}
+    }
+    /**
+     * 照明キャリブレーション開始
+     * @param event
+     */
+    @FXML
+    void onCalibLite(ActionEvent event) {
+
+    	if( calibLiteFlg ) {
+    		offCalibLite();
 			return;
     	}
 
