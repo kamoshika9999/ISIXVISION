@@ -934,12 +934,12 @@ public class VisonController{
 							debugCnt++;
 						}
 						//生産リスタート時画像保存回避フラグ
-						if( !triggerFlg && System.currentTimeMillis() - triggerTimer > 1000*10) {
+						if( !triggerFlg && System.currentTimeMillis() - triggerTimer > 1000*4) {
 							triggerFlg = true;
 							Gpio.ngSignalON();
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 						}
-						if(	calibLiteFlg ) {
+						if(	calibLiteFlg ) {//照明キャリブレーション中はＮＧ信号発信
 							Gpio.ngSignalON();
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 
@@ -3208,6 +3208,7 @@ public class VisonController{
 			Platform.runLater(() ->info2.appendText("**************************\n"));
 			Platform.runLater(() ->info2.appendText("照明キャリブレーション終了\n"));
 			Platform.runLater(() ->info2.appendText("**************************\n"));
+			Platform.runLater( () ->throughImageChk.setSelected(false));
     	}
     }
     /**
@@ -3226,6 +3227,7 @@ public class VisonController{
 		Platform.runLater(() ->info2.appendText("**************************\n"));
 		Platform.runLater(() ->info2.appendText("照明キャリブレーション開始\n"));
 		Platform.runLater(() ->info2.appendText("**************************\n"));
+		Platform.runLater( () ->throughImageChk.setSelected(true));
 
 		Runnable calibLiter = new Runnable() {
 			@Override

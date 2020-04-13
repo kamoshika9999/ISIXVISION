@@ -113,8 +113,6 @@
                         </Label>
                         <CheckBox fx:id="trigger_2nd_chk" layoutX="713.0" layoutY="61.0" mnemonicParsing="false" text="有効" />
                         <Button fx:id="setting_csv_out" layoutX="120.0" layoutY="203.0" mnemonicParsing="false" onAction="#onCSVout" text="CSV" />
-                        <Button fx:id="calib_btn" layoutX="585.0" layoutY="104.0" mnemonicParsing="false" onAction="#onCalibLite" prefHeight="25.0" prefWidth="123.0" text="照明キャリブ(測光)" />
-                        <Label fx:id="calib_label" layoutX="584.0" layoutY="137.0" prefHeight="25.0" prefWidth="174.0" text="0" textAlignment="RIGHT" />
                         <CheckBox fx:id="imgSaveFlg" layoutX="408.0" layoutY="195.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
                         <CheckBox fx:id="imgSaveFlg_all" layoutX="409.0" layoutY="216.0" mnemonicParsing="false" text="OK SAVE" />
                         <Button fx:id="OKImageBtn" layoutX="628.0" layoutY="185.0" mnemonicParsing="false" onAction="#onOKImageBtn" prefHeight="39.0" prefWidth="63.0" text="OK Image Viewer" wrapText="true">
@@ -477,7 +475,7 @@
       <Label layoutX="332.0" layoutY="183.0" text="③deilate" textFill="#d7ed07" />
       <Label fx:id="fpsLabel" layoutX="5.0" layoutY="20.0" prefHeight="17.0" prefWidth="174.0" text="FPS" />
       <Circle fx:id="triggerCCircle" fill="LIME" layoutX="668.0" layoutY="23.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" />
-      <Button fx:id="ngImageBtn" layoutX="670.0" layoutY="305.0" mnemonicParsing="false" onAction="#onNgImageBtn" prefHeight="39.0" prefWidth="63.0" text="Ng Image Viewer" wrapText="true">
+      <Button fx:id="ngImageBtn" layoutX="738.0" layoutY="302.0" mnemonicParsing="false" onAction="#onNgImageBtn" prefHeight="39.0" prefWidth="63.0" text="Ng Image Viewer" wrapText="true">
          <effect>
             <DropShadow color="#3000f0" />
          </effect>
@@ -498,7 +496,7 @@
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <TextArea fx:id="info2" layoutX="872.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />
@@ -593,5 +591,10 @@
             <TableColumn fx:id="dim_table_E" editable="false" minWidth="0.0" prefWidth="45.0" resizable="false" sortable="false" text="E" />
         </columns>
       </TableView>
+      <Button fx:id="calib_btn" layoutX="348.0" layoutY="321.0" mnemonicParsing="false" onAction="#onCalibLite" prefHeight="25.0" prefWidth="123.0" text="照明キャリブ(測光)" />
+      <Label fx:id="calib_label" layoutX="471.0" layoutY="323.0" prefHeight="27.0" prefWidth="262.0" text="00000000000" textAlignment="RIGHT">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font></Label>
    </children>
 </AnchorPane>
