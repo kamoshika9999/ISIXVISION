@@ -90,7 +90,7 @@ public class VisonController{
 	public static boolean debugFlg = false;
 
 	public int shotCnt = 0; //オールクリアしてからのカウント数
-	boolean triggerFlg=true; //シャッター間隔が2秒以上あいた時にセットされる
+	boolean shutterSignal4secInterval=true; //シャッター間隔が2秒以上あいた時にセットされる
 
 	final int saveMax_all = 255;
 	final int saveMax_ng = 400;
@@ -917,74 +917,56 @@ public class VisonController{
 		if( Gpio.openFlg ) {
 			Gpio.ngSignalON();
 			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
-
-			//トリガクラス
+			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+			//GPIOからのトリガ信号を受信するループ
+			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 			Runnable triggerLoop = new Runnable() {
 				String rt = "-1";//nullを避ける為-1をいれておく
 				long debugCnt = 0;
-				private long triggerTimer=System.currentTimeMillis();
+				private long shutterSignalIntervalTime=System.currentTimeMillis();
 
 				@Override
 				public void run() {
-
 					try {
-						//readIO ="nothing";
 						if( debugFlg ) {
 							System.out.println("GPIO READ/WRITE" + debugCnt);
 							debugCnt++;
 						}
-						//生産リスタート時画像保存回避フラグ
-						if( !triggerFlg && System.currentTimeMillis() - triggerTimer > 1000*4) {
-							triggerFlg = true;
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						//シャッター信号の間隔が4秒以上開いた場合NG信号発信しフラグセット
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						if( !shutterSignal4secInterval && System.currentTimeMillis() -
+																			shutterSignalIntervalTime > 1000*4) {
+							shutterSignal4secInterval = true;
 							Gpio.ngSignalON();
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 						}
-						if(	calibLiteFlg ) {//照明キャリブレーション中はＮＧ信号発信
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						//照明キャリブレーション中はＮＧ信号発信
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						if(	calibLiteFlg ) {
 							Gpio.ngSignalON();
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
-
 						}
-
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//オールクリア信号受信
-						/*
-						try {
-							if( Gpio.useFlg ) {
-								System.out.println("GPIO useFlg=Treu:CLER not signal");
-								Thread.sleep(30);
-							}
-						}catch(Exception e) {
-							System.out.println(e);
-						}
-						*/
-
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						rt = Gpio.clearSignal();
 						if( rt == "1" ) {
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
 							onAllClear(null);
 				    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
-
 						}else {
 							Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
 						}
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//シャッター信号受信
-						//readIO ="shutterSignal";
-						/*
-						try {
-							if( Gpio.useFlg ) {
-								Thread.sleep(30);
-								System.out.println("GPIO useFlg=Treu:Shutter not signal");
-							}
-						}catch(Exception e) {
-							System.out.println(e);
-						}
-						*/
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						rt = Gpio.shutterSignal();
-						//Platform.runLater( () ->info1.setText(Gpio.useFlg  + String.valueOf(loopcnt)+  "  GPIO 0(SHUTTER TRIGGER) = " + rt));
-
 						if( rt == "1") {
 							if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
-								//シャッター
 								try {
+									//PLCからのシャッター信号をオンディレーする
 									Thread.sleep( dellySpinner.getValue() );
 								} catch (InterruptedException e) {
 									e.printStackTrace();
@@ -992,14 +974,20 @@ public class VisonController{
 
 								shutterFlg = true;
 								offShutterFlg = true;
-								triggerTimer=System.currentTimeMillis();
+
+								//トリガ間隔測定用に現在時刻を保存
+								shutterSignalIntervalTime=System.currentTimeMillis();
+
+								//シャッタートリガ受信インジケーター色変更
 					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
-					    		//Platform.runLater( () ->info2.appendText("シャッターON"));
 							}
 						}else{
+								//シャッター信号　非受信
 								offShutterFlg = false;
+								//シャッタートリガ受信インジケーター色変更
 					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
 						}
+						//--------------------------------------------------------------------------------------------
 					}catch(NullPointerException e) {
 						System.out.println("readIO" + " / " + e.toString());
 					}
@@ -1612,7 +1600,7 @@ public class VisonController{
 		        	Platform.runLater( () ->judg.setText("NG"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.RED) );
 		        	//画像保存
-		        	if( !triggerFlg && imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
+		        	if( !shutterSignal4secInterval && imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
@@ -2624,7 +2612,7 @@ public class VisonController{
 
 
 		shotCnt= 0;
-		triggerFlg=false;//NG画像保存開始
+		shutterSignal4secInterval=false;//NG画像保存開始
     	Platform.runLater( () ->judg.setText("-"));
     	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
     }
