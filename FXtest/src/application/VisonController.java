@@ -924,6 +924,7 @@ public class VisonController{
 				String rt = "-1";//nullを避ける為-1をいれておく
 				long debugCnt = 0;
 				private long shutterSignalIntervalTime=System.currentTimeMillis();
+				private boolean clealFlg = false;;
 
 				@Override
 				public void run() {
@@ -952,40 +953,44 @@ public class VisonController{
 						//オールクリア信号受信
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						rt = Gpio.clearSignal();
-						if( rt == "1" ) {
+						if( rt == "1" && !clealFlg) {
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
+							clealFlg = true;
 							onAllClear(null);
 				    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
 						}else {
+							clealFlg = false;
 							Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
 						}
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//シャッター信号受信
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
-						rt = Gpio.shutterSignal();
-						if( rt == "1") {
-							if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
-								try {
-									//PLCからのシャッター信号をオンディレーする
-									Thread.sleep( dellySpinner.getValue() );
-								} catch (InterruptedException e) {
-									e.printStackTrace();
+						if( !clealFlg ) {
+							rt = Gpio.shutterSignal();
+							if( rt == "1") {
+								if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
+									try {
+										//PLCからのシャッター信号をオンディレーする
+										Thread.sleep( dellySpinner.getValue() );
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+
+									shutterFlg = true;
+									offShutterFlg = true;
+
+									//トリガ間隔測定用に現在時刻を保存
+									shutterSignalIntervalTime=System.currentTimeMillis();
+
+									//シャッタートリガ受信インジケーター色変更
+						    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
 								}
-
-								shutterFlg = true;
-								offShutterFlg = true;
-
-								//トリガ間隔測定用に現在時刻を保存
-								shutterSignalIntervalTime=System.currentTimeMillis();
-
-								//シャッタートリガ受信インジケーター色変更
-					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
+							}else{
+									//シャッター信号　非受信
+									offShutterFlg = false;
+									//シャッタートリガ受信インジケーター色変更
+						    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
 							}
-						}else{
-								//シャッター信号　非受信
-								offShutterFlg = false;
-								//シャッタートリガ受信インジケーター色変更
-					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
 						}
 						//--------------------------------------------------------------------------------------------
 					}catch(NullPointerException e) {
