@@ -92,7 +92,7 @@ public class VisonController{
 	//検査したカウント数
 	public int shotCnt = 0;
 	//シャッター間隔が4秒以上あいた時にセットされる
-	boolean shutterSignal4secInterval=true; 
+	boolean shutterSignal4secInterval=true;
 
 	//保存される画像の最大数
 	final int saveMax_all = 255;
@@ -103,7 +103,6 @@ public class VisonController{
 
 	public static Mat srcMat = new Mat();//保存画像を使用した設定に使用する為publicにしておく
 	Mat dstframe = new Mat();//srcMatをカメラキャリブレーションデーターから変換したオブジェクトが入る
-	private Mat mainViewGlayMat;
     List<Rectangle> rects;
     Rectangle draggingRect;
     volatile boolean dragging;
@@ -124,7 +123,6 @@ public class VisonController{
 	private long whiteAreaAverage;
 	private long whiteAreaMax;
 	private long whiteAreaMin;
-
 
 	//シャッタートリガ用
 	boolean shutterFlg = false;
@@ -1210,10 +1208,11 @@ public class VisonController{
 
 
 	    	parameter para = pObj.para[pObj.select];
-	    	Mat	mainViewMat = srcMat.clone();//srcMatは不変にしておく
-	    	Mat saveSrcMat = srcMat.clone();
 
-	    	mainViewGlayMat = new Mat();
+	    	Mat	mainViewMat = srcMat.clone();//srcMatは不変にしておく
+	    	Mat saveSrcMat = srcMat.clone();//画像保存用にオリジナルを保持させる
+	    	Mat mainViewGlayMat = new Mat();
+
 	    	Imgproc.cvtColor(mainViewMat, mainViewGlayMat, Imgproc.COLOR_BGR2GRAY);
 	    	//Imgproc.equalizeHist(mainViewGlayMat, mainViewGlayMat);//コントラスト均等化
 
