@@ -86,16 +86,20 @@ import javafx.stage.Stage;
 
 public class VisonController{
 
-	//クラス変数
+	//デバッグフラグ
 	public static boolean debugFlg = false;
 
-	public int shotCnt = 0; //オールクリアしてからのカウント数
-	boolean shutterSignal4secInterval=true; //シャッター間隔が2秒以上あいた時にセットされる
+	//検査したカウント数
+	public int shotCnt = 0;
+	//シャッター間隔が4秒以上あいた時にセットされる
+	boolean shutterSignal4secInterval=true; 
 
+	//保存される画像の最大数
 	final int saveMax_all = 255;
 	final int saveMax_ng = 400;
-	int ngCnt = 0;
 	int allSaveCnt = 0;
+	//判定ＮＧとなった回数
+	int ngCnt = 0;
 
 	public static Mat srcMat = new Mat();//保存画像を使用した設定に使用する為publicにしておく
 	Mat dstframe = new Mat();//srcMatをカメラキャリブレーションデーターから変換したオブジェクトが入る
