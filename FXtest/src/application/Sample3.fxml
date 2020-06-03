@@ -143,9 +143,9 @@
                         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="39.0" layoutX="14.0" layoutY="110.0" stroke="BLACK" strokeType="INSIDE" width="511.0" />
                         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="43.0" layoutX="15.0" layoutY="151.0" stroke="BLACK" strokeType="INSIDE" width="224.0" />
                         <Slider fx:id="gauusianSliderX" layoutX="93.0" layoutY="112.0" majorTickUnit="10.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" value="10.0" />
-                        <Slider fx:id="sliderDetecPara4" blockIncrement="1.0" layoutX="69.0" layoutY="8.0" majorTickUnit="1.0" max="10.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="37.0" prefWidth="196.0" showTickLabels="true" showTickMarks="true" value="3.0" />
+                        <Slider fx:id="sliderDetecPara4" blockIncrement="1.0" layoutX="69.0" layoutY="8.0" majorTickUnit="1.0" max="10.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="37.0" prefWidth="196.0" showTickLabels="true" showTickMarks="true" value="3.0" visible="false" />
                         <TextField fx:id="textFieldDetecPara4" alignment="CENTER_RIGHT" layoutX="265.0" layoutY="2.0" prefHeight="25.0" prefWidth="46.0" />
-                        <Label alignment="CENTER" layoutX="12.0" layoutY="2.0" prefHeight="25.0" prefWidth="57.0" text="投票分解能">
+                        <Label alignment="CENTER" layoutX="12.0" layoutY="2.0" prefHeight="25.0" prefWidth="57.0" text="投票分解能" visible="false">
                            <font>
                               <Font size="9.0" />
                            </font>
@@ -157,19 +157,19 @@
                               <Font size="9.0" />
                            </font>
                         </Label>
-                        <Slider fx:id="sliderDetecPara6" layoutX="69.0" layoutY="72.0" majorTickUnit="20.0" max="512.0" min="0.1" minorTickCount="4" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="37.0" prefWidth="196.0" showTickLabels="true" showTickMarks="true" value="128.0" />
+                        <Slider fx:id="sliderDetecPara6" layoutX="69.0" layoutY="72.0" majorTickUnit="20.0" max="512.0" min="0.1" minorTickCount="4" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="37.0" prefWidth="196.0" showTickLabels="true" showTickMarks="true" value="128.0" visible="false" />
                         <TextField fx:id="textFieldDetecPara6" alignment="CENTER_RIGHT" layoutX="265.0" layoutY="66.0" prefHeight="25.0" prefWidth="46.0" />
-                        <Label alignment="CENTER" layoutX="12.0" layoutY="66.0" prefHeight="25.0" prefWidth="57.0" text="2値化パラ①">
+                        <Label alignment="CENTER" layoutX="12.0" layoutY="66.0" prefHeight="25.0" prefWidth="57.0" text="2値化パラ①" visible="false">
                            <font>
                               <Font size="9.0" />
                            </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="317.0" layoutY="2.0" prefHeight="25.0" prefWidth="57.0" text="投票数">
+                        <Label alignment="CENTER" layoutX="317.0" layoutY="2.0" prefHeight="25.0" prefWidth="57.0" text="円形度">
                            <font>
                               <Font size="9.0" />
                            </font>
                         </Label>
-                        <Slider fx:id="sliderDetecPara7" layoutX="374.0" layoutY="8.0" majorTickUnit="10.0" max="255.0" min="0.1" minorTickCount="10" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="37.0" prefWidth="196.0" showTickLabels="true" showTickMarks="true" value="1.0" />
+                        <Slider fx:id="sliderDetecPara7" blockIncrement="0.1" layoutX="374.0" layoutY="8.0" majorTickUnit="0.1" max="1.0" minorTickCount="1" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="37.0" prefWidth="196.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="0.8" />
                         <TextField fx:id="textFieldDetecPara7" alignment="CENTER_RIGHT" layoutX="577.0" layoutY="2.0" prefHeight="25.0" prefWidth="46.0" />
                         <Label alignment="CENTER" layoutX="317.0" layoutY="34.0" prefHeight="25.0" prefWidth="57.0" text="検出円最小">
                            <font>
@@ -421,7 +421,7 @@
             <Font size="36.0" />
          </font>
       </Label>
-      <Label layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver2.8" textFill="#0a22d7">
+      <Label layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver2.9" textFill="#0a22d7">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
@@ -497,7 +497,7 @@
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;v2.9 2020/06/02 HoleDedection Change&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />

@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -39,6 +40,8 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -118,6 +121,8 @@ public class VisonController{
     //照明キャリブレーション用
 	private static ScheduledExecutorService timerCalib;
 	private boolean calibLiteFlg;//キャリブレーション中か？
+	Mat realMat;//スルー画像
+
 
 	//穴面積判定用
 	private long whiteAreaAverage;
@@ -172,6 +177,7 @@ public class VisonController{
 	private Mat cameraMatrix;//内部パラメータ
 	private Mat distortionCoefficients;//歪み係数
 
+
 	//インフォメーション
 	private String initInfo2;
 
@@ -200,6 +206,8 @@ public class VisonController{
     @FXML
     private ToggleButton para_12st_shot11;
 
+    @FXML
+    private CheckBox camera_revers_chk;//カメラ上下反転
 
     @FXML
     private ResourceBundle resources;
@@ -836,7 +844,6 @@ public class VisonController{
 
 		 // メインクラス
 		Runnable frameGrabber = new Runnable() {
-			Mat realMat;
 			@Override
 			public void run() {
 				//設定自動ロック用
@@ -1026,6 +1033,9 @@ public class VisonController{
 			} catch(Exception e) {
 				Platform.runLater( () ->info2.appendText("Exception during the image elaboration: " + e +"\n"));
 			}
+		}
+		if(camera_revers_chk.isSelected()) {//画像上下反転
+			Core.flip(frame, frame, -1);
 		}
 		if( cameraCalibFlg ) {
 			Calib3d.undistort(frame, dstframe, cameraMatrix, distortionCoefficients);
@@ -1764,6 +1774,127 @@ public class VisonController{
 
     }
 
+
+    /**
+     * ブロブによる円の検出
+     * @param src 2値化済画像
+     * @param dst 結果画像描画用MAT
+     * @para holeLength 検出円間最小距離
+     * @param max_diameter 検出円最大直径値　ピクセル
+     * @param min_diameter 検出円最小直径値　ピクセル
+     * @param circularity 円形度 0.0 - 1.0
+     * @param circleCountThresh 検出円個数　判定個数
+     * @param threshholdAreaMax 検出矩形の白面積 最大値閾値
+     * @param threshholdAreaMin 検出矩形の白面積 最小値閾値
+     * @para infoFlg インフォメーションテキストに値を表示させるか？
+     * @return 判定結果 0:合格 1:面積判定NG 2:個数ＮＧ 3:(面積判定、個数ＮＧ)
+     */
+    private int foundCircle(Mat src_,Mat dst_,int holeLength,int max_diameter_,int min_diameter_,double circularity_
+    			,int circleCountThresh,double threshholdAreaMax,double threshholdAreaMin,
+    			boolean infoFlg	) {
+
+		List<MatOfPoint> contours=new ArrayList<MatOfPoint>();
+		Mat hierarchy = new Mat();
+
+		//輪郭抽出
+		Imgproc.findContours(src_,contours,hierarchy,Imgproc.RETR_CCOMP,Imgproc.CHAIN_APPROX_SIMPLE);
+
+		//ローカル変数宣言
+		Iterator<MatOfPoint> iterator = contours.iterator();
+	    MatOfPoint2f[] contoursPoly = new MatOfPoint2f[contours.size()];
+        Rect[] boundRect = new Rect[contours.size()];
+        Point[] centers = new Point[contours.size()];
+        float[][] radius = new float[contours.size()][1];
+        int cnt = 0;
+        Mat roi = new Mat(1,1,CvType.CV_8U);
+        int whiteArea = 0;
+    	infoText = "";
+      	double radiusMax,radiusMin,radiusAve,distAve;
+      	radiusMax = 0;
+      	radiusMin = 9999;
+      	radiusAve = 0;
+      	distAve = 0;
+      	int	result = 0;
+
+        whiteAreaAverage = 0;//クラス変数
+	  	whiteAreaMax = 0;//クラス変数
+	  	whiteAreaMin = 99999;//クラス変数
+
+        while (iterator.hasNext()){
+    		MatOfPoint contour = iterator.next();
+    		double area = Imgproc.contourArea(contour);
+    		double arclength = Imgproc.arcLength(new MatOfPoint2f(contour.toArray()),true);
+    		double circularity = 4 * Math.PI * area / (arclength * arclength);//円形度計算 4πS/周長^2
+
+    		if( circularity >= circularity_ &&
+    				arclength/(2*Math.PI) >= min_diameter_ && arclength/(2*Math.PI) <= max_diameter_) {//円形度の比較
+    			contoursPoly[cnt] = new MatOfPoint2f();
+    			Imgproc.approxPolyDP(new MatOfPoint2f(contour.toArray()), contoursPoly[cnt], 3, true);
+	            boundRect[cnt] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[cnt].toArray()));
+    			centers[cnt] = new Point();
+    			Imgproc.minEnclosingCircle(contoursPoly[cnt], centers[cnt], radius[cnt]);
+	            Scalar color = new Scalar(0,0,255);
+	            Imgproc.circle(dst_, centers[cnt], (int) radius[cnt][0], color, 10);
+	            Imgproc.rectangle(dst_, boundRect[cnt].tl(), boundRect[cnt].br(), new Scalar(0,255,255), 1);
+
+
+	            //面積判定
+	      		roi = src_.submat(boundRect[cnt]);
+	      		whiteArea = Core.countNonZero(roi);
+	      		whiteAreaAverage += whiteArea;
+	      		whiteAreaMax = whiteAreaMax < whiteArea?whiteArea:whiteAreaMax;
+	      		whiteAreaMin = whiteAreaMin > whiteArea?whiteArea:whiteAreaMin;
+	      		if( whiteArea > threshholdAreaMax || whiteArea < threshholdAreaMin) {
+	      			result += 1;
+	      		}
+
+    			cnt++;
+    		}
+    		//個数判定
+    		if( cnt != circleCountThresh) {
+    			result += 2;
+    		}
+    		//径と距離算出 X順で並び替え
+    		Rect tmpRect;
+    		Point tmpPoint;
+    		for(int i=0;i<cnt;i++) {
+    			for(int j=i+1;j<cnt;j++) {
+    				if( boundRect[i].tl().x > boundRect[j].tl().x ) {
+    					tmpRect = boundRect[i].clone();
+    					boundRect[i] = boundRect[j].clone();
+    					boundRect[j] = tmpRect;
+
+    					tmpPoint = centers[i].clone();
+
+    				}
+    			}
+    		}
+    		//径 最大、最小、平均算出
+    		for(int i=0;i<cnt;i++) {
+    			if( )
+    		}
+
+
+
+    		if( settingModeFlg ) {
+    			Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", whiteAreaMax)));
+    			Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", whiteAreaMin)));
+    		  	updateImageView(debugImg, Utils.mat2Image(roi));
+    		  }
+    		whiteAreaAverage = whiteAreaAverage / cnt;
+    	}
+
+    	  infoText += String.format("MAX=%.1f ,MIN=%.1f ,AVE=%.1f ,DistAve=%.1f ",
+    			  radiusMax,radiusMin,radiusAve,distAve);
+
+    	  if(infoFlg) {
+    		 Platform.runLater(
+                   () ->info1.setText(infoText));
+    	  }
+
+	    return result;
+
+    }
     /**
      * 検出円描画
      * @param circles
@@ -3240,7 +3371,7 @@ public class VisonController{
 		    	for( int i=0;i<4;i++) {
 			    	if( para.hole_DetectFlg[i] ) {
 				    	Rectangle r = para.hole_rects[i];//検査範囲
-				    	luminanceAverage += Core.mean(srcMat.submat(new Rect(r.x,r.y,r.width,r.height))).val[0];
+				    	luminanceAverage += Core.mean(realMat.submat(new Rect(r.x,r.y,r.width,r.height))).val[0];
 				    	cnt++;
 			    	}
 		    	}
