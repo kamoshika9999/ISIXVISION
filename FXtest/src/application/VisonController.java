@@ -1335,51 +1335,25 @@ public class VisonController{
 		        			draggingRect.x+draggingRect.width);
 		        	//穴検出
 		        	if( !ptmSetStartFlg ) {
-			            Mat resultCircles = new Mat();
-						Imgproc.HoughCircles(fillterAftterMatRoi, resultCircles, Imgproc.CV_HOUGH_GRADIENT,
-								sliderDetecPara4.getValue(),
-								sliderDetecPara5.getValue(),
-								sliderDetecPara6.getValue(),
-								sliderDetecPara7.getValue(),
-								(int)sliderDetecPara8.getValue(),
-								(int)sliderDetecPara9.getValue());
-						if( resultCircles.cols() > 0) {
-							fncDrwCircles(fillterAftterMatRoi,resultCircles,
-									mainViewMat.submat(
-						        			draggingRect.y,
-						        			draggingRect.y + draggingRect.height,
-						        			draggingRect.x,
-						        			draggingRect.x+draggingRect.width),
-											true);
-
-							Imgproc.putText(mainViewMat, String.valueOf(resultCircles.cols()),
-									new Point(draggingRect.x-25,draggingRect.y-6),
-									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(128,255,128),7);
-
-							//面積判定
-							boolean holeAreaJudgFlg = holeWhiteAreaCheck(
-									fillterAftterMatRoi,resultCircles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
-							if( holeAreaJudgFlg ) {
-								Imgproc.putText(mainViewMat,
-										"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
-												" Max=" + String.format("%d",whiteAreaMax) +
-												" Min=" + String.format("%d",whiteAreaMin),
-										new Point(draggingRect.x+20,draggingRect.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(128,255,128),7);
-							}else {
-								Imgproc.putText(mainViewMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
-										" Max=" + String.format("%d",whiteAreaMax) +
-										" Min=" + String.format("%d",whiteAreaMin),
-										new Point(draggingRect.x+20,draggingRect.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),7);
-							}
-						}
-		        	}
-		            Imgproc.rectangle(mainViewMat,
-		            		new Point(draggingRect.x,draggingRect.y),
-		            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
-		            		new Scalar(0,255,0),2);
-	        	}
+			            int foundCircle_result_int = foundCircle(
+			            		fillterAftterMatRoi,//検出領域のサブMAT
+			            		mainViewMat,//結果の描画
+			            		(int)sliderDetecPara5.getValue(),//穴間距離の閾値
+			            		(int)sliderDetecPara9.getValue(),//穴径の最大値
+			            		(int)sliderDetecPara8.getValue(),//穴径の最小値
+			            		sliderDetecPara7.getValue(),//円形度
+			            		-1,//穴数の閾値 設定領域の為「-1」と入れ区別する
+			            		whiteRatioMaxSp.getValue(),//白面積の最大値
+			            		whiteRatioMinSp.getValue(),//白面積の最小値
+			            		true,//インフォメーションに表示する
+			            		draggingRect.x,draggingRect.y
+			            		);
+					}
+		        }
+	            Imgproc.rectangle(mainViewMat,
+	            		new Point(draggingRect.x,draggingRect.y),
+	            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
+	            		new Scalar(0,255,0),2);
 	        }
 
 	    	int judgCnt=0;
@@ -1412,105 +1386,66 @@ public class VisonController{
 		        		Imgproc.dilate(holeDetectAreaMatroi, holeDetectAreaMatroi, new Mat(),new Point(-1,-1),para.hole_fil_dilateValue[i]);
 		        	}
 
-					/*# ハフ変換で円検出する。
-					第1引数(gray)：8bit、1チャンネルのグレースケール画像。
-				 	第2引数(circles)：検出した円のベクトル(x,y,r)→ x, yは円の中心座標でrは半径
-					第3引数(Imgproc.CV_HOUGH_GRADIENT)：２値化の手法
-					第4引数(sliderDetecPara4)：画像分解能に対する投票分解能の比率の逆数
-					第5引数(sliderDetecPara5)：円の中心同士の最小距離
-					第6引数(sliderDetecPara6)：２値化のパラメータ1
-					第7引数(sliderDetecPara7)：２値化のパラメータ2
-					第8引数(sliderDetecPara8)：円の半径の最小値
-					第9引数(sliderDetecPara9)：円の半径の最大値 */
-		            Mat circles = new Mat();
-					Imgproc.HoughCircles(holeDetectAreaMatroi, circles, Imgproc.CV_HOUGH_GRADIENT,
-							para.hole_circlePara4[i],
-							para.hole_circlePara5[i],
-							para.hole_circlePara6[i],
-							para.hole_circlePara7[i],
-							(int)para.hole_circlePara8[i],
-							(int)para.hole_circlePara9[i]);
 
-					boolean holeAreaFlg = true;
-					if( circles.cols() > 0 && !FilterViewMode.isSelected()) {
+		            int foundCircle_result_int = foundCircle(
+		            		holeDetectAreaMatroi,//検出領域のサブMAT
+		            		mainViewMat,//結果の描画
+		            		(int)para.hole_circlePara5[i],//穴間距離の閾値
+		            		(int)para.hole_circlePara9[i],//穴径の最大値
+		            		(int)para.hole_circlePara8[i],//穴径の最小値
+		            		para.hole_circlePara7[i],//円形度
+		            		para.hole_cntHoleTh[i],//穴数の閾値 設定領域の為「-1」と入れ区別する
+		            		whiteRatioMaxSp.getValue(),//白面積の最大値
+		            		whiteRatioMinSp.getValue(),//白面積の最小値
+		            		true,//インフォメーションに表示する
+		            		r.x,r.y
+		            		);
 
-						if( holeDispChk.isSelected() ) {
-							fncDrwCircles(holeDetectAreaMatroi,circles, mainViewMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
-							Imgproc.putText(mainViewMat, String.valueOf(circles.cols()),
-									new Point(r.x-25,r.y-6),
-									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),7);
-						}
-						//面積判定
-						holeAreaFlg = holeWhiteAreaCheck(
-								holeDetectAreaMatroi,circles,para.hole_whiteAreaMax[i],para.hole_whiteAreaMin[i]);
-						if( holeDispChk.isSelected() ) {
-							if( holeAreaFlg ) {
-									Imgproc.putText(mainViewMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
-										" Max=" + String.format("%d",whiteAreaMax) +
-										" Min=" + String.format("%d",whiteAreaMin),
-										new Point(r.x+20,r.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),7);
-							}else {
-								Imgproc.putText(mainViewMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
-										" Max=" + String.format("%d",whiteAreaMax) +
-										" Min=" + String.format("%d",whiteAreaMin),
-										new Point(r.x+20,r.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),7);
-							}
-						}
+					//if( !FilterViewMode.isSelected()) {
 
-					}
 
 					//判定
 		            switch(i) {
 		            	case 0:
-		            		Platform.runLater( () ->okuri1_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
+		            		if( foundCircle_result_int == 0) {
 		            			Platform.runLater( () ->okuri1_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri1_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.RED));
-		            			//fileString += "1_okuri_";
 		            			ngFlg = true;
 		            		}
 		            		break;
 		            	case 1:
-		            		Platform.runLater( () ->okuri2_n.setText(String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
+		            		if( foundCircle_result_int == 0 ) {
 		            			Platform.runLater( () ->okuri2_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri2_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.RED));
-		            			//fileString += "1_poke_";
 		            			ngFlg = true;
 		            		}
 		            		break;
 		            	case 2:
-		            		Platform.runLater( () ->okuri3_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
+		            		if( foundCircle_result_int == 0 ) {
 		            			Platform.runLater( () ->okuri3_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri3_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.RED));
-		            			//fileString += "2_okuri_";
 		            			ngFlg = true;			            		}
 		            		break;
 		            	case 3:
-		            		Platform.runLater( () ->okuri4_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
+		            		if( foundCircle_result_int == 0 ) {
 		            			Platform.runLater( () ->okuri4_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri4_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.RED));
-		            			//fileString += "2_poke_";
 		            			ngFlg = true;
 		            		}
 		            		break;
@@ -1791,7 +1726,7 @@ public class VisonController{
      */
     private int foundCircle(Mat src_,Mat dst_,int holeLength,int max_diameter_,int min_diameter_,double circularity_
     			,int circleCountThresh,double threshholdAreaMax,double threshholdAreaMin,
-    			boolean infoFlg	) {
+    			boolean infoFlg,int offset_x,int offset_y) {
 
 		List<MatOfPoint> contours=new ArrayList<MatOfPoint>();
 		Mat hierarchy = new Mat();
@@ -1834,9 +1769,16 @@ public class VisonController{
     			centers[cnt] = new Point();
     			Imgproc.minEnclosingCircle(contoursPoly[cnt], centers[cnt], radius[cnt]);
 	            Scalar color = new Scalar(0,0,255);
-	            Imgproc.circle(dst_, centers[cnt], (int) radius[cnt][0], color, 10);
-	            Imgproc.rectangle(dst_, boundRect[cnt].tl(), boundRect[cnt].br(), new Scalar(0,255,255), 1);
 
+	            if(holeDispChk.isSelected()) {
+		            Imgproc.circle(dst_,
+		            		new Point(centers[cnt].x+offset_x,centers[cnt].y+offset_y),
+		            		(int) radius[cnt][0], color, 2);
+		            Imgproc.rectangle(dst_,
+		            		new Point(boundRect[cnt].tl().x+offset_x,boundRect[cnt].tl().y+offset_y),
+		            		new Point(boundRect[cnt].br().x+offset_x,boundRect[cnt].br().y+offset_y),
+		            		color, 2);
+	            }
 
 	            //面積判定
 	      		roi = src_.submat(boundRect[cnt]);
@@ -1845,172 +1787,90 @@ public class VisonController{
 	      		whiteAreaMax = whiteAreaMax < whiteArea?whiteArea:whiteAreaMax;
 	      		whiteAreaMin = whiteAreaMin > whiteArea?whiteArea:whiteAreaMin;
 	      		if( whiteArea > threshholdAreaMax || whiteArea < threshholdAreaMin) {
-	      			result += 1;
+	      			result = 1;
 	      		}
 
     			cnt++;
     		}
-    		//個数判定
-    		if( cnt != circleCountThresh) {
-    			result += 2;
-    		}
-    		//径と距離算出 X順で並び替え
-    		Rect tmpRect;
-    		Point tmpPoint;
-    		for(int i=0;i<cnt;i++) {
-    			for(int j=i+1;j<cnt;j++) {
-    				if( boundRect[i].tl().x > boundRect[j].tl().x ) {
-    					tmpRect = boundRect[i].clone();
-    					boundRect[i] = boundRect[j].clone();
-    					boundRect[j] = tmpRect;
+        }
+        if(holeDispChk.isSelected()) {
+    		if( result == 1 ) {
+				Imgproc.putText(dst_,
+						"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
+								" Max=" + String.format("%d",whiteAreaMax) +
+								" Min=" + String.format("%d",whiteAreaMin),
+						new Point(offset_x+80,offset_y-6),
+						Imgproc.FONT_HERSHEY_SIMPLEX, 1.0,new Scalar(128,255,128),2);
+			}else {
+				Imgproc.putText(dst_, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
+						" Max=" + String.format("%d",whiteAreaMax) +
+						" Min=" + String.format("%d",whiteAreaMin),
+						new Point(offset_x+80,offset_y-6),
+						Imgproc.FONT_HERSHEY_SIMPLEX, 1.0,new Scalar(0,0,255),2);
+			}
+        }
 
-    					tmpPoint = centers[i].clone();
+		//個数判定
+		if( cnt != circleCountThresh) {
+			result += 2;
+		}
+        if(holeDispChk.isSelected()) {
+			Imgproc.putText(dst_, String.valueOf(cnt),
+					new Point(offset_x-60,offset_y-6),
+					Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(128,255,128),2);
+        }
+		//径と距離算出 X順で並び替え
+		Point tmpPoint;
+		float tmpRadius;
+		for(int i=0;i<cnt;i++) {
+			for(int j=i+1;j<cnt;j++) {
+				if( centers[i].x > centers[j].x ) {
+					tmpPoint = centers[i].clone();
+					centers[i] = centers[j].clone();
+					centers[j] = tmpPoint;
 
-    				}
-    			}
-    		}
-    		//径 最大、最小、平均算出
-    		for(int i=0;i<cnt;i++) {
-    			if( )
-    		}
+					tmpRadius = radius[i][0];
+					radius[i][0] = radius[j][0];
+					radius[j][0] = tmpRadius;
+				}
+			}
+		}
+		//穴径(最大、最小、平均算出)
+		for(int i=0;i<cnt;i++) {
+			if( radius[i][0] > radiusMax ) {
+				radiusMax = radius[i][0];
+			}
+			if( radius[i][0] < radiusMin ) {
+				radiusMin = radius[i][0];
+			}
+			radiusAve += radius[i][0];
+		}
+		radiusAve /= cnt;
+		//穴間平均距離
+		for(int i=0;i<cnt-1;i++) {
+			distAve += centers[i+1].x - centers[i].x;
+		}
+		distAve /= cnt - 1;
 
+		if( settingModeFlg ) {
+			Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", whiteAreaMax)));
+			Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", whiteAreaMin)));
+		  	updateImageView(debugImg, Utils.mat2Image(roi));
+		  }
+		whiteAreaAverage = whiteAreaAverage / cnt;
 
+    	infoText += String.format("MAX=%.1f ,MIN=%.1f ,AVE=%.1f ,DistAve=%.1f ",
+    			radiusMax,radiusMin,radiusAve,distAve);
 
-    		if( settingModeFlg ) {
-    			Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", whiteAreaMax)));
-    			Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", whiteAreaMin)));
-    		  	updateImageView(debugImg, Utils.mat2Image(roi));
-    		  }
-    		whiteAreaAverage = whiteAreaAverage / cnt;
-    	}
-
-    	  infoText += String.format("MAX=%.1f ,MIN=%.1f ,AVE=%.1f ,DistAve=%.1f ",
-    			  radiusMax,radiusMin,radiusAve,distAve);
-
-    	  if(infoFlg) {
-    		 Platform.runLater(
-                   () ->info1.setText(infoText));
-    	  }
+    	if(infoFlg) {
+    		Platform.runLater(
+    				() ->info1.setText(infoText));
+    	 }
 
 	    return result;
 
     }
-    /**
-     * 検出円描画
-     * @param circles
-     * @param img
-     */
-    private String fncDrwCircles(Mat judgeAreaMat,Mat circles ,Mat img,boolean infoFlg) {
-  	  double[] data,data2;
-  	  double rho;
-  	  Point pt = new Point();
-  	  infoText = "";
-  	  double radiusMax,radiusMin,radiusAve,distAve;
-  	  radiusMax = 0;
-  	  radiusMin = 9999;
-  	  radiusAve = 0;
-  	  distAve = 0;
 
-  	  //ソーティング　Ｘ昇順
-  	  for (int i = 0; i < circles.cols(); i++){
-  	  	  for (int j = 1+i; j < circles.cols(); j++){
-			data = circles.get(0, i);
-			data2 = circles.get(0, j);
-			if( data[0] > data2[0] ) {
-				circles.put(0, i,data2);
-				circles.put(0, j,data);
-			}
-  	  	  }
-  	  }
-  	  //最大、最小、平均、距離平均計算
-  	  if( circles.cols() >= 2) {
-	  	  for( int i= 0; i < circles.cols(); i++) {
-	  		  double r = circles.get(0, i)[2];
-	  		  radiusAve += r;
-
-	  		  if( radiusMax < r ) radiusMax = r;
-	  		  if( radiusMin > r ) radiusMin = r;
-
-	  		  if( i != circles.cols()-1 ) {
-	  			  distAve += circles.get(0, circles.cols()-1)[0] - circles.get(0, circles.cols()-2)[0];
-	  		  }
-	  	  }
-  		  distAve /= (circles.cols()-1);
-  		  holeDist_DimSetting = distAve;
-  	  	  radiusAve /= circles.cols();
-  	  }else {
-  		radiusAve = circles.get(0, 0)[2];
-  		radiusMax = radiusAve;
-  		radiusMin = radiusAve;
-  		distAve = 0;
-  	  }
-
-  	  infoText += String.format("MAX=%.1f ,MIN=%.1f ,AVE=%.1f ,DistAve=%.1f ",
-  			  radiusMax,radiusMin,radiusAve,distAve);
-
-  	  for (int i = 0; i < circles.cols(); i++){
-  	    data = circles.get(0, i);
-  	    pt.x = data[0];
-  	    pt.y = data[1];
-  	    rho = data[2];
-  	    Imgproc.circle(img, pt, (int) rho, new Scalar(0,255,0),4);
-  	    Imgproc.arrowedLine(img, new Point(pt.x-50,pt.y-50),
-  	    		new Point(pt.x-6,pt.y-6),new Scalar(0,255,0), 4);
-  	  }
-
-  	  if(infoFlg) {
-  		 Platform.runLater(
-                 () ->info1.setText(infoText));
-  	  }
-
-  	  return infoText;
-  	}
-
-    /**
-     * 穴面積判定
-     * @param judgeAreaMat
-     * @param circles
-     * @param threshholdAreaMax　白面積の上限
-     * @param threshholdAreaMin　白面積の下限
-     * @return
-     */
-    private boolean holeWhiteAreaCheck(Mat judgeAreaMat,Mat circles,int threshholdAreaMax,int threshholdAreaMin) {
-      boolean result = true;
-	  Mat roi = new Mat(1,1,CvType.CV_8U);
-	  int whiteArea = 0;
-	  final int offset = 0;
-
-	  whiteAreaAverage = 0;
-	  whiteAreaMax = 0;
-	  whiteAreaMin = 99999;
-
-	  for( int i= 0; i < circles.cols(); i++) {
-		double[] v = circles.get(0, i);//[0]:X  [1]:Y  [2]:r
-		int  x = (int)v[0];
-		int  y = (int)v[1];
-		int  r = (int)v[2];
-		if( x-r-offset < 0 || y-r-offset<0 || x-r-offset+r+r+offset>judgeAreaMat.width() || y-r-offset+r+r+offset>judgeAreaMat.height() ) {
-			result = false;
-			Platform.runLater(() ->info2.appendText("穴検出エリアが狭すぎ、面積判定ができません。\n"));
-		}else {
-	  		roi = judgeAreaMat.submat(new Rect( x-r-offset, y-r-offset, r+r+offset, r+r+offset));
-	  		whiteArea = Core.countNonZero(roi);
-	  		whiteAreaAverage += whiteArea;
-	  		whiteAreaMax = whiteAreaMax < whiteArea?whiteArea:whiteAreaMax;
-	  		whiteAreaMin = whiteAreaMin > whiteArea?whiteArea:whiteAreaMin;
-	  		if( whiteArea > threshholdAreaMax || whiteArea < threshholdAreaMin)
-	  			result = false;
-		}
-	  }
-	  if( settingModeFlg ) {
-	  	  Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", whiteAreaMax)));
-	  	  Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", whiteAreaMin)));
-	  	  updateImageView(debugImg, Utils.mat2Image(roi));
-	  }
-
-	  whiteAreaAverage = whiteAreaAverage / circles.cols();
-	  return result;
-    }
 
     /**
      * クリックで面積スピナーの値を一致させる
@@ -2018,8 +1878,8 @@ public class VisonController{
      */
     @FXML
     void onWhiteAreaLabelClicked(MouseEvent event) {
-    	int max = (int)(Double.valueOf(whiteRatioLabel.getText())*1.3);
-    	int min = (int)(Double.valueOf(blackRatioLabel.getText())*0.7);
+    	int max = (int)(Double.valueOf(whiteRatioLabel.getText())*1.2);
+    	int min = (int)(Double.valueOf(blackRatioLabel.getText())*0.8);
     	Platform.runLater( () ->whiteRatioMaxSp.setValueFactory(
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,
 				max,
