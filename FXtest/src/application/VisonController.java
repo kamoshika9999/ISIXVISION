@@ -1386,8 +1386,9 @@ public class VisonController{
 		        		Imgproc.dilate(holeDetectAreaMatroi, holeDetectAreaMatroi, new Mat(),new Point(-1,-1),para.hole_fil_dilateValue[i]);
 		        	}
 
-
-		            int foundCircle_result_int = foundCircle(
+		        	int foundCircle_result_int=0;
+		    		if( !settingModeFlg ) {
+		            foundCircle_result_int = foundCircle(
 		            		holeDetectAreaMatroi,//検出領域のサブMAT
 		            		mainViewMat,//結果の描画
 		            		(int)para.hole_circlePara5[i],//穴間距離の閾値
@@ -1395,13 +1396,12 @@ public class VisonController{
 		            		(int)para.hole_circlePara8[i],//穴径の最小値
 		            		para.hole_circlePara7[i],//円形度
 		            		para.hole_cntHoleTh[i],//穴数の閾値 設定領域の為「-1」と入れ区別する
-		            		whiteRatioMaxSp.getValue(),//白面積の最大値
-		            		whiteRatioMinSp.getValue(),//白面積の最小値
-		            		true,//インフォメーションに表示する
+		            		para.hole_whiteAreaMax[i],//白面積の最大値
+		            		para.hole_whiteAreaMin[i],//白面積の最小値
+		            		false,//インフォメーションに表示する
 		            		r.x,r.y
 		            		);
-
-					//if( !FilterViewMode.isSelected()) {
+		    		}
 
 
 					//判定
@@ -1479,7 +1479,6 @@ public class VisonController{
 
 
         	//寸法測定
-
         	boolean dimFlg;
        		dimFlg = dim_templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
         											,false,dimensionDispChk.isSelected());
@@ -1740,6 +1739,7 @@ public class VisonController{
         Rect[] boundRect = new Rect[contours.size()];
         Point[] centers = new Point[contours.size()];
         float[][] radius = new float[contours.size()][1];
+        
         int cnt = 0;
         Mat roi = new Mat(1,1,CvType.CV_8U);
         int whiteArea = 0;
@@ -1755,7 +1755,10 @@ public class VisonController{
 	  	whiteAreaMax = 0;//クラス変数
 	  	whiteAreaMin = 99999;//クラス変数
 
-        while (iterator.hasNext()){
+	  	//*************************************************************************************************************
+	  	//円の取得
+	  	//*************************************************************************************************************
+	  	while (iterator.hasNext()){
     		MatOfPoint contour = iterator.next();
     		double area = Imgproc.contourArea(contour);
     		double arclength = Imgproc.arcLength(new MatOfPoint2f(contour.toArray()),true);
@@ -1764,54 +1767,81 @@ public class VisonController{
     		if( circularity >= circularity_ &&
     				arclength/(2*Math.PI) >= min_diameter_ && arclength/(2*Math.PI) <= max_diameter_) {//円形度の比較
     			contoursPoly[cnt] = new MatOfPoint2f();
+    			try {
     			Imgproc.approxPolyDP(new MatOfPoint2f(contour.toArray()), contoursPoly[cnt], 3, true);
 	            boundRect[cnt] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[cnt].toArray()));
-    			centers[cnt] = new Point();
+
+	            //検出円の位置と直径の取得
+	            centers[cnt] = new Point();
     			Imgproc.minEnclosingCircle(contoursPoly[cnt], centers[cnt], radius[cnt]);
-	            Scalar color = new Scalar(0,0,255);
-
-	            if(holeDispChk.isSelected()) {
-		            Imgproc.circle(dst_,
-		            		new Point(centers[cnt].x+offset_x,centers[cnt].y+offset_y),
-		            		(int) radius[cnt][0], color, 2);
-		            Imgproc.rectangle(dst_,
-		            		new Point(boundRect[cnt].tl().x+offset_x,boundRect[cnt].tl().y+offset_y),
-		            		new Point(boundRect[cnt].br().x+offset_x,boundRect[cnt].br().y+offset_y),
-		            		color, 2);
-	            }
-
-	            //面積判定
-	      		roi = src_.submat(boundRect[cnt]);
-	      		whiteArea = Core.countNonZero(roi);
-	      		whiteAreaAverage += whiteArea;
-	      		whiteAreaMax = whiteAreaMax < whiteArea?whiteArea:whiteAreaMax;
-	      		whiteAreaMin = whiteAreaMin > whiteArea?whiteArea:whiteAreaMin;
-	      		if( whiteArea > threshholdAreaMax || whiteArea < threshholdAreaMin) {
-	      			result = 1;
-	      		}
-
+    			}catch(Exception e){
+    				System.out.println(e);
+    			}
     			cnt++;
     		}
         }
+	  	if( cnt == 0 ) {
+	  		return 3;
+	  	}
+	  	//*************************************************************************************************************
+	  	//検出円描画、検出矩形描画
+	  	//*************************************************************************************************************
+	  	for( int i=0; i<cnt; i++ ) {
+		  	if(holeDispChk.isSelected()) {
+	            Scalar color = new Scalar(0,255,255);
+	            Imgproc.circle(dst_,
+	            		new Point(centers[i].x+offset_x,centers[i].y+offset_y),
+	            		(int) radius[i][0], color, 2);
+	            Imgproc.rectangle(dst_,
+	            		new Point(boundRect[i].tl().x+offset_x,boundRect[i].tl().y+offset_y),
+	            		new Point(boundRect[i].br().x+offset_x,boundRect[i].br().y+offset_y),
+	            		color, 2);
+	        }
+		  	//*************************************************************************************************************
+	        //白面積判定
+	        if(src_.width() < boundRect[i].br().x) {
+	        	boundRect[i].br().x = src_.width() -1;
+	        }
+	        if( src_.height() < boundRect[i].br().y) {
+	        	boundRect[i].br().y = src_.height() -1;
+	        }
+		  	roi = src_.submat(boundRect[i]);
+	  		whiteArea = Core.countNonZero(roi);
+	  		whiteAreaAverage += whiteArea;
+	  		whiteAreaMax = whiteAreaMax < whiteArea?whiteArea:whiteAreaMax;
+	  		whiteAreaMin = whiteAreaMin > whiteArea?whiteArea:whiteAreaMin;
+	  		if( whiteArea > threshholdAreaMax || whiteArea < threshholdAreaMin) {
+	  			result = 1;
+	  		}
+  		}
+		if( settingModeFlg ) {
+			Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", whiteAreaMax)));
+			Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", whiteAreaMin)));
+		  	updateImageView(debugImg, Utils.mat2Image(roi));
+		}
+		
+  		whiteAreaAverage /= cnt;
+	  	
         if(holeDispChk.isSelected()) {
-    		if( result == 1 ) {
+    		if( result == 0 ) {
 				Imgproc.putText(dst_,
 						"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
 								" Max=" + String.format("%d",whiteAreaMax) +
 								" Min=" + String.format("%d",whiteAreaMin),
-						new Point(offset_x+80,offset_y-6),
+						new Point(offset_x+20,offset_y-6),
 						Imgproc.FONT_HERSHEY_SIMPLEX, 1.0,new Scalar(128,255,128),2);
 			}else {
 				Imgproc.putText(dst_, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
 						" Max=" + String.format("%d",whiteAreaMax) +
 						" Min=" + String.format("%d",whiteAreaMin),
-						new Point(offset_x+80,offset_y-6),
+						new Point(offset_x+20,offset_y-6),
 						Imgproc.FONT_HERSHEY_SIMPLEX, 1.0,new Scalar(0,0,255),2);
 			}
         }
 
 		//個数判定
-		if( cnt != circleCountThresh) {
+        
+		if( cnt != circleCountThresh && circleCountThresh != -1) {
 			result += 2;
 		}
         if(holeDispChk.isSelected()) {
@@ -1846,17 +1876,18 @@ public class VisonController{
 			radiusAve += radius[i][0];
 		}
 		radiusAve /= cnt;
+
 		//穴間平均距離
 		for(int i=0;i<cnt-1;i++) {
 			distAve += centers[i+1].x - centers[i].x;
+			
+			if( holeLength > centers[i+1].x - centers[i].x ) {
+				result = 4;
+			}
 		}
+
 		distAve /= cnt - 1;
 
-		if( settingModeFlg ) {
-			Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", whiteAreaMax)));
-			Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", whiteAreaMin)));
-		  	updateImageView(debugImg, Utils.mat2Image(roi));
-		  }
 		whiteAreaAverage = whiteAreaAverage / cnt;
 
     	infoText += String.format("MAX=%.1f ,MIN=%.1f ,AVE=%.1f ,DistAve=%.1f ",
@@ -1866,6 +1897,7 @@ public class VisonController{
     		Platform.runLater(
     				() ->info1.setText(infoText));
     	 }
+    		
 
 	    return result;
 

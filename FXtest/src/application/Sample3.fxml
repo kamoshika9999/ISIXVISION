@@ -234,7 +234,7 @@
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Button fx:id="preset1" layoutX="272.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="PreSet 1">
+                        <Button fx:id="preset1" layoutX="272.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="TO220SM">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -242,7 +242,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
-                        <Button fx:id="preset2" layoutX="336.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="PreSet 2">
+                        <Button fx:id="preset2" layoutX="336.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="D2PAK">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -250,7 +250,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
-                        <Button fx:id="preset3" layoutX="400.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="PreSet 3">
+                        <Button fx:id="preset3" layoutX="400.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="TOGL">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -258,7 +258,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
-                        <Button fx:id="preset4" layoutX="464.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="PreSet 4">
+                        <Button fx:id="preset4" layoutX="464.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="LEDIP">
                            <font>
                               <Font size="11.0" />
                            </font>
