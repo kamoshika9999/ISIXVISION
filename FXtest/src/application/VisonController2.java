@@ -1211,7 +1211,6 @@ public class VisonController2{
 	    	Mat tmp1Mat = new Mat();
 	    	Mat tmp2Mat = new Mat();
 	    	Mat tmp3Mat = new Mat();
-	    	Mat tmp4mat = new Mat();
 	    	Mat fillterAftterMat = mainViewGlayMat.clone();//セッティングモード時判定のベースMat
 	    	int filterUselFlg = 0;
 
@@ -1240,7 +1239,6 @@ public class VisonController2{
 	    		tmp3Mat = fillterAftterMat.clone();
 	    		filterUselFlg+=4;
 	    	}
-    		Imgproc.Canny(fillterAftterMat, tmp4mat,sliderDetecPara6.getValue(),sliderDetecPara6.getValue()/2);
 
 	    	if( FilterViewMode.isSelected()) {
 	    		switch(filterUselFlg) {
@@ -1248,49 +1246,49 @@ public class VisonController2{
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
 		    		break;
 		    	case 1://ガウシアンのみ
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
 		    		break;
 		    	case 2://２値化のみ
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
 		    		break;
 		    	case 3://ガウシアンと２値化あり
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
-			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
 		    		break;
 		    	case 4://膨張のみ
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
 		    		break;
 		    	case 5://ガウシアンと膨張あり
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
 		    		break;
 		    	case 6://ガウシアン無し　他あり
 			        updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
 		    		break;
 		    	case 7://全てあり
 			        updateImageView(imgGLAY1, Utils.mat2Image(tmp1Mat));
 			        updateImageView(imgGLAY2, Utils.mat2Image(tmp2Mat));
 			        updateImageView(imgGLAY3, Utils.mat2Image(tmp3Mat));
-			        updateImageView(imgGLAY, Utils.mat2Image(tmp4mat));
+			        updateImageView(imgGLAY, Utils.mat2Image(fillterAftterMat));
 		    		break;
 		    	}
 	    	}
@@ -2170,6 +2168,8 @@ public class VisonController2{
 		pObj.dimensionDispChk =  dimensionDispChk.isSelected();
 	    pObj.holeDispChk = holeDispChk.isSelected();
 	    pObj.patternDispChk = patternDispChk.isSelected();
+		pObj.camera_revers = camera_revers_chk.isSelected();
+
 
     	parameter para = pObj.para[pObj.select];
 		para.hole_rects[4] =  (Rectangle)draggingRect.clone();

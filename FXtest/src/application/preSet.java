@@ -16,6 +16,8 @@ public class preSet implements Serializable{
 	boolean holeDispChk;
 	boolean patternDispChk;
 
+	boolean camera_revers;
+
 	String[] presetNameText = {"TO220","D2PAK","TOGL","LEDIP"};
 
 
@@ -31,6 +33,7 @@ public class preSet implements Serializable{
 			cameraWidth = 1920;
 			cameraHeight = 1080;
 			adcFlg = true;
+			camera_revers = false;
 		}
 	}
 }

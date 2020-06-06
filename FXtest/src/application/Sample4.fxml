@@ -28,7 +28,7 @@
    <children>
       <Accordion fx:id="accordion_1" layoutY="350.0" prefHeight="343.0" prefWidth="768.0">
         <panes>
-          <TitledPane text="Hard Setting /SAVE /LOAD /Other">
+          <TitledPane text="ハード 設定 / セーブ / ロード　">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
@@ -46,7 +46,7 @@
                               <DropShadow />
                            </effect>
                         </CheckBox>
-                        <CheckBox fx:id="FilterViewMode" layoutX="14.0" layoutY="45.0" mnemonicParsing="false" onAction="#onEventTrigger" text="FilterViewMode">
+                        <CheckBox fx:id="FilterViewMode" layoutX="14.0" layoutY="45.0" mnemonicParsing="false" onAction="#onEventTrigger" text="フィルタ画像表示">
                            <font>
                               <Font size="13.0" />
                            </font>
@@ -66,22 +66,22 @@
                         <TextField fx:id="capH_text" alignment="CENTER_RIGHT" layoutX="176.0" layoutY="66.0" prefHeight="25.0" prefWidth="52.0" text="1080" />
                         <Label layoutX="380.0" layoutY="20.0" prefHeight="17.0" prefWidth="68.0" text="ADC Thresh" />
                         <Label layoutX="126.0" layoutY="69.0" prefHeight="17.0" prefWidth="45.0" text="CAP H" />
-                        <Button fx:id="demoMode" layoutX="15.0" layoutY="100.0" mnemonicParsing="false" onAction="#onDemo" prefHeight="25.0" prefWidth="75.0" text="DemoMode">
+                        <Button fx:id="demoMode" layoutX="15.0" layoutY="100.0" mnemonicParsing="false" onAction="#onDemo" prefHeight="25.0" prefWidth="75.0" text="デモモード">
                            <font>
                               <Font size="10.0" />
                            </font>
                         </Button>
                         <Button fx:id="saveBtn" layoutX="19.0" layoutY="203.0" mnemonicParsing="false" onAction="#saveAllPara" text="SAVE" />
                         <Button fx:id="loadBtn" layoutX="68.0" layoutY="203.0" mnemonicParsing="false" onAction="#loadAllPara" text="LOAD" />
-                        <Button fx:id="aTriggerBtn" layoutX="15.0" layoutY="134.0" mnemonicParsing="false" onAction="#onTrigger" text="AutoTrigger">
+                        <Button fx:id="aTriggerBtn" layoutX="15.0" layoutY="134.0" mnemonicParsing="false" onAction="#onTrigger" text="オートトリガ">
                            <font>
                               <Font size="11.0" />
                            </font>
                         </Button>
-                        <Button fx:id="getInfoBtn" layoutX="97.0" layoutY="100.0" mnemonicParsing="false" onAction="#onInfoBtnAction" prefHeight="25.0" prefWidth="85.0" text="CameraInfo" />
+                        <Button fx:id="getInfoBtn" layoutX="97.0" layoutY="100.0" mnemonicParsing="false" onAction="#onInfoBtnAction" prefHeight="25.0" prefWidth="85.0" text="カメラ情報" />
                         <Button fx:id="testBtn" layoutX="14.0" layoutY="163.0" mnemonicParsing="false" onAction="#onTest" prefHeight="25.0" prefWidth="77.0" text="検査開始" />
                         <Button fx:id="stopTest" layoutX="99.0" layoutY="163.0" mnemonicParsing="false" onAction="#onTestStop" prefHeight="25.0" prefWidth="85.0" text="停止" />
-                        <Button fx:id="GPIO_allRead" layoutX="196.0" layoutY="104.0" mnemonicParsing="false" onAction="#onGPIOAllRead" prefHeight="25.0" prefWidth="90.0" text="GPIO AllRead" />
+                        <Button fx:id="GPIO_allRead" disable="true" layoutX="196.0" layoutY="104.0" mnemonicParsing="false" onAction="#onGPIOAllRead" prefHeight="25.0" prefWidth="90.0" text="GPIO AllRead" />
                         <Button fx:id="shotImgBtn_chess" layoutX="294.0" layoutY="104.0" mnemonicParsing="false" onAction="#onShotImg_chess" prefHeight="25.0" prefWidth="108.0" text="チェスボード撮影" />
                         <Button fx:id="cameraCalib" layoutX="410.0" layoutY="104.0" mnemonicParsing="false" onAction="#onCameraCalib" prefHeight="25.0" prefWidth="160.0" text="カメラキャリブレーション実行" />
                         <Button fx:id="calibDataDel" layoutX="410.0" layoutY="135.0" mnemonicParsing="false" onAction="#onCalbdataDel" prefHeight="25.0" prefWidth="160.0" text="キャリブレーションデータ削除" />
@@ -105,13 +105,13 @@
                            </effect>
                         </CheckBox>
                         <Button fx:id="paraInitBtn" layoutX="705.0" layoutY="216.0" mnemonicParsing="false" onAction="#onParaInitBtn" text="初期化" />
-                        <Spinner fx:id="dellySpinner2" initialValue="50" layoutX="636.0" layoutY="60.0" prefHeight="25.0" prefWidth="69.0" />
-                        <Label layoutX="560.0" layoutY="65.0" text="2nd.Delly(mSec)">
+                        <Spinner fx:id="dellySpinner2" disable="true" initialValue="50" layoutX="636.0" layoutY="60.0" prefHeight="25.0" prefWidth="69.0" />
+                        <Label disable="true" layoutX="560.0" layoutY="65.0" text="2nd.Delly(mSec)">
                            <font>
                               <Font size="10.0" />
                            </font>
                         </Label>
-                        <CheckBox fx:id="trigger_2nd_chk" layoutX="713.0" layoutY="61.0" mnemonicParsing="false" text="有効" />
+                        <CheckBox fx:id="trigger_2nd_chk" disable="true" layoutX="713.0" layoutY="61.0" mnemonicParsing="false" text="有効" />
                         <Button fx:id="setting_csv_out" layoutX="120.0" layoutY="203.0" mnemonicParsing="false" onAction="#onCSVout" text="CSV" />
                         <CheckBox fx:id="imgSaveFlg" layoutX="408.0" layoutY="195.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
                         <CheckBox fx:id="imgSaveFlg_all" layoutX="409.0" layoutY="216.0" mnemonicParsing="false" text="OK SAVE" />
@@ -136,7 +136,7 @@
                   </AnchorPane>
             </content>
           </TitledPane>
-          <TitledPane text="ImageFilter /Hole Detect Setting">
+          <TitledPane text="穴検出設定 / 品種選択">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
@@ -186,14 +186,14 @@
                         <Slider fx:id="sliderDetecPara9" layoutX="374.0" layoutY="72.0" majorTickUnit="10.0" max="250.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="37.0" prefWidth="196.0" showTickLabels="true" showTickMarks="true" value="100.0" />
                         <TextField fx:id="textFieldDetecPara9" alignment="CENTER_RIGHT" layoutX="577.0" layoutY="66.0" prefHeight="25.0" prefWidth="46.0" />
                         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="43.0" layoutX="242.0" layoutY="151.0" stroke="BLACK" strokeType="INSIDE" width="283.0" />
-                        <CheckBox fx:id="dilateCheck" layoutX="21.0" layoutY="154.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Dilate" />
+                        <CheckBox fx:id="dilateCheck" layoutX="21.0" layoutY="154.0" mnemonicParsing="false" onAction="#onCheckBtn" text="膨張" />
                         <Slider fx:id="dilateSliderN" layoutX="94.0" layoutY="156.0" majorTickUnit="1.0" max="5.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="1.0" />
                         <Slider fx:id="gauusianSliderY" layoutX="237.0" layoutY="113.0" majorTickUnit="10.0" min="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" value="10.0" />
                         <Slider fx:id="gauusianSliderK" layoutX="379.0" layoutY="113.0" majorTickUnit="10.0" max="30.0" min="1.0" minorTickCount="9" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="5.0" />
-                        <CheckBox fx:id="threshholdCheck" layoutX="245.0" layoutY="153.0" mnemonicParsing="false" onAction="#onCheckBtn" selected="true" text="threshhold" />
-                        <Slider fx:id="threshholdSlider" layoutX="329.0" layoutY="155.0" majorTickUnit="50.0" max="255.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" value="128.0" />
+                        <CheckBox fx:id="threshholdCheck" layoutX="245.0" layoutY="153.0" mnemonicParsing="false" onAction="#onCheckBtn" selected="true" text="２値閾値" />
+                        <Slider fx:id="threshholdSlider" layoutX="329.0" layoutY="155.0" majorTickUnit="50.0" max="255.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" showTickLabels="true" showTickMarks="true" value="190.0" />
                         <Label fx:id="threshholdLabel" layoutX="469.0" layoutY="153.0" text="Label" />
-                        <CheckBox fx:id="threshhold_Inverse" layoutX="245.0" layoutY="173.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Inverse" />
+                        <CheckBox fx:id="threshhold_Inverse" layoutX="245.0" layoutY="173.0" mnemonicParsing="false" onAction="#onCheckBtn" text="白黒反転" />
                         <Button fx:id="okuri1_btn" layoutX="16.0" layoutY="195.0" mnemonicParsing="false" onAction="#onSetValue" prefHeight="23.0" prefWidth="57.0" text="①送り穴">
                            <font>
                               <Font size="10.0" />
@@ -214,22 +214,22 @@
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Button fx:id="setVeriBtn1" layoutX="16.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
+                        <Button fx:id="setVeriBtn1" layoutX="16.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="設定確認">
                            <font>
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Button fx:id="setVeriBtn2" layoutX="78.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
+                        <Button fx:id="setVeriBtn2" layoutX="78.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="設定確認">
                            <font>
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Button fx:id="setVeriBtn3" layoutX="139.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
+                        <Button fx:id="setVeriBtn3" layoutX="139.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="設定確認">
                            <font>
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Button fx:id="setVeriBtn4" layoutX="200.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="CheckSet">
+                        <Button fx:id="setVeriBtn4" layoutX="200.0" layoutY="218.0" mnemonicParsing="false" onAction="#onSetVeri" prefHeight="23.0" prefWidth="57.0" text="設定確認">
                            <font>
                               <Font size="10.0" />
                            </font>
@@ -266,7 +266,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
-                        <CheckBox fx:id="gauusianCheck" layoutX="18.0" layoutY="113.0" mnemonicParsing="false" onAction="#onCheckBtn" text="Gauusian" />
+                        <CheckBox fx:id="gauusianCheck" layoutX="18.0" layoutY="113.0" mnemonicParsing="false" onAction="#onCheckBtn" text="ぼかし" />
                         <Label layoutX="525.0" layoutY="113.0" text="Label" />
                         <ImageView fx:id="debugImg" fitHeight="91.0" fitWidth="102.0" layoutX="653.0" layoutY="36.0" pickOnBounds="true" preserveRatio="true" smooth="false" />
                         <Label layoutX="656.0" layoutY="126.0" text="白MAX" />
@@ -287,7 +287,7 @@
                   </AnchorPane>
             </content>
           </TitledPane>
-          <TitledPane fx:id="ptm_setting_accordion" text="Pattern Detect Setting">
+          <TitledPane fx:id="ptm_setting_accordion" text="パターンマッチング設定">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
@@ -305,7 +305,7 @@
                      </children></AnchorPane>
             </content>
           </TitledPane>
-            <TitledPane animated="false" text="Dimension measurement">
+            <TitledPane animated="false" text="寸法測定設定">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
@@ -318,7 +318,7 @@
                         <Label layoutX="175.0" layoutY="6.0" text="1列目 ポケット" />
                         <TextField fx:id="dim_offset_F_1" layoutX="114.0" layoutY="203.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
                         <TextField fx:id="dim_offset_P2_1" layoutX="60.0" layoutY="203.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
-                        <Label layoutX="22.0" layoutY="207.0" text="offset" />
+                        <Label layoutX="13.0" layoutY="207.0" text="オフセット" />
                         <Label layoutX="70.0" layoutY="184.0" text="P2" />
                         <Label layoutX="131.0" layoutY="184.0" text="F" />
                         <TextField fx:id="dim_offset_E_1" layoutX="167.0" layoutY="204.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
@@ -340,10 +340,10 @@
                         <Line endX="-101.0" endY="200.0" layoutX="597.0" layoutY="28.0" startX="-101.0" startY="-14.0" />
                         <Button fx:id="dimSettingBtn" layoutX="511.0" layoutY="76.0" mnemonicParsing="false" onAction="#onDimSetting" prefHeight="25.0" prefWidth="109.0" text="設定" />
                         <Label layoutX="506.0" layoutY="8.0" text="送り穴距離ピクセル換算" />
-                        <Label layoutX="507.0" layoutY="32.0" prefHeight="35.0" prefWidth="237.0" text="※HoleDetectSettingにて送り穴を２個認識させ設定ボタンを押す" wrapText="true" />
+                        <Label layoutX="507.0" layoutY="32.0" prefHeight="35.0" prefWidth="237.0" text="※穴検出設定にて送り穴を２個認識させ設定ボタンを押す" wrapText="true" />
                         <TextField fx:id="dimSetting_offset" alignment="CENTER_RIGHT" layoutX="563.0" layoutY="112.0" prefHeight="25.0" prefWidth="57.0" text="0" />
-                        <Label layoutX="520.0" layoutY="116.0" prefHeight="17.0" prefWidth="36.0" text="offset" />
-                        <Label fx:id="dimSettingLabel" layoutX="520.0" layoutY="149.0" prefHeight="27.0" prefWidth="116.0" text="offset">
+                        <Label layoutX="508.0" layoutY="116.0" prefHeight="17.0" prefWidth="48.0" text="オフセット" />
+                        <Label fx:id="dimSettingLabel" layoutX="508.0" layoutY="151.0" prefHeight="27.0" prefWidth="116.0" text="999μm">
                            <font>
                               <Font name="System Bold" size="18.0" />
                            </font>
@@ -455,7 +455,7 @@
             <Rectangle2D />
          </viewport>
       </ImageView>
-      <Label layoutX="496.0" layoutY="183.0" text="④Canny" textFill="#e6f20d" />
+      <Label layoutX="496.0" layoutY="183.0" text="④final" textFill="#e6f20d" />
       <Label layoutX="335.0" layoutY="63.0" text="①Gauusian" textFill="#eaff02">
          <font>
             <Font name="System Bold" size="12.0" />
@@ -487,7 +487,7 @@
          </font>
       </Label>
       <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;v2.9 2020/06/02 HoleDedection Change&#10;v3.0 2020/06/06 patternMatching maxCount=20&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
-      <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
+      <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="設定">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />
          </effect>
