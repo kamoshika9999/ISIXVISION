@@ -2276,7 +2276,7 @@ public class VisonController2{
      */
     public void loadAllPara(){
     	try {
-	    	FileInputStream fi = new FileInputStream("./conf5.txt");
+	    	FileInputStream fi = new FileInputStream("./conf14.txt");
 	    	ObjectInputStream objIn = new ObjectInputStream(fi);
 
 	    	pObj = (preSet)objIn.readObject();
