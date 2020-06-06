@@ -28,7 +28,7 @@ public class PasswordDialogController {
 
     @FXML
     void onOKbtn(ActionEvent event) {
-    	if(pass_text.getText().matches("62013437")) {
+    	if(pass_text.getText().matches("1111")) {
     		flg = true;
     	}else {
     		flg = false;

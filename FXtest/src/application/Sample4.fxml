@@ -338,12 +338,12 @@
                         <TextField fx:id="dim_offset_E_2" layoutX="398.0" layoutY="205.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
                         <Label layoutX="415.0" layoutY="186.0" text="E" />
                         <Line endX="-101.0" endY="200.0" layoutX="597.0" layoutY="28.0" startX="-101.0" startY="-14.0" />
-                        <Button fx:id="dimSettingBtn" layoutX="511.0" layoutY="76.0" mnemonicParsing="false" onAction="#onDimSetting" prefHeight="25.0" prefWidth="109.0" text="設定" />
+                        <Button fx:id="dimSettingBtn" layoutX="511.0" layoutY="76.0" mnemonicParsing="false" onAction="#onDimSetting" prefHeight="25.0" prefWidth="174.0" text="換算距離反映 (オフセットも反映)" />
                         <Label layoutX="506.0" layoutY="8.0" text="送り穴距離ピクセル換算" />
                         <Label layoutX="507.0" layoutY="32.0" prefHeight="35.0" prefWidth="237.0" text="※穴検出設定にて送り穴を２個認識させ設定ボタンを押す" wrapText="true" />
                         <TextField fx:id="dimSetting_offset" alignment="CENTER_RIGHT" layoutX="563.0" layoutY="112.0" prefHeight="25.0" prefWidth="57.0" text="0" />
                         <Label layoutX="508.0" layoutY="116.0" prefHeight="17.0" prefWidth="48.0" text="オフセット" />
-                        <Label fx:id="dimSettingLabel" layoutX="508.0" layoutY="151.0" prefHeight="27.0" prefWidth="116.0" text="999μm">
+                        <Label fx:id="dimSettingLabel" layoutX="565.0" layoutY="152.0" prefHeight="27.0" prefWidth="116.0" text="999μm">
                            <font>
                               <Font name="System Bold" size="18.0" />
                            </font>
@@ -354,6 +354,7 @@
                               <Font name="System Bold" size="13.0" />
                            </font>
                         </ToggleButton>
+                        <Label layoutX="508.0" layoutY="157.0" prefHeight="17.0" prefWidth="48.0" text="換算距離" />
                      </children></AnchorPane>
               </content>
             </TitledPane>
@@ -511,7 +512,7 @@
          </font>
       </CheckBox>
       <Button fx:id="shotImgBtn" layoutX="1097.0" layoutY="344.0" mnemonicParsing="false" onAction="#onShotImg" prefHeight="25.0" prefWidth="90.0" text="ショット撮影" />
-      <Button fx:id="dimensionBtn" disable="true" layoutX="836.0" layoutY="396.0" mnemonicParsing="false" onAction="#onDimensionBtn" prefHeight="39.0" prefWidth="63.0" text="Dimension Viewer" wrapText="true">
+      <Button fx:id="dimensionBtn" disable="true" layoutX="836.0" layoutY="396.0" mnemonicParsing="false" onAction="#onDimensionBtn" prefHeight="39.0" prefWidth="63.0" text="Dimension Viewer" visible="false" wrapText="true">
          <effect>
             <DropShadow color="#3000f0" />
          </effect>
@@ -519,7 +520,7 @@
             <Font size="10.0" />
          </font>
       </Button>
-      <Button fx:id="ReTestBtn" disable="true" layoutX="767.0" layoutY="396.0" mnemonicParsing="false" onAction="#onRetestBtn" prefHeight="39.0" prefWidth="63.0" text="ReTest" wrapText="true">
+      <Button fx:id="ReTestBtn" disable="true" layoutX="767.0" layoutY="396.0" mnemonicParsing="false" onAction="#onRetestBtn" prefHeight="39.0" prefWidth="63.0" text="ReTest" visible="false" wrapText="true">
          <effect>
             <DropShadow color="#84f000" />
          </effect>
@@ -532,7 +533,7 @@
             <Font size="24.0" />
          </font>
       </Label>
-      <Button fx:id="holeAnalysisBtn" disable="true" layoutX="903.0" layoutY="396.0" mnemonicParsing="false" onAction="#onHoleAnalysisBtn" prefHeight="39.0" prefWidth="63.0" text="HoleAnalysis Viewer" wrapText="true">
+      <Button fx:id="holeAnalysisBtn" disable="true" layoutX="903.0" layoutY="396.0" mnemonicParsing="false" onAction="#onHoleAnalysisBtn" prefHeight="39.0" prefWidth="63.0" text="HoleAnalysis Viewer" visible="false" wrapText="true">
          <effect>
             <DropShadow color="#3000f0" />
          </effect>

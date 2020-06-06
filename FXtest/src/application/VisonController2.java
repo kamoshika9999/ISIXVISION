@@ -1865,6 +1865,7 @@ public class VisonController2{
 		}
 
 		distAve /= cnt - 1;
+		holeDist_DimSetting = distAve;//寸法測定に使用する値
 
 		whiteAreaAverage = whiteAreaAverage / cnt;
 
