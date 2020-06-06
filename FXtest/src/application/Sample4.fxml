@@ -24,7 +24,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="aPane" accessibleRole="TEXT_FIELD" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeypressed" pickOnBounds="false" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.VisonController">
+<AnchorPane fx:id="aPane" accessibleRole="TEXT_FIELD" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeypressed" pickOnBounds="false" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.VisonController2">
    <children>
       <Accordion fx:id="accordion_1" layoutY="350.0" prefHeight="343.0" prefWidth="768.0">
         <panes>
@@ -292,27 +292,16 @@
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
                         <Label layoutY="6.0" prefHeight="17.0" prefWidth="653.0" text="パターンマッチング設定" />
-                        <Button fx:id="ptm_set_pt1" layoutX="14.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン①登録" />
-                        <Button fx:id="ptm_set_pt2" layoutX="173.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン②登録" />
-                        <Button fx:id="ptm_set_pt3" layoutX="346.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン③登録" />
-                        <Button fx:id="ptm_set_pt4" layoutX="519.0" layoutY="23.0" mnemonicParsing="false" onAction="#onPtmSetImage" text="パターン④登録" />
-                        <ImageView fx:id="ptm_img1" fitHeight="90.0" fitWidth="90.0" layoutX="14.0" layoutY="60.0" pickOnBounds="true" preserveRatio="true" />
-                        <ImageView fx:id="ptm_img2" fitHeight="90.0" fitWidth="90.0" layoutX="173.0" layoutY="60.0" pickOnBounds="true" preserveRatio="true" />
-                        <ImageView fx:id="ptm_img3" fitHeight="90.0" fitWidth="90.0" layoutX="346.0" layoutY="60.0" pickOnBounds="true" preserveRatio="true" />
-                        <ImageView fx:id="ptm_img4" fitHeight="90.0" fitWidth="90.0" layoutX="504.0" layoutY="56.0" pickOnBounds="true" preserveRatio="true" />
-                        <Button fx:id="ptm_set_para1" layoutX="14.0" layoutY="166.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <Button fx:id="ptm_set_para2" layoutX="169.0" layoutY="166.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <Button fx:id="ptm_set_para3" layoutX="345.0" layoutY="166.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <Button fx:id="ptm_set_para4" layoutX="515.0" layoutY="166.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <CheckBox fx:id="ptm_pt1_enable" layoutX="14.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
-                        <CheckBox fx:id="ptm_pt2_enable" layoutX="173.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
-                        <CheckBox fx:id="ptm_pt3_enable" layoutX="346.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
-                        <CheckBox fx:id="ptm_pt4_enable" layoutX="519.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
+                        <ImageView fx:id="ptm_img" fitHeight="198.0" fitWidth="188.0" layoutX="139.0" layoutY="22.0" pickOnBounds="true" preserveRatio="true" />
+                        <Button fx:id="ptm_set_para" layoutX="2.0" layoutY="131.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="102.0" text="詳細設定" />
+                        <CheckBox fx:id="ptm_pt_enable" layoutX="14.0" layoutY="170.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
                         <ToggleButton fx:id="para_12st_shot1" disable="true" layoutX="681.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
                            <font>
                               <Font name="System Bold" size="13.0" />
                            </font>
                         </ToggleButton>
+                        <Spinner fx:id="ptm_selectNo" layoutX="2.0" layoutY="32.0" prefHeight="75.0" prefWidth="102.0" />
+                        <TextArea fx:id="ptm_textArea" layoutX="337.0" layoutY="14.0" prefHeight="200.0" prefWidth="330.0" />
                      </children></AnchorPane>
             </content>
           </TitledPane>
@@ -421,7 +410,7 @@
             <Font size="36.0" />
          </font>
       </Label>
-      <Label layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver2.9" textFill="#0a22d7">
+      <Label fx:id="presetText" layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver2.9" textFill="#0a22d7">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
@@ -497,7 +486,7 @@
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;v2.9 2020/06/02 HoleDedection Change&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;v2.9 2020/06/02 HoleDedection Change&#10;v3.0 2020/06/06 patternMatching maxCount=20&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="SettingMode">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />

@@ -42,7 +42,7 @@ public class parameter implements Serializable {
 	public int[] hole_whiteAreaMax;
 	public int[] hole_whiteAreaMin;
 
-	final int ptm_arrySize = 4;
+	static final int ptm_arrySize = 20;
 	String[] ptm_FileName;//パターンマッチングの登録Mat
 	Rectangle[] ptm_templatRect;//テンプレートの切り出し位置
 	Rectangle[] ptm_ptmMat_mask_rect;////x,y:テンプレートからの相対位置 width,height:矩形サイズ
@@ -140,11 +140,11 @@ public class parameter implements Serializable {
 		hole_fil_threshholdCheck  = new boolean[hole_arrySize];
 		hole_fil_threshhold_Invers  = new boolean[hole_arrySize];
 
-		ptm_fil_threshholdCheck = new boolean[hole_arrySize];
-		ptm_fil_threshhold_Invers = new boolean[hole_arrySize];
-
 		hole_whiteAreaMax = new int[hole_arrySize];
 		hole_whiteAreaMin = new int[hole_arrySize];
+
+		ptm_fil_threshholdCheck = new boolean[hole_arrySize];
+		ptm_fil_threshhold_Invers = new boolean[hole_arrySize];
 
 		ptm_DetectCnt = new int[ptm_arrySize];
 		ptm_Enable = new boolean[ptm_arrySize];
@@ -178,8 +178,8 @@ public class parameter implements Serializable {
 		ptm_ptmMat_mask_rect = new Rectangle[ptm_arrySize];
 		//--------------寸法測定------------------------
 		//マスク処理用
-		dim_templatRect = new Rectangle[ptm_arrySize];
-		dim_ptmMat_mask_rect = new Rectangle[ptm_arrySize];
+		dim_templatRect = new Rectangle[dim_arrySize];
+		dim_ptmMat_mask_rect = new Rectangle[dim_arrySize];
 
 		dim_DetectCnt = new int[dim_arrySize];
 		dim_fil_detectionCnt = new int[dim_arrySize];

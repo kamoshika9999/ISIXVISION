@@ -14,7 +14,7 @@ import org.opencv.imgproc.Imgproc;
  *
  */
 public class TMpara implements Cloneable{
-	public int arrayCnt = 4;
+	public int arrayCnt;
 	public int[] matchingTreshDetectCnt;//マッチングパターン数の閾値
 	public double[] matchingThresh;//テンプレートマッチングの閾値
 	public Mat[] paternMat;//パターンマッチングの登録Mat
@@ -39,36 +39,6 @@ public class TMpara implements Cloneable{
 
 	public Rectangle[] ptm_ptmMat_mask_rect;
 	public Mat[] ptm_ptmMat_mask;
-
-
-	public TMpara() {
-		matchingTreshDetectCnt = new int[arrayCnt];
-		matchingThresh = new double[arrayCnt];
-		paternMat = new Mat[arrayCnt];
-		ptmEnable = new boolean[arrayCnt];
-		detectionRects = new Rectangle[arrayCnt];
-		scale = new double[arrayCnt];
-
-		ptm_fil_gauusianCheck = new boolean[arrayCnt];
-		ptm_fil_gauusianX = new double[arrayCnt];
-		ptm_fil_gauusianY = new double[arrayCnt];
-		ptm_fil_gauusianValue = new double[arrayCnt];
-		ptm_fil_threshholdCheck = new boolean[arrayCnt];
-		ptm_fil_threshhold_Invers = new boolean[arrayCnt];
-		ptm_fil_threshholdValue = new double[arrayCnt];
-		ptm_fil_dilateCheck = new boolean[arrayCnt];
-		ptm_fil_dilateValue = new double[arrayCnt];
-		ptm_fil_erodeCheck = new boolean[arrayCnt];
-		ptm_fil_erodeValue = new double[arrayCnt];
-		ptm_fil_cannyCheck = new boolean[arrayCnt];
-		ptm_fil_cannyThresh1 = new double[arrayCnt];
-		ptm_fil_cannyThresh2 = new double[arrayCnt];
-
-		ptm_ptmMat_mask_rect = new Rectangle[arrayCnt];
-		ptm_ptmMat_mask = new Mat[arrayCnt];
-
-
-	}
 
 	public TMpara(int arg_arrayCnt) {
 		arrayCnt = arg_arrayCnt;

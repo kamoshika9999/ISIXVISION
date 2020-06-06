@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -27,17 +28,20 @@ import org.jfree.chart.ChartColor;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.fx.ChartViewer;
+import org.jfree.chart.fx.interaction.ChartMouseEventFX;
+import org.jfree.chart.fx.interaction.ChartMouseListenerFX;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -48,6 +52,8 @@ import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -62,10 +68,13 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -80,25 +89,23 @@ import javafx.stage.Stage;
 
 public class VisonController2{
 
-	//クラス変数
+	//デバッグフラグ
 	public static boolean debugFlg = false;
 
-	public int shotCnt = 0; //オールクリアしてからのカウント数
+	//検査したカウント数
+	public int shotCnt = 0;
+	//シャッター間隔が4秒以上あいた時にセットされる
+	boolean shutterSignal4secInterval=true;
 
-	private int targetSetParaNO = 0;
-
-
+	//保存される画像の最大数
 	final int saveMax_all = 255;
 	final int saveMax_ng = 400;
-	int ngCnt = 0;
 	int allSaveCnt = 0;
+	//判定ＮＧとなった回数
+	int ngCnt = 0;
 
-	//public static Mat srcMat = new Mat();//保存画像を使用した設定に使用する為publicにしておく
-	public static Mat firstSrcMat = new Mat();
-	public static Mat secondScrMat= new Mat();
-
+	public static Mat srcMat = new Mat();//保存画像を使用した設定に使用する為publicにしておく
 	Mat dstframe = new Mat();//srcMatをカメラキャリブレーションデーターから変換したオブジェクトが入る
-	private Mat mainViewGlayMat;
     List<Rectangle> rects;
     Rectangle draggingRect;
     volatile boolean dragging;
@@ -107,16 +114,20 @@ public class VisonController2{
 	Point moveDraggingPointView = new Point();
 
 
-    public static preSet2 pObj;
+    public static preSet pObj;
     public static VideoCapture capObj = new VideoCapture();
 	public static ScheduledExecutorService timer;
 	public static ScheduledExecutorService timer2;
+    //照明キャリブレーション用
+	private static ScheduledExecutorService timerCalib;
+	private boolean calibLiteFlg;//キャリブレーション中か？
+	Mat realMat;//スルー画像
+
 
 	//穴面積判定用
 	private long whiteAreaAverage;
 	private long whiteAreaMax;
 	private long whiteAreaMin;
-
 
 	//シャッタートリガ用
 	boolean shutterFlg = false;
@@ -149,8 +160,8 @@ public class VisonController2{
 	final long lockedTimerThresh = 1000 * 60 *5;
 	//パターンマッチング用
 	private boolean ptmSetStartFlg = false;
-	public Mat[][] ptm_ImgMat = new Mat[4][4];//[presetNo][ptm1～ptm4]
-	private TMpara ptm_tmpara = new TMpara();
+	public Mat[][] ptm_ImgMat = new Mat[4][parameter.ptm_arrySize];//[presetNo][ptm1～ptm4]
+	private TMpara ptm_tmpara;
 	private templateMatching ptm_templateMatchingObj;
 
 	//保存画像を使用した設定用
@@ -166,6 +177,7 @@ public class VisonController2{
 	private Mat cameraMatrix;//内部パラメータ
 	private Mat distortionCoefficients;//歪み係数
 
+
 	//インフォメーション
 	private String initInfo2;
 
@@ -175,13 +187,15 @@ public class VisonController2{
 	private JFreeChart[] chart_P2;
 	private JFreeChart[] chart_F;
 	public Mat[][] dim_ImgMat = new Mat[4][4];//[presetNo][dim1～dim4]
-	private TMpara dim_tmpara = new TMpara();
+	private TMpara dim_tmpara = new TMpara(4);
 	private templateMatching dim_templateMatchingObj;
-
+	private double[] P2_sum = new double[2];
+	private double[] F_sum = new double[2];
+	private double[] E_sum = new double[2];
 
 	@FXML
     private Spinner<Integer> dellySpinner;
-	@FXML
+  @FXML
     private Spinner<Integer> dellySpinner2;
     @FXML
     private CheckBox trigger_2nd_chk;
@@ -192,6 +206,8 @@ public class VisonController2{
     @FXML
     private ToggleButton para_12st_shot11;
 
+    @FXML
+    private CheckBox camera_revers_chk;//カメラ上下反転
 
     @FXML
     private ResourceBundle resources;
@@ -416,45 +432,25 @@ public class VisonController2{
     @FXML
     private Button paraInitBtn;//設定初期化
 
-
+    @FXML
+    private Label presetText;//選択されている品種
 
     //パターンマッチング関係
     @FXML
     private TitledPane ptm_setting_accordion;
     @FXML
-    private Button ptm_set_pt1;
+    private Button ptm_set_para;
     @FXML
-    private Button ptm_set_pt2;
-    @FXML
-    private Button ptm_set_pt3;
-    @FXML
-    private Button ptm_set_pt4;
-    @FXML
-    private Button ptm_set_para1;
-    @FXML
-    private Button ptm_set_para2;
-    @FXML
-    private Button ptm_set_para3;
-    @FXML
-    private Button ptm_set_para4;
-    @FXML
-    private CheckBox ptm_pt1_enable;
-    @FXML
-    private CheckBox ptm_pt2_enable;
-    @FXML
-    private CheckBox ptm_pt3_enable;
-    @FXML
-    private CheckBox ptm_pt4_enable;
-    @FXML
-    private ImageView ptm_img1;
-    @FXML
-    private ImageView ptm_img2;
-    @FXML
-    private ImageView ptm_img3;
-    @FXML
-    private ImageView ptm_img4;
+    private CheckBox ptm_pt_enable;
     @FXML
     private CheckBox ptm_disableChk;
+    @FXML
+    private Spinner<Integer> ptm_selectNo;
+    @FXML
+    private TextArea ptm_textArea;
+    @FXML
+    private ImageView ptm_img;
+
     //穴判定関係
     @FXML
     private ImageView debugImg;//穴の面積判定用
@@ -510,6 +506,16 @@ public class VisonController2{
     private Label dimSettingLabel;
     @FXML
     private Button dimensionBtn;
+    @FXML
+    private TableView<Dim_itemValue> dim_table;
+    @FXML
+    private TableColumn dim_table_item;
+    @FXML
+    private TableColumn dim_table_P2;
+    @FXML
+    private TableColumn dim_table_F;
+    @FXML
+    private TableColumn dim_table_E;
 
     //カメラ関係
     @FXML
@@ -544,7 +550,15 @@ public class VisonController2{
 	private XYSeriesCollection[] dataset_F;
 	private double holeDist_DimSetting;
 
+	private int targetSetParaNO = 1;
 
+    @FXML
+    private Button setting_csv_out;
+
+    @FXML
+    private Button calib_btn;//照明キャリブレーションボタン
+    @FXML
+    private Label calib_label;//キャリブレーション用輝度平均表示
 
 
 
@@ -688,7 +702,7 @@ public class VisonController2{
     @FXML
     void onWheel(ScrollEvent e) {
     	Rectangle2D rect = imgORG.getViewport();
-    	double zoomStep = 0.01;
+    	double zoomStep = 0.02;
     	double imgWidth = imgORG.getImage().getWidth();//に格納されているイメージの幅
 
     	if( e.getDeltaY() < 0) {
@@ -729,9 +743,14 @@ public class VisonController2{
 			Platform.runLater( () ->capObj.release());
 		}
     	demoFlg = true;
-    	firstSrcMat = new Mat();
+    	srcMat = new Mat();
     }
 
+    /**
+     * メインループ　初期設定からトリガ取得など
+     * @param event
+     * @throws InterruptedException
+     */
     @FXML
     void onTest(ActionEvent event) throws InterruptedException {
     	demoFlg = false;
@@ -784,7 +803,7 @@ public class VisonController2{
 				distortionCoefficients = calibrationMats.get("DistortionCoefficients");//歪み係数
 			}
 		}
-		source_video = new VideoCapture("./test2.mp4" );//デモモード用動画
+		source_video = new VideoCapture("./test4.mp4" );//デモモード用動画
 		double video_width = source_video.get( Videoio.CAP_PROP_FRAME_WIDTH ); // 横幅を取得
 		double video_height = source_video.get( Videoio.CAP_PROP_FRAME_HEIGHT ); // 縦幅を取得
 		double video_frame_count = source_video.get( Videoio.CAP_PROP_FRAME_COUNT ); // フレーム数を取得
@@ -805,7 +824,6 @@ public class VisonController2{
 
 		 // メインクラス
 		Runnable frameGrabber = new Runnable() {
-			Mat realMat;
 			@Override
 			public void run() {
 				//設定自動ロック用
@@ -834,8 +852,7 @@ public class VisonController2{
 			    		if( !dragging ) {
 			    			eventTrigger = false;
 			    		}
-			    		rePaint(0,firstSrcMat);
-			    		rePaint(1,secondScrMat);
+			    		rePaint();
 			    	}
 
 					if( (manualTrigger || autoTrigger) && !saveImgUseFlg) {//マニュアルトリガ又はオートトリガが有効であった場合
@@ -848,13 +865,13 @@ public class VisonController2{
 				    				Platform.runLater( () ->info2.appendText(("demo動画ループ再生\n")));
 				    				framCnt=0;
 				    			}
-				    			source_video.read(firstSrcMat);
+				    			source_video.read(srcMat);
 
 
-				    			if( firstSrcMat == null) {
+				    			if( srcMat == null) {
 				    				Platform.runLater( () ->info2.appendText(( "demo動画が再生できません\n")));
 				    			}else {
-				    				rePaint(0,firstSrcMat);
+				    				rePaint();
 				    			}
 
 				    		}catch(Exception e) {
@@ -862,47 +879,24 @@ public class VisonController2{
 				    			return;
 				    		}
 						}else {
-							firstSrcMat = grabFrame();
-					    	if( firstSrcMat.width() !=0 ) {
-					    		rePaint(0,firstSrcMat);
+							srcMat = grabFrame();
+					    	if( srcMat.width() !=0 ) {
+					    		rePaint();
 					    	}
 						}
 			    	}else if(shutterFlg && !demoFlg && !saveImgUseFlg) {
-			    		//1st.ショット撮影
-			    		firstSrcMat = grabFrame();
-			    		//2nd.ショット撮影
-			    		if( trigger_2nd_chk.isSelected()) {
-				    		try {
-								Thread.sleep(dellySpinner2.getValue());
-							} catch (InterruptedException e) {
-								// TODO 自動生成された catch ブロック
-								e.printStackTrace();
-							}
-				    		secondScrMat = grabFrame();
-			    		}
-				    	if( firstSrcMat.width() > 0 ) {
-				    		rePaint(0,firstSrcMat);
+						srcMat = grabFrame();
+				    	if( srcMat.width() > 0 ) {
+				    		rePaint();
 				    	}else {
 				    		Platform.runLater( () ->info2.appendText(("カメラから画像の取得に失敗\n")));
 				    	}
-				    	if( trigger_2nd_chk.isSelected()) {
-					    	if( secondScrMat.width() > 0 ) {
-					    		rePaint(1,secondScrMat);
-					    	}else {
-					    		Platform.runLater( () ->info2.appendText(("カメラから画像の取得に失敗\n")));
-					    	}
-				    	}
-
 				    	shutterFlg = false;
 					}
 
 			    	if( eventTrigger ) {
-			    		rePaint(0,firstSrcMat);
-			    		if( trigger_2nd_chk.isSelected() ) {
-			    			rePaint(1,secondScrMat);
-			    		}
+			    		rePaint();
 			    	}
-
 				}
 			}
 		};
@@ -910,58 +904,84 @@ public class VisonController2{
 		timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
 
 		if( Gpio.openFlg ) {
-			if( Gpio.OkSignalON() ) {
-				Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
-			}else {
-				Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
-			}
-			//トリガクラス
+			Gpio.ngSignalON();
+			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+			//GPIOからのトリガ信号を受信するループ
+			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 			Runnable triggerLoop = new Runnable() {
 				String rt = "-1";//nullを避ける為-1をいれておく
 				long debugCnt = 0;
+				private long shutterSignalIntervalTime=System.currentTimeMillis();
+				private boolean clealFlg = false;;
 
 				@Override
 				public void run() {
-
 					try {
-						//readIO ="nothing";
 						if( debugFlg ) {
 							System.out.println("GPIO READ/WRITE" + debugCnt);
 							debugCnt++;
 						}
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						//シャッター信号の間隔が4秒以上開いた場合NG信号発信しフラグセット
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						if( !shutterSignal4secInterval && System.currentTimeMillis() -
+																			shutterSignalIntervalTime > 1000*4) {
+							shutterSignal4secInterval = true;
+							Gpio.ngSignalON();
+							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+						}
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						//照明キャリブレーション中はＮＧ信号発信
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						if(	calibLiteFlg ) {
+							Gpio.ngSignalON();
+							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+						}
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//オールクリア信号受信
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						rt = Gpio.clearSignal();
-						if( rt == "1" ) {
+						if( rt == "1" && !clealFlg) {
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
+							clealFlg = true;
 							onAllClear(null);
 				    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
-
 						}else {
+							clealFlg = false;
 							Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
 						}
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//シャッター信号受信
-						//readIO ="shutterSignal";
-						rt = Gpio.shutterSignal();
-						//Platform.runLater( () ->info1.setText(Gpio.useFlg  + String.valueOf(loopcnt)+  "  GPIO 0(SHUTTER TRIGGER) = " + rt));
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						if( !clealFlg ) {
+							rt = Gpio.shutterSignal();
+							if( rt == "1") {
+								if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
+									try {
+										//PLCからのシャッター信号をオンディレーする
+										Thread.sleep( dellySpinner.getValue() );
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
 
-						if( rt == "1") {
-							if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
-								//シャッター
-								try {
-									Thread.sleep( dellySpinner.getValue() );
-								} catch (InterruptedException e) {
-									e.printStackTrace();
+									shutterFlg = true;
+									offShutterFlg = true;
+
+									//トリガ間隔測定用に現在時刻を保存
+									shutterSignalIntervalTime=System.currentTimeMillis();
+
+									//シャッタートリガ受信インジケーター色変更
+						    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
 								}
-
-								shutterFlg = true;
-								offShutterFlg = true;
-					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.YELLOW));
-					    		//Platform.runLater( () ->info2.appendText("シャッターON"));
+							}else{
+									//シャッター信号　非受信
+									offShutterFlg = false;
+									//シャッタートリガ受信インジケーター色変更
+						    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
 							}
-						}else{
-								offShutterFlg = false;
-					    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.LIGHTGRAY));
 						}
+						//--------------------------------------------------------------------------------------------
 					}catch(NullPointerException e) {
 						System.out.println("readIO" + " / " + e.toString());
 					}
@@ -993,6 +1013,9 @@ public class VisonController2{
 			} catch(Exception e) {
 				Platform.runLater( () ->info2.appendText("Exception during the image elaboration: " + e +"\n"));
 			}
+		}
+		if(camera_revers_chk.isSelected()) {//画像上下反転
+			Core.flip(frame, frame, -1);
 		}
 		if( cameraCalibFlg ) {
 			Calib3d.undistort(frame, dstframe, cameraMatrix, distortionCoefficients);
@@ -1103,11 +1126,11 @@ public class VisonController2{
         double mX = e.getX()/zoom;
         double mY = e.getY()/zoom;
 
-        if( mX > firstSrcMat.width() ) {
-        	mX = firstSrcMat.width()-1;
+        if( mX > srcMat.width() ) {
+        	mX = srcMat.width()-1;
         }
-        if( mY > firstSrcMat.height() ) {
-        	mY = firstSrcMat.height()-1;
+        if( mY > srcMat.height() ) {
+        	mY = srcMat.height()-1;
         }
         draggingRect.width = (int)(imgORG.getViewport().getMinX() + mX - x);
         draggingRect.height =(int)(imgORG.getViewport().getMinY() + mY - y);
@@ -1148,11 +1171,13 @@ public class VisonController2{
     }
 
 
-    private void rePaint(int shotNo,Mat arg_srcMat) {
+    private void rePaint() {
     	if( saveImgUseFlg ) {
-    		arg_srcMat = saveImgMat.clone();
+    		srcMat = saveImgMat.clone();
     	}
-    	if( arg_srcMat.width() < 1) return;
+    	if( srcMat.width() < 1) return;
+
+
     	try {
 	    	if( this.triggerCCircle.getFill() != Color.YELLOW) {
 	    		Platform.runLater( () ->this.triggerCCircle.setFill(Color.YELLOW));
@@ -1165,18 +1190,19 @@ public class VisonController2{
 	    		fpsEnd = System.currentTimeMillis();
 
 	    		fps = fpsCnt/((fpsEnd - fpsFirst)/1000.0);
-	    		Platform.runLater( () ->fpsLabel.setText(String.format("FPS=%.3f", fps)));
+	    		Platform.runLater( () ->fpsLabel.setText(String.format("FPS=%.3f",fps)));
 
 	    		fpsFirst = System.currentTimeMillis();
 	    		fpsCnt=0;
 	    	}
 
 
-	    	parameter para = pObj.para[shotNo][pObj.select];
-	    	Mat	mainViewMat = arg_srcMat.clone();//srcMatは不変にしておく
-	    	Mat saveSrcMat = arg_srcMat.clone();
+	    	parameter para = pObj.para[pObj.select];
 
-	    	mainViewGlayMat = new Mat();
+	    	Mat	mainViewMat = srcMat.clone();//srcMatは不変にしておく
+	    	Mat saveSrcMat = srcMat.clone();//画像保存用にオリジナルを保持させる
+	    	Mat mainViewGlayMat = new Mat();
+
 	    	Imgproc.cvtColor(mainViewMat, mainViewGlayMat, Imgproc.COLOR_BGR2GRAY);
 	    	//Imgproc.equalizeHist(mainViewGlayMat, mainViewGlayMat);//コントラスト均等化
 
@@ -1273,9 +1299,15 @@ public class VisonController2{
 	            Imgproc.rectangle(mainViewMat,
 	            		new Point(draggingRect.x,draggingRect.y),
 	            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
-	            		new Scalar(0,255,0),3);
+	            		new Scalar(0,255,0),2);
 	        }else{
-	        	if(draggingRect.width >0 && draggingRect.height > 0 && settingModeFlg){
+	    		if( srcMat.width() < draggingRect.x+draggingRect.width) {
+	    			draggingRect.width = srcMat.width() - draggingRect.x;
+	    		}
+	    		if( srcMat.height() < draggingRect.y+draggingRect.height) {
+	    			draggingRect.height = srcMat.height() - draggingRect.y;
+	    		}
+	    		if(draggingRect.width >0 && draggingRect.height > 0 && settingModeFlg){
 	        		Mat fillterAftterMatRoi = fillterAftterMat.submat(
 		        			draggingRect.y,
 		        			draggingRect.y + draggingRect.height,
@@ -1283,51 +1315,25 @@ public class VisonController2{
 		        			draggingRect.x+draggingRect.width);
 		        	//穴検出
 		        	if( !ptmSetStartFlg ) {
-			            Mat resultCircles = new Mat();
-						Imgproc.HoughCircles(fillterAftterMatRoi, resultCircles, Imgproc.CV_HOUGH_GRADIENT,
-								sliderDetecPara4.getValue(),
-								sliderDetecPara5.getValue(),
-								sliderDetecPara6.getValue(),
-								sliderDetecPara7.getValue(),
-								(int)sliderDetecPara8.getValue(),
-								(int)sliderDetecPara9.getValue());
-						if( resultCircles.cols() > 0) {
-							fncDrwCircles(fillterAftterMatRoi,resultCircles,
-									mainViewMat.submat(
-						        			draggingRect.y,
-						        			draggingRect.y + draggingRect.height,
-						        			draggingRect.x,
-						        			draggingRect.x+draggingRect.width),
-											true);
-
-							Imgproc.putText(mainViewMat, String.valueOf(resultCircles.cols()),
-									new Point(draggingRect.x-25,draggingRect.y-6),
-									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(128,255,128),7);
-
-							//面積判定
-							boolean holeAreaJudgFlg = holeWhiteAreaCheck(
-									fillterAftterMatRoi,resultCircles,whiteRatioMaxSp.getValue(),whiteRatioMinSp.getValue());
-							if( holeAreaJudgFlg ) {
-								Imgproc.putText(mainViewMat,
-										"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
-												" Max=" + String.format("%d",whiteAreaMax) +
-												" Min=" + String.format("%d",whiteAreaMin),
-										new Point(draggingRect.x+20,draggingRect.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(128,255,128),7);
-							}else {
-								Imgproc.putText(mainViewMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
-										" Max=" + String.format("%d",whiteAreaMax) +
-										" Min=" + String.format("%d",whiteAreaMin),
-										new Point(draggingRect.x+20,draggingRect.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),7);
-							}
-						}
-		        	}
-		            Imgproc.rectangle(mainViewMat,
-		            		new Point(draggingRect.x,draggingRect.y),
-		            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
-		            		new Scalar(0,255,0),4);
-	        	}
+			            int foundCircle_result_int = foundCircle(
+			            		fillterAftterMatRoi,//検出領域のサブMAT
+			            		mainViewMat,//結果の描画
+			            		(int)sliderDetecPara5.getValue(),//穴間距離の閾値
+			            		(int)sliderDetecPara9.getValue(),//穴径の最大値
+			            		(int)sliderDetecPara8.getValue(),//穴径の最小値
+			            		sliderDetecPara7.getValue(),//円形度
+			            		-1,//穴数の閾値 設定領域の為「-1」と入れ区別する
+			            		whiteRatioMaxSp.getValue(),//白面積の最大値
+			            		whiteRatioMinSp.getValue(),//白面積の最小値
+			            		true,//インフォメーションに表示する
+			            		draggingRect.x,draggingRect.y
+			            		);
+					}
+		        }
+	            Imgproc.rectangle(mainViewMat,
+	            		new Point(draggingRect.x,draggingRect.y),
+	            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
+	            		new Scalar(0,255,0),2);
 	        }
 
 	    	int judgCnt=0;
@@ -1360,105 +1366,66 @@ public class VisonController2{
 		        		Imgproc.dilate(holeDetectAreaMatroi, holeDetectAreaMatroi, new Mat(),new Point(-1,-1),para.hole_fil_dilateValue[i]);
 		        	}
 
-					/*# ハフ変換で円検出する。
-					第1引数(gray)：8bit、1チャンネルのグレースケール画像。
-				 	第2引数(circles)：検出した円のベクトル(x,y,r)→ x, yは円の中心座標でrは半径
-					第3引数(Imgproc.CV_HOUGH_GRADIENT)：２値化の手法
-					第4引数(sliderDetecPara4)：画像分解能に対する投票分解能の比率の逆数
-					第5引数(sliderDetecPara5)：円の中心同士の最小距離
-					第6引数(sliderDetecPara6)：２値化のパラメータ1
-					第7引数(sliderDetecPara7)：２値化のパラメータ2
-					第8引数(sliderDetecPara8)：円の半径の最小値
-					第9引数(sliderDetecPara9)：円の半径の最大値 */
-		            Mat circles = new Mat();
-					Imgproc.HoughCircles(holeDetectAreaMatroi, circles, Imgproc.CV_HOUGH_GRADIENT,
-							para.hole_circlePara4[i],
-							para.hole_circlePara5[i],
-							para.hole_circlePara6[i],
-							para.hole_circlePara7[i],
-							(int)para.hole_circlePara8[i],
-							(int)para.hole_circlePara9[i]);
+		        	int foundCircle_result_int=0;
+		    		if( !settingModeFlg ) {
+		            foundCircle_result_int = foundCircle(
+		            		holeDetectAreaMatroi,//検出領域のサブMAT
+		            		mainViewMat,//結果の描画
+		            		(int)para.hole_circlePara5[i],//穴間距離の閾値
+		            		(int)para.hole_circlePara9[i],//穴径の最大値
+		            		(int)para.hole_circlePara8[i],//穴径の最小値
+		            		para.hole_circlePara7[i],//円形度
+		            		para.hole_cntHoleTh[i],//穴数の閾値 設定領域の為「-1」と入れ区別する
+		            		para.hole_whiteAreaMax[i],//白面積の最大値
+		            		para.hole_whiteAreaMin[i],//白面積の最小値
+		            		false,//インフォメーションに表示する
+		            		r.x,r.y
+		            		);
+		    		}
 
-					boolean holeAreaFlg = true;
-					if( circles.cols() > 0 && !FilterViewMode.isSelected()) {
-
-						if( holeDispChk.isSelected() ) {
-							fncDrwCircles(holeDetectAreaMatroi,circles, mainViewMat.submat(new Rect(r.x,r.y,r.width,r.height)),false);
-							Imgproc.putText(mainViewMat, String.valueOf(circles.cols()),
-									new Point(r.x-25,r.y-6),
-									Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(0,255,0),7);
-						}
-						//面積判定
-						holeAreaFlg = holeWhiteAreaCheck(
-								holeDetectAreaMatroi,circles,para.hole_whiteAreaMax[i],para.hole_whiteAreaMin[i]);
-						if( holeDispChk.isSelected() ) {
-							if( holeAreaFlg ) {
-									Imgproc.putText(mainViewMat, "WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
-										" Max=" + String.format("%d",whiteAreaMax) +
-										" Min=" + String.format("%d",whiteAreaMin),
-										new Point(r.x+20,r.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,0),7);
-							}else {
-								Imgproc.putText(mainViewMat, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
-										" Max=" + String.format("%d",whiteAreaMax) +
-										" Min=" + String.format("%d",whiteAreaMin),
-										new Point(r.x+20,r.y-6),
-										Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,0,255),7);
-							}
-						}
-
-					}
 
 					//判定
 		            switch(i) {
 		            	case 0:
-		            		Platform.runLater( () ->okuri1_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
+		            		if( foundCircle_result_int == 0) {
 		            			Platform.runLater( () ->okuri1_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri1_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.RED));
-		            			//fileString += "1_okuri_";
 		            			ngFlg = true;
 		            		}
 		            		break;
 		            	case 1:
-		            		Platform.runLater( () ->okuri2_n.setText(String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
+		            		if( foundCircle_result_int == 0 ) {
 		            			Platform.runLater( () ->okuri2_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri2_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.RED));
-		            			//fileString += "1_poke_";
 		            			ngFlg = true;
 		            		}
 		            		break;
 		            	case 2:
-		            		Platform.runLater( () ->okuri3_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
+		            		if( foundCircle_result_int == 0 ) {
 		            			Platform.runLater( () ->okuri3_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri3_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.RED));
-		            			//fileString += "2_okuri_";
 		            			ngFlg = true;			            		}
 		            		break;
 		            	case 3:
-		            		Platform.runLater( () ->okuri4_n.setText( String.format("%d個", circles.cols()) + infoText));
-		            		if( circles.cols() == para.hole_cntHoleTh[i] && holeAreaFlg ) {
+		            		if( foundCircle_result_int == 0 ) {
 		            			Platform.runLater( () ->okuri4_judg.setText("OK"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.GREEN));
 		            			judgCnt++;
 		            		}else {
 		            			Platform.runLater( () ->okuri4_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.RED));
-		            			//fileString += "2_poke_";
 		            			ngFlg = true;
 		            		}
 		            		break;
@@ -1492,57 +1459,85 @@ public class VisonController2{
 
 
         	//寸法測定
-
         	boolean dimFlg;
        		dimFlg = dim_templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
         											,false,dimensionDispChk.isSelected());
        		if( dimFlg ) {
         	for(int g=0;g<2;g++) {
         		if( ((g==0 && dim_1_enable.isSelected()) || ((g==1) && dim_2_enable.isSelected())) && shotCnt>0) {
-        			int g2 =g;
-	        		double p2_x0 = dim_templateMatchingObj.resultValue[g*2].centerPositionX.get(0);
-	        		double p2_x1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionX.get(0);
-	        		double P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
-	        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
-	        		double f_y1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionY.get(0);
-	        		double F = Math.abs(f_y0 - f_y1)*para.dimPixel_mm+para.dim_offset_F[g];
+        			double P2 = 0.0;
+        			double F = 0.0;
+        			if( dim_templateMatchingObj.resultValue[g*2].cnt == 1 &&
+        					dim_templateMatchingObj.resultValue[g*2+1].cnt == 1) {
+		        		double p2_x0 = dim_templateMatchingObj.resultValue[g*2].centerPositionX.get(0);
+		        		double p2_x1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionX.get(0);
+		        		//System.out.println("X0 = " + String.format("%.4f", p2_x0));
+		        		//System.out.println("X1 = " + String.format("%.4f", p2_x1));
+		        		P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
+		        		P2_sum[g] += P2;
+		        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
+		        		double f_y1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionY.get(0);
+		        		F = Math.abs(f_y0 - f_y1)*para.dimPixel_mm+para.dim_offset_F[g];
+		        		F_sum[g] += F;
+        			}
+        			final int g2 =g;
 
-        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,P2));
-	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,F));
+        			final double _P2 =Double.valueOf(String.format("%.3f",P2)).doubleValue();
+        			final double _F = Double.valueOf(String.format("%.3f",F)).doubleValue();
+        			final double P2_ave = P2_sum[g]/shotCnt;
+        			final double F_ave = F_sum[g]/shotCnt;
+        			final double _P2_ave = Double.valueOf(String.format("%.3f",P2_ave)).doubleValue();
+        			final double _F_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
+
+        			final double P2_final = P2;
+        			final double F_final = F;
+        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,P2_final));
+	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,F_final));
+	        		//寸法表示テーブルの更新
+	        		Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(_P2));
+	        		Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(_F));
+	        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(_P2_ave));
+	        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).FProperty().set(_F_ave));
 
 
 	        		//軸の設定更新
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getDomainAxis()).
-																setRange(shotCnt<=100?0:shotCnt-100,shotCnt));
+																setRange(shotCnt<=200?0:shotCnt-200,shotCnt));
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getDomainAxis()).
-	        													setRange(shotCnt<=100?0:shotCnt-100,shotCnt));
+	        													setRange(shotCnt<=200?0:shotCnt-200,shotCnt));
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getRangeAxis()).
 							setRange(1.8,2.2));
 	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
 							setRange(11.3,11.7));
         		}
         	}
+       		}else {
+       			Platform.runLater( () ->this.info2.appendText("寸法測定に失敗しました\n"));
+       			Platform.runLater( () ->this.info2.appendText("登録領域が画像端ギリギリすぎると推定します。\n"));
        		}
 
 	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
 		        //最終判定
-	        	if(judgCnt==4 && tmFlg ) {
-		        	Platform.runLater( () ->judg.setText("OK"));
-		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
+	        	if( shotCnt < 21 ) { //20ショットまでは判定無視
+		        	Platform.runLater( () ->judg.setText( String.valueOf(20-shotCnt)) );
+		        	Platform.runLater( () ->judg.setTextFill( Color.GREEN) );
+	        	}else if(judgCnt==4 && tmFlg ) {//judgCntが穴判定  tmFlgがテンプレートマッチング判定
+		        	Platform.runLater( () ->judg.setText("OK") );
+		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN) );
 		        	//画像保存
 		        	if( this.imgSaveFlg_all.isSelected() ) {
 		        		saveImgOK( saveSrcMat );
 		        	}
 		        }else {
 		        	Platform.runLater( () ->judg.setText("NG"));
-		        	Platform.runLater( () ->judg.setTextFill(Color.RED));
+		        	Platform.runLater( () ->judg.setTextFill(Color.RED) );
 		        	//画像保存
-		        	if( imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
+		        	if( !shutterSignal4secInterval && imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
-		        		final String infoText = fileString +"\n";
-		        		Platform.runLater( () ->info2.appendText(infoText));
+		        		//final String infoText = fileString +"\n";
+		        		//Platform.runLater( () ->info2.appendText(infoText));
 		        	}
 		        	if( ngCnt < 999) ngCnt++;
 
@@ -1693,120 +1688,199 @@ public class VisonController2{
 
     }
 
-    /**
-     * 検出円描画
-     * @param circles
-     * @param img
-     */
-    private String fncDrwCircles(Mat judgeAreaMat,Mat circles ,Mat img,boolean infoFlg) {
-  	  double[] data,data2;
-  	  double rho;
-  	  Point pt = new Point();
-  	  infoText = "";
-  	  double radiusMax,radiusMin,radiusAve,distAve;
-  	  radiusMax = 0;
-  	  radiusMin = 9999;
-  	  radiusAve = 0;
-  	  distAve = 0;
-
-  	  //ソーティング　Ｘ昇順
-  	  for (int i = 0; i < circles.cols(); i++){
-  	  	  for (int j = 1+i; j < circles.cols(); j++){
-			data = circles.get(0, i);
-			data2 = circles.get(0, j);
-			if( data[0] > data2[0] ) {
-				circles.put(0, i,data2);
-				circles.put(0, j,data);
-			}
-  	  	  }
-  	  }
-  	  //最大、最小、平均、距離平均計算
-  	  if( circles.cols() >= 2) {
-	  	  for( int i= 0; i < circles.cols(); i++) {
-	  		  double r = circles.get(0, i)[2];
-	  		  radiusAve += r;
-
-	  		  if( radiusMax < r ) radiusMax = r;
-	  		  if( radiusMin > r ) radiusMin = r;
-
-	  		  if( i != circles.cols()-1 ) {
-	  			  distAve += circles.get(0, circles.cols()-1)[0] - circles.get(0, circles.cols()-2)[0];
-	  		  }
-	  	  }
-  		  distAve /= (circles.cols()-1);
-  		  holeDist_DimSetting = distAve;
-  	  	  radiusAve /= circles.cols();
-  	  }else {
-  		radiusAve = circles.get(0, 0)[2];
-  		radiusMax = radiusAve;
-  		radiusMin = radiusAve;
-  		distAve = 0;
-  	  }
-
-  	  infoText += String.format("MAX=%.1f ,MIN=%.1f ,AVE=%.1f ,DistAve=%.1f ",
-  			  radiusMax,radiusMin,radiusAve,distAve);
-
-  	  for (int i = 0; i < circles.cols(); i++){
-  	    data = circles.get(0, i);
-  	    pt.x = data[0];
-  	    pt.y = data[1];
-  	    rho = data[2];
-  	    Imgproc.circle(img, pt, (int) rho, new Scalar(0,255,0),4);
-  	    Imgproc.arrowedLine(img, new Point(pt.x-50,pt.y-50),
-  	    		new Point(pt.x-6,pt.y-6),new Scalar(0,255,0), 4);
-  	  }
-
-  	  if(infoFlg) {
-  		 Platform.runLater(
-                 () ->info1.setText(infoText));
-  	  }
-
-  	  return infoText;
-  	}
 
     /**
-     * 穴面積判定
-     * @param judgeAreaMat
-     * @param circles
-     * @param threshholdAreaMax　白面積の上限
-     * @param threshholdAreaMin　白面積の下限
-     * @return
+     * ブロブによる円の検出
+     * @param src 2値化済画像
+     * @param dst 結果画像描画用MAT
+     * @para holeLength 検出円間最小距離
+     * @param max_diameter 検出円最大直径値　ピクセル
+     * @param min_diameter 検出円最小直径値　ピクセル
+     * @param circularity 円形度 0.0 - 1.0
+     * @param circleCountThresh 検出円個数　判定個数
+     * @param threshholdAreaMax 検出矩形の白面積 最大値閾値
+     * @param threshholdAreaMin 検出矩形の白面積 最小値閾値
+     * @para infoFlg インフォメーションテキストに値を表示させるか？
+     * @return 判定結果 0:合格 1:面積判定NG 2:個数ＮＧ 3:(面積判定、個数ＮＧ)
      */
-    private boolean holeWhiteAreaCheck(Mat judgeAreaMat,Mat circles,int threshholdAreaMax,int threshholdAreaMin) {
-      boolean result = true;
-	  Mat roi = new Mat(1,1,CvType.CV_8U);
-	  int whiteArea = 0;
-	  final int offset = 0;
+    private int foundCircle(Mat src_,Mat dst_,int holeLength,int max_diameter_,int min_diameter_,double circularity_
+    			,int circleCountThresh,double threshholdAreaMax,double threshholdAreaMin,
+    			boolean infoFlg,int offset_x,int offset_y) {
 
-	  whiteAreaAverage = 0;
-	  whiteAreaMax = 0;
-	  whiteAreaMin = 99999;
+		List<MatOfPoint> contours=new ArrayList<MatOfPoint>();
+		Mat hierarchy = new Mat();
 
-	  for( int i= 0; i < circles.cols(); i++) {
-		double[] v = circles.get(0, i);//[0]:X  [1]:Y  [2]:r
-		int  x = (int)v[0];
-		int  y = (int)v[1];
-		int  r = (int)v[2];
-		if( x-r-offset < 0 || y-r-offset<0 || x-r-offset+r+r+offset>judgeAreaMat.width() || y-r-offset+r+r+offset>judgeAreaMat.height() ) {
-			result = false;
-		}else {
-	  		roi = judgeAreaMat.submat(new Rect( x-r-offset, y-r-offset, r+r+offset, r+r+offset));
+		//輪郭抽出
+		Imgproc.findContours(src_,contours,hierarchy,Imgproc.RETR_CCOMP,Imgproc.CHAIN_APPROX_SIMPLE);
+
+		//ローカル変数宣言
+		Iterator<MatOfPoint> iterator = contours.iterator();
+	    MatOfPoint2f[] contoursPoly = new MatOfPoint2f[contours.size()];
+        Rect[] boundRect = new Rect[contours.size()];
+        Point[] centers = new Point[contours.size()];
+        float[][] radius = new float[contours.size()][1];
+
+        int cnt = 0;
+        Mat roi = new Mat(1,1,CvType.CV_8U);
+        int whiteArea = 0;
+    	infoText = "";
+      	double radiusMax,radiusMin,radiusAve,distAve;
+      	radiusMax = 0;
+      	radiusMin = 9999;
+      	radiusAve = 0;
+      	distAve = 0;
+      	int	result = 0;
+
+        whiteAreaAverage = 0;//クラス変数
+	  	whiteAreaMax = 0;//クラス変数
+	  	whiteAreaMin = 99999;//クラス変数
+
+	  	//*************************************************************************************************************
+	  	//円の取得
+	  	//*************************************************************************************************************
+	  	while (iterator.hasNext()){
+    		MatOfPoint contour = iterator.next();
+    		double area = Imgproc.contourArea(contour);
+    		double arclength = Imgproc.arcLength(new MatOfPoint2f(contour.toArray()),true);
+    		double circularity = 4 * Math.PI * area / (arclength * arclength);//円形度計算 4πS/周長^2
+
+    		if( circularity >= circularity_ &&
+    				arclength/(2*Math.PI) >= min_diameter_ && arclength/(2*Math.PI) <= max_diameter_) {//円形度の比較
+    			contoursPoly[cnt] = new MatOfPoint2f();
+    			try {
+    			Imgproc.approxPolyDP(new MatOfPoint2f(contour.toArray()), contoursPoly[cnt], 3, true);
+	            boundRect[cnt] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[cnt].toArray()));
+
+	            //検出円の位置と直径の取得
+	            centers[cnt] = new Point();
+    			Imgproc.minEnclosingCircle(contoursPoly[cnt], centers[cnt], radius[cnt]);
+    			}catch(Exception e){
+    				System.out.println(e);
+    			}
+    			cnt++;
+    		}
+        }
+	  	if( cnt == 0 ) {
+	  		return 3;
+	  	}
+	  	//*************************************************************************************************************
+	  	//検出円描画、検出矩形描画
+	  	//*************************************************************************************************************
+	  	for( int i=0; i<cnt; i++ ) {
+		  	if(holeDispChk.isSelected()) {
+	            Scalar color = new Scalar(0,255,255);
+	            Imgproc.circle(dst_,
+	            		new Point(centers[i].x+offset_x,centers[i].y+offset_y),
+	            		(int) radius[i][0], color, 2);
+	            Imgproc.rectangle(dst_,
+	            		new Point(boundRect[i].tl().x+offset_x,boundRect[i].tl().y+offset_y),
+	            		new Point(boundRect[i].br().x+offset_x,boundRect[i].br().y+offset_y),
+	            		color, 2);
+	        }
+		  	//*************************************************************************************************************
+	        //白面積判定
+	        if(src_.width() < boundRect[i].br().x) {
+	        	boundRect[i].br().x = src_.width() -1;
+	        }
+	        if( src_.height() < boundRect[i].br().y) {
+	        	boundRect[i].br().y = src_.height() -1;
+	        }
+		  	roi = src_.submat(boundRect[i]);
 	  		whiteArea = Core.countNonZero(roi);
 	  		whiteAreaAverage += whiteArea;
 	  		whiteAreaMax = whiteAreaMax < whiteArea?whiteArea:whiteAreaMax;
 	  		whiteAreaMin = whiteAreaMin > whiteArea?whiteArea:whiteAreaMin;
-	  		if( whiteArea > threshholdAreaMax || whiteArea < threshholdAreaMin)
-	  			result = false;
+	  		if( whiteArea > threshholdAreaMax || whiteArea < threshholdAreaMin) {
+	  			result = 1;
+	  		}
+  		}
+		if( settingModeFlg ) {
+			Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", whiteAreaMax)));
+			Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", whiteAreaMin)));
+		  	updateImageView(debugImg, Utils.mat2Image(roi));
 		}
-	  }
-	  if( settingModeFlg ) {
-	  	  Platform.runLater(() ->whiteRatioLabel.setText( String.format("%d", whiteAreaMax)));
-	  	  Platform.runLater(() ->blackRatioLabel.setText( String.format("%d", whiteAreaMin)));
-	  	  updateImageView(debugImg, Utils.mat2Image(roi));
-	  }
 
-	  whiteAreaAverage = whiteAreaAverage / circles.cols();
-	  return result;
+  		whiteAreaAverage /= cnt;
+
+        if(holeDispChk.isSelected()) {
+    		if( result == 0 ) {
+				Imgproc.putText(dst_,
+						"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
+								" Max=" + String.format("%d",whiteAreaMax) +
+								" Min=" + String.format("%d",whiteAreaMin),
+						new Point(offset_x+20,offset_y-6),
+						Imgproc.FONT_HERSHEY_SIMPLEX, 1.0,new Scalar(128,255,128),2);
+			}else {
+				Imgproc.putText(dst_, "WhiteArea NG  ave=" + String.format("%d",whiteAreaAverage) +
+						" Max=" + String.format("%d",whiteAreaMax) +
+						" Min=" + String.format("%d",whiteAreaMin),
+						new Point(offset_x+20,offset_y-6),
+						Imgproc.FONT_HERSHEY_SIMPLEX, 1.0,new Scalar(0,0,255),2);
+			}
+        }
+
+		//個数判定
+
+		if( cnt != circleCountThresh && circleCountThresh != -1) {
+			result += 2;
+		}
+        if(holeDispChk.isSelected()) {
+			Imgproc.putText(dst_, String.valueOf(cnt),
+					new Point(offset_x-60,offset_y-6),
+					Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(128,255,128),2);
+        }
+		//径と距離算出 X順で並び替え
+		Point tmpPoint;
+		float tmpRadius;
+		for(int i=0;i<cnt;i++) {
+			for(int j=i+1;j<cnt;j++) {
+				if( centers[i].x > centers[j].x ) {
+					tmpPoint = centers[i].clone();
+					centers[i] = centers[j].clone();
+					centers[j] = tmpPoint;
+
+					tmpRadius = radius[i][0];
+					radius[i][0] = radius[j][0];
+					radius[j][0] = tmpRadius;
+				}
+			}
+		}
+		//穴径(最大、最小、平均算出)
+		for(int i=0;i<cnt;i++) {
+			if( radius[i][0] > radiusMax ) {
+				radiusMax = radius[i][0];
+			}
+			if( radius[i][0] < radiusMin ) {
+				radiusMin = radius[i][0];
+			}
+			radiusAve += radius[i][0];
+		}
+		radiusAve /= cnt;
+
+		//穴間平均距離
+		for(int i=0;i<cnt-1;i++) {
+			distAve += centers[i+1].x - centers[i].x;
+
+			if( holeLength > centers[i+1].x - centers[i].x ) {
+				result = 4;
+			}
+		}
+
+		distAve /= cnt - 1;
+
+		whiteAreaAverage = whiteAreaAverage / cnt;
+
+    	infoText += String.format("MAX=%.1f ,MIN=%.1f ,AVE=%.1f ,DistAve=%.1f ",
+    			radiusMax,radiusMin,radiusAve,distAve);
+
+    	if(infoFlg) {
+    		Platform.runLater(
+    				() ->info1.setText(infoText));
+    	 }
+
+
+	    return result;
+
     }
 
     /**
@@ -1815,8 +1889,8 @@ public class VisonController2{
      */
     @FXML
     void onWhiteAreaLabelClicked(MouseEvent event) {
-    	int max = (int)(Double.valueOf(whiteRatioLabel.getText())*1.1);
-    	int min = (int)(Double.valueOf(blackRatioLabel.getText())*0.9);
+    	int max = (int)(Double.valueOf(whiteRatioLabel.getText())*1.2);
+    	int min = (int)(Double.valueOf(blackRatioLabel.getText())*0.8);
     	Platform.runLater( () ->whiteRatioMaxSp.setValueFactory(
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,
 				max,
@@ -1838,7 +1912,7 @@ public class VisonController2{
      */
     @FXML
     void onSetValue(ActionEvent e) {
-    	parameter para = pObj.para[this.targetSetParaNO][pObj.select];
+    	parameter para = pObj.para[pObj.select];
     	Object eObject = e.getSource();
 
     	if(eObject == okuri1_btn) {
@@ -1878,7 +1952,7 @@ public class VisonController2{
 
 
     private void setPara(int i) {
-    	parameter para = pObj.para[targetSetParaNO][pObj.select];
+    	parameter para = pObj.para[pObj.select];
     	para.hole_circlePara4[i] = sliderDetecPara4.getValue();
     	para.hole_circlePara5[i] = sliderDetecPara5.getValue();
     	para.hole_circlePara6[i] = sliderDetecPara6.getValue();
@@ -1903,7 +1977,7 @@ public class VisonController2{
 
     }
     private void setBtnPara() {
-    	parameter para = pObj.para[targetSetParaNO][pObj.select];
+    	parameter para = pObj.para[pObj.select];
 		if( !para.hole_DetectFlg[0] ) {
 			Platform.runLater(() ->okuri1_btn.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, null, null))));
 			Platform.runLater(() ->okuri1_btn.setTextFill( Color.BLACK));
@@ -1968,10 +2042,19 @@ public class VisonController2{
 		para.hole_whiteAreaMax[4] = whiteRatioMaxSp.getValue();
 		para.hole_whiteAreaMin[4] = whiteRatioMinSp.getValue();
 
+    	//寸法測定部
+    	Platform.runLater( () ->dimSettingLabel.setText(String.format("%.0f μm/pixel", para.dimPixel_mm*1000)));
+    	Platform.runLater( () ->dim_offset_P2_1.setText(String.valueOf(para.dim_offset_P2[0])));
+    	Platform.runLater( () ->dim_offset_F_1.setText(String.valueOf(para.dim_offset_F[0])));
+    	Platform.runLater( () ->dim_offset_E_1.setText(String.valueOf(para.dim_offset_E[0])));
+    	Platform.runLater( () ->dim_offset_P2_2.setText(String.valueOf(para.dim_offset_P2[1])));
+    	Platform.runLater( () ->dim_offset_F_2.setText(String.valueOf(para.dim_offset_F[1])));
+    	Platform.runLater( () ->dim_offset_E_2.setText(String.valueOf(para.dim_offset_E[1])));
+
 		setSlidbar();
     }
     private void setSlidbar() {
-    	parameter para = pObj.para[targetSetParaNO][pObj.select];
+    	parameter para = pObj.para[pObj.select];
 		Platform.runLater(() ->sliderDetecPara4.setValue(para.hole_circlePara4[4]));
 		Platform.runLater(() ->sliderDetecPara5.setValue(para.hole_circlePara5[4]));
 		Platform.runLater(() ->sliderDetecPara6.setValue(para.hole_circlePara6[4]));
@@ -1996,13 +2079,14 @@ public class VisonController2{
     	Platform.runLater(() ->textFieldDetecPara7.setText(String.valueOf(String.format("%.1f",sliderDetecPara7.getValue()))));
     	Platform.runLater(() ->textFieldDetecPara8.setText(String.valueOf(String.format("%.1f",sliderDetecPara8.getValue()))));
     	Platform.runLater(() ->textFieldDetecPara9.setText(String.valueOf(String.format("%.1f",sliderDetecPara9.getValue()))));
+    	//Platform.runLater(() ->matchTmempTHreshSlider.setValue(para.matchThreshValue[4]));
     	Platform.runLater(() ->threshholdLabel.setText(String.format("%.1f",threshholdSlider.getValue())));
 
     }
 
     @FXML
     void onSetVeri(ActionEvent e) {
-    	parameter para = pObj.para[targetSetParaNO][pObj.select];
+    	parameter para = pObj.para[pObj.select];
     	Object obj = e.getSource();
     	onSetVeri_n=0;
     	if( obj == setVeriBtn1 && para.hole_DetectFlg[0]) {
@@ -2021,7 +2105,6 @@ public class VisonController2{
 
     	Rectangle r = para.hole_rects[onSetVeri_n];
     	draggingRect = (Rectangle)r.clone();
-
 
 		Platform.runLater(() ->sliderDetecPara4.setValue(para.hole_circlePara4[onSetVeri_n]));
 		Platform.runLater(() ->sliderDetecPara5.setValue(para.hole_circlePara5[onSetVeri_n]));
@@ -2052,7 +2135,6 @@ public class VisonController2{
 		whiteRatioMinSp.setValueFactory(
 				new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 99999,para.hole_whiteAreaMin[onSetVeri_n],5));
 
-
     	eventTrigger = true;
     }
 
@@ -2082,14 +2164,14 @@ public class VisonController2{
      * @throws IOException
      */
     public void saveAllPara() throws IOException{
-		FileOutputStream fo = new FileOutputStream("./conf5.txt");
+		FileOutputStream fo = new FileOutputStream("./conf14.txt");
 		ObjectOutputStream objOut = new ObjectOutputStream(fo);
 
 		pObj.dimensionDispChk =  dimensionDispChk.isSelected();
 	    pObj.holeDispChk = holeDispChk.isSelected();
 	    pObj.patternDispChk = patternDispChk.isSelected();
 
-    	parameter para = pObj.para[0][pObj.select];
+    	parameter para = pObj.para[pObj.select];
 		para.hole_rects[4] =  (Rectangle)draggingRect.clone();
 		para.hole_viewRect[0] = imgORG.getViewport().getMinX();
 		para.hole_viewRect[1] = imgORG.getViewport().getMinY();
@@ -2111,11 +2193,6 @@ public class VisonController2{
 		para.hole_fil_threshholdCheck[4] = threshholdCheck.isSelected();
 		para.hole_fil_threshhold[4] = threshholdSlider.getValue();
 		para.hole_fil_threshhold_Invers[4] = threshhold_Inverse.isSelected();
-
-		para.ptm_Enable[0] = ptm_pt1_enable.isSelected();
-		para.ptm_Enable[1] = ptm_pt2_enable.isSelected();
-		para.ptm_Enable[2] = ptm_pt3_enable.isSelected();
-		para.ptm_Enable[3] = ptm_pt4_enable.isSelected();
 
 		para.dim_1_enable = dim_1_enable.isSelected();
 		para.dim_2_enable = dim_2_enable.isSelected();
@@ -2148,9 +2225,10 @@ public class VisonController2{
 		objOut.flush();
 		objOut.close();
 
-		//パターンマッチング画像の保存 ptmImgMat[preSet2No][ptm1～ptm4]
+		//パターンマッチング画像の保存 ptmImgMat[preSetNo][ptm1～ptm4]
+    	int max_ptm_array = pObj.para[pObj.select].ptm_arrySize;
 		for(int i=0;i<4;i++) {
-			for(int j=0;j<4;j++) {
+			for(int j=0;j<max_ptm_array;j++) {
 				if( ptm_ImgMat[i][j] != null ) {
 					savePtmImg(ptm_ImgMat[i][j],"ptm"+String.format("_%d_%d", i,j));
 				}
@@ -2201,14 +2279,18 @@ public class VisonController2{
 	    	FileInputStream fi = new FileInputStream("./conf5.txt");
 	    	ObjectInputStream objIn = new ObjectInputStream(fi);
 
-	    	pObj = (preSet2)objIn.readObject();
+	    	pObj = (preSet)objIn.readObject();
 	    	objIn.close();
     	}catch(Exception e) {
     		System.out.println(e);
-    		pObj = new preSet2();
+    		pObj = new preSet();
     	}
 
-    	parameter para = pObj.para[0][pObj.select];
+    	parameter para = pObj.para[pObj.select];
+
+    	//選択されている品種の表示
+    	Platform.runLater( () ->presetText.setText(pObj.presetNameText[pObj.select]));
+
     	draggingRect = (Rectangle)para.hole_rects[4].clone();
 
     	viewOrgZoom = para.hole_zoom;
@@ -2241,10 +2323,11 @@ public class VisonController2{
     	adc_flg.setSelected(pObj.adcFlg);
 
     	//パターンマッチング部
+    	ptm_selectNo.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 49,0,1));
     	loadPtmImg();
 
         //パターンマッチング用パラメータ設定
-    	//ptm_patternMatchParaSet();
+    	ptm_patternMatchParaSet();
 
 
     	//寸法測定部
@@ -2260,11 +2343,17 @@ public class VisonController2{
 
     }
 
+    //設定をCSVファイルへ書き出す
+    @FXML
+    void onCSVout(ActionEvent event) {
+    	Platform.runLater( () ->this.info2.appendText("設定をCSVファイルへ書き出し（未実装)\n"));
+    }
+
     /**
      * パターンマッチング用パラメータ設定
      */
-    private void ptm_patternMatchParaSet(int shotNo) {
-    	parameter para = pObj.para[shotNo][pObj.select];
+    private void ptm_patternMatchParaSet() {
+    	parameter para = pObj.para[pObj.select];
         for(int i=0;i<ptm_tmpara.arrayCnt;i++) {
         	ptm_tmpara.matchingTreshDetectCnt[i] = para.ptm_fil_detectionCnt[i];
         	ptm_tmpara.matchingThresh[i] = para.ptm_threshValue[i];
@@ -2287,14 +2376,27 @@ public class VisonController2{
         ptm_tmpara.ptm_fil_cannyCheck = para.ptm_fil_cannyCheck;
         ptm_tmpara.ptm_fil_cannyThresh1 = para.ptm_fil_cannyThresh1;
         ptm_tmpara.ptm_fil_cannyThresh2 = para.ptm_fil_cannyThresh2;
+        ptm_tmpara.ptm_ptmMat_mask_rect = para.ptm_ptmMat_mask_rect;
+        ptm_tmpara.createMaskMat();
 
         ptm_templateMatchingObj = new templateMatching(ptm_tmpara);
     }
+
+    /**
+     *パターンマッチング有効化チェックボックスのイベント
+     * @param event
+     */
+    @FXML
+    void onPtmEnabeChk(MouseEvent event) {
+    	parameter para = pObj.para[pObj.select];
+    	para.ptm_Enable[ptm_selectNo.getValue()] = ptm_pt_enable.isSelected();
+    }
+
     /**
      * 寸法測定用パターンマッチングパラメータ設定
      */
-    private void dim_patternMatchParaSet(int shotNo) {
-    	parameter para = pObj.para[shotNo][pObj.select];
+    private void dim_patternMatchParaSet() {
+    	parameter para = pObj.para[pObj.select];
         for(int i=0;i<dim_tmpara.arrayCnt;i++) {
         	dim_tmpara.matchingTreshDetectCnt[i] = para.dim_fil_detectionCnt[i];
         	dim_tmpara.matchingThresh[i] = para.dim_threshValue[i];
@@ -2317,6 +2419,8 @@ public class VisonController2{
         dim_tmpara.ptm_fil_cannyCheck = para.dim_fil_cannyCheck;
         dim_tmpara.ptm_fil_cannyThresh1 = para.dim_fil_cannyThresh1;
         dim_tmpara.ptm_fil_cannyThresh2 = para.dim_fil_cannyThresh2;
+        dim_tmpara.ptm_ptmMat_mask_rect = para.dim_ptmMat_mask_rect;
+        dim_tmpara.createMaskMat();
 
         dim_templateMatchingObj = new templateMatching(dim_tmpara);
     }
@@ -2332,43 +2436,34 @@ public class VisonController2{
     			return;
     		}
     	}
-    	for( int shotNo=0;shotNo<2;shotNo++) {
-	    	for( int i=0;i<4;i++) {
-	    		for( int j=0;j<4;j++) {
-	    	    	Mat tmpMat = Imgcodecs.imread(
-	    	    			"./ptm_image/ptm"+String.format("_%d_%d_%d",shotNo,i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
-	    	    	if( tmpMat.width() > 0 &&  pObj.para[shotNo][i].ptm_Enable[j]) {
-	    	    		 ptm_ImgMat[i][j] = new Mat();
-	    	    		 ptm_ImgMat[i][j] = tmpMat.clone();
-	    	    	}else {
-	    	    		ptm_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3,new Scalar(0));
-	    	    	}
-	    		}
-	    	}
+    	int max_ptm_array = pObj.para[pObj.select].ptm_arrySize;
+    	for( int i=0;i<4;i++) {
+    		for( int j=0;j<max_ptm_array;j++) {
+    	    	Mat tmpMat = Imgcodecs.imread(
+    	    			"./ptm_image/ptm"+String.format("_%d_%d", i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
+    	    	if( tmpMat.width() > 0 &&  pObj.para[i].ptm_Enable[j]) {
+    	    		 ptm_ImgMat[i][j] = new Mat();
+    	    		 ptm_ImgMat[i][j] = tmpMat.clone();
+    	    	}else {
+    	    		ptm_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3,new Scalar(0));
+    	    	}
+    		}
     	}
-    	updateImageView(ptm_img1, Utils.mat2Image(ptm_ImgMat[pObj.select][0]));
-    	updateImageView(ptm_img2, Utils.mat2Image(ptm_ImgMat[pObj.select][1]));
-    	updateImageView(ptm_img3, Utils.mat2Image(ptm_ImgMat[pObj.select][2]));
-    	updateImageView(ptm_img4, Utils.mat2Image(ptm_ImgMat[pObj.select][3]));
-    	Platform.runLater(() ->ptm_pt1_enable.setSelected(pObj.para[targetSetParaNO][pObj.select].ptm_Enable[0]));
-    	Platform.runLater(() ->ptm_pt2_enable.setSelected(pObj.para[targetSetParaNO][pObj.select].ptm_Enable[1]));
-    	Platform.runLater(() ->ptm_pt3_enable.setSelected(pObj.para[targetSetParaNO][pObj.select].ptm_Enable[2]));
-    	Platform.runLater(() ->ptm_pt4_enable.setSelected(pObj.para[targetSetParaNO][pObj.select].ptm_Enable[3]));
+    	updateImageView(ptm_img, Utils.mat2Image(ptm_ImgMat[pObj.select][ptm_selectNo.getValue()]));
+    	ptm_pt_enable.setSelected(pObj.para[pObj.select].ptm_Enable[ptm_selectNo.getValue()]);
 
     	//寸法測定用画像
-    	for( int shotNo=0;shotNo<2;shotNo++) {
-	    	for( int i=0;i<4;i++) {
-	    		for( int j=0;j<4;j++) {
-	    	    	Mat tmpMat = Imgcodecs.imread(
-	    	    			"./ptm_image/dim"+String.format("_%d_%d_%d", shotNo,i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
-	    	    	if( tmpMat.width() > 0 && pObj.para[shotNo][pObj.select].dim_rectsDetection[0].width>1) {
-	    	    		 dim_ImgMat[i][j] = new Mat();
-	    	    		 dim_ImgMat[i][j] = tmpMat.clone();
-	    	    	}else {
-	    	    		dim_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3,new Scalar(0));
-	    	    	}
-	    		}
-	    	}
+    	for( int i=0;i<4;i++) {
+    		for( int j=0;j<4;j++) {
+    	    	Mat tmpMat = Imgcodecs.imread(
+    	    			"./ptm_image/dim"+String.format("_%d_%d", i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
+    	    	if( tmpMat.width() > 0 && pObj.para[pObj.select].dim_rectsDetection[0].width>1) {
+    	    		 dim_ImgMat[i][j] = new Mat();
+    	    		 dim_ImgMat[i][j] = tmpMat.clone();
+    	    	}else {
+    	    		dim_ImgMat[i][j] = new Mat(100,100,CvType.CV_8UC3,new Scalar(0));
+    	    	}
+    		}
     	}
     	updateImageView(dim_okuriImg_1, Utils.mat2Image(dim_ImgMat[pObj.select][0]));
     	updateImageView(dim_poke_1, Utils.mat2Image(dim_ImgMat[pObj.select][1]));
@@ -2399,9 +2494,21 @@ public class VisonController2{
     		pObj.select = 3;
     		Platform.runLater(() ->preset4.setTextFill( Color.BLUE ));
     	}
-    	draggingRect = (Rectangle)pObj.para[targetSetParaNO][pObj.select].hole_rects[4].clone();
+    	draggingRect = (Rectangle)pObj.para[pObj.select].hole_rects[4].clone();
 
     	setBtnPara();
+
+    	//パターンマッチング部
+    	loadPtmImg();
+
+        //パターンマッチング用パラメータ設定
+    	ptm_patternMatchParaSet();
+
+    	//選択されている品種の表示
+    	Platform.runLater( () ->presetText.setText(pObj.presetNameText[pObj.select]));
+
+
+
     }
     @FXML
     void onCheckBtn(ActionEvent event) {
@@ -2483,7 +2590,7 @@ public class VisonController2{
     	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
     	Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094;"));
 
-    	Platform.runLater( () ->FileClass.fileClass(new File("./ng_image/")) );
+    	//Platform.runLater( () ->FileClass.fileClass(new File("./ng_image/")) );
     	//Platform.runLater( () ->FileClass.fileClass(new File("./ok_image/")) );
 
     	Platform.runLater(() ->this.imgNG.setImage(null));
@@ -2491,7 +2598,7 @@ public class VisonController2{
     	Platform.runLater(() ->info2.clear());
     	Platform.runLater(() ->info2.setText(initInfo2));
     	//Platform.runLater(() ->info2.appendText("NG/OK画像ファイルを全て削除しました。\n"));
-    	Platform.runLater(() ->info2.appendText("NG画像ファイルを全て削除しました。\n"));
+    	//Platform.runLater(() ->info2.appendText("NG画像ファイルを全て削除しました。\n"));
 
     	//チャートデーターのクリア
     	for(int i=0;i<2;i++) {
@@ -2511,12 +2618,52 @@ public class VisonController2{
 		}else {
 			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
 		}
+		//寸法表示テーブルの更新
+		Platform.runLater( () ->dim_table.getItems().get(0).P2Property().set(0.0));
+		Platform.runLater( () ->dim_table.getItems().get(0).FProperty().set(0.0));
+		Platform.runLater( () ->dim_table.getItems().get(0).EProperty().set(0.0));
+		Platform.runLater( () ->dim_table.getItems().get(1).P2Property().set(0.0));
+		Platform.runLater( () ->dim_table.getItems().get(1).FProperty().set(0.0));
+		Platform.runLater( () ->dim_table.getItems().get(1).EProperty().set(0.0));
+		P2_sum[0] = 0;P2_sum[1] = 0;
+		F_sum[0] = 0;F_sum[1] = 0;
+		E_sum[0] = 0;E_sum[1] = 0;
+
 
 		shotCnt= 0;
+		shutterSignal4secInterval=false;//NG画像保存開始
+    	Platform.runLater( () ->judg.setText("-"));
+    	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
     }
 
+	/**
+	 * 設定モード切替
+	 * @param event
+	 */
     @FXML
     void onSettingModeBtn(ActionEvent event) {
+    	if( !settingModeFlg) {//ロックするときはパスワード不要
+		    FXMLLoader loader = new FXMLLoader(getClass().getResource("passwordDialog.fxml"));
+			AnchorPane root = null;
+			try {
+				root = (AnchorPane) loader.load();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			Scene scene = new Scene(root);
+			Stage stage = new Stage();
+			stage.setScene(scene);
+			stage.setResizable(false);
+			stage.showAndWait();
+			if( PasswordDialogController.flg == false ){//パスワードが不一致の場合
+	    		Platform.runLater(() ->info2.appendText("*********************\n"));
+	    		Platform.runLater(() ->info2.appendText("パスワードが違います\n"));
+	    		Platform.runLater(() ->info2.appendText("*********************\n"));
+	    		return;
+
+			}
+    	}
+
     	if( settingModeFlg ) {
 
     		Platform.runLater(() ->this.accordion_1.setDisable(true));
@@ -2525,10 +2672,11 @@ public class VisonController2{
         	Platform.runLater(() ->info1.setText(""));
         	draggingRect = new Rectangle(1,1,1,1);
         	saveImgUseFlg = false;
+        	offCalibLite();
         	updateImageView(imgGLAY, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
     	}else {
             //パターンマッチング用パラメータ設定
-        	ptm_patternMatchParaSet(targetSetParaNO);
+        	ptm_patternMatchParaSet();
 
     		Platform.runLater(() ->this.accordion_1.setDisable(false));
         	settingModeFlg = true;
@@ -2560,14 +2708,12 @@ public class VisonController2{
      * @param event
      */
     void onShotImg(ActionEvent event) {
-    	SaveshotImg(firstSrcMat, "shot");
-    	SaveshotImg(secondScrMat, "shot");
+    	SaveshotImg(srcMat, "shot");
     }
 
     @FXML
     void onShotImg_chess(ActionEvent event) {
-    	SavechessImg(firstSrcMat, "chessbord");
-    	SaveshotImg(secondScrMat, "chessbord");
+    	SavechessImg(srcMat, "chessbord");
     }
     @FXML
     void onCalbdataDel(ActionEvent event) {
@@ -2642,57 +2788,44 @@ public class VisonController2{
      */
     @FXML
     void onPtmSetPara(ActionEvent e){
-    	Button obj = (Button)e.getSource();
-    	ImageView iv;
-    	int selectBtn;
-    	if( obj == ptm_set_para1 ) {
-    		selectBtn = 0;
-    		iv = ptm_img1;
-    	}else if( obj == ptm_set_para2 ) {
-    		selectBtn = 1;
-    		iv = ptm_img2;
-    	}else if( obj == ptm_set_para3 ) {
-    		selectBtn = 2;
-    		iv = ptm_img3;
-    	}else if( obj == ptm_set_para4 ) {
-    		selectBtn = 3;
-    		iv = ptm_img4;
-    	}else {
-    		return;
-    	}
-/*
+    	int selectNo= this.ptm_selectNo.getValue();
+
     	parameter para = pObj.para[pObj.select];
 
 		//パラメーターを渡す
-		PtmView.ptmSrcMat = srcMat.clone();
+		PtmView.arg_ptmSrcMat = srcMat.clone();
 
-		PtmView.arg_ptmMat = ptm_ImgMat[pObj.select][selectBtn].clone();
-		PtmView.arg_detectionCnt = para.ptm_fil_detectionCnt[selectBtn];
+		PtmView.arg_ptmMat = ptm_ImgMat[pObj.select][selectNo].clone();
 
-		PtmView.arg_gauusianCheck = para.ptm_fil_gauusianCheck[selectBtn];
-		PtmView.arg_gauusianSliderX = para.ptm_fil_gauusianX[selectBtn];
-		PtmView.arg_gauusianSliderY = para.ptm_fil_gauusianY[selectBtn];
-		PtmView.arg_gauusianSliderA = para.ptm_fil_gauusianValue[selectBtn];
+		PtmView.arg_ptmMat_mask_rect = para.ptm_ptmMat_mask_rect[selectNo];
+		PtmView.arg_ptm_templatRect = para.ptm_templatRect[selectNo];
 
-		PtmView.arg_dilateCheck = para.ptm_fil_dilateCheck[selectBtn];
-		PtmView.arg_dilateSliderN = para.ptm_fil_dilateValue[selectBtn];
+		PtmView.arg_detectionCnt = para.ptm_fil_detectionCnt[selectNo];
 
-		PtmView.arg_erodeCheck = para.ptm_fil_erodeCheck[selectBtn];
-		PtmView.arg_erodeSliderN = para.ptm_fil_erodeValue[selectBtn];
+		PtmView.arg_gauusianCheck = para.ptm_fil_gauusianCheck[selectNo];
+		PtmView.arg_gauusianSliderX = para.ptm_fil_gauusianX[selectNo];
+		PtmView.arg_gauusianSliderY = para.ptm_fil_gauusianY[selectNo];
+		PtmView.arg_gauusianSliderA = para.ptm_fil_gauusianValue[selectNo];
 
-		PtmView.arg_threshholdCheck = para.ptm_fil_threshholdCheck[selectBtn];
-		PtmView.arg_threshhold_Inverse = para.ptm_fil_threshhold_Invers[selectBtn];
-		PtmView.arg_threshholdSlider = para.ptm_fil_threshholdValue[selectBtn];//2値化閾値
+		PtmView.arg_dilateCheck = para.ptm_fil_dilateCheck[selectNo];
+		PtmView.arg_dilateSliderN = para.ptm_fil_dilateValue[selectNo];
 
-		PtmView.arg_cannyCheck = para.ptm_fil_cannyCheck[selectBtn];
-		PtmView.arg_cannyThresh1 = para.ptm_fil_cannyThresh1[selectBtn];
-		PtmView.arg_cannyThresh2 = para.ptm_fil_cannyThresh2[selectBtn];
+		PtmView.arg_erodeCheck = para.ptm_fil_erodeCheck[selectNo];
+		PtmView.arg_erodeSliderN = para.ptm_fil_erodeValue[selectNo];
 
-		PtmView.arg_ptmThreshSliderN = para.ptm_threshValue[selectBtn];//閾値
-		PtmView.arg_zoomValue_slider = para.ptm_zoomValue_slider[selectBtn];
-		PtmView.arg_rectsDetection =  para.ptm_rectsDetection[selectBtn];//検出範囲
+		PtmView.arg_threshholdCheck = para.ptm_fil_threshholdCheck[selectNo];
+		PtmView.arg_threshhold_Inverse = para.ptm_fil_threshhold_Invers[selectNo];
+		PtmView.arg_threshholdSlider = para.ptm_fil_threshholdValue[selectNo];//2値化閾値
 
-		PtmView.arg_detectionScale = para.ptm_detectionScale[selectBtn];//検出倍率の逆数
+		PtmView.arg_cannyCheck = para.ptm_fil_cannyCheck[selectNo];
+		PtmView.arg_cannyThresh1 = para.ptm_fil_cannyThresh1[selectNo];
+		PtmView.arg_cannyThresh2 = para.ptm_fil_cannyThresh2[selectNo];
+
+		PtmView.arg_ptmThreshSliderN = para.ptm_threshValue[selectNo];//閾値
+		PtmView.arg_zoomValue_slider = para.ptm_zoomValue_slider[selectNo];
+		PtmView.arg_rectsDetection =  para.ptm_rectsDetection[selectNo];//検出範囲
+
+		PtmView.arg_detectionScale = para.ptm_detectionScale[selectNo];//検出倍率の逆数
 
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("ptmView.fxml"));
 		AnchorPane root = null;
@@ -2710,82 +2843,40 @@ public class VisonController2{
 		stage.showAndWait();
 
 		if( PtmView.confimFlg ) {
-			ptm_ImgMat[pObj.select][selectBtn] = PtmView.arg_ptmMat;
-			updateImageView(iv, Utils.mat2Image(ptm_ImgMat[pObj.select][selectBtn]));
+			ptm_ImgMat[pObj.select][selectNo] = PtmView.arg_ptmMat;
+			para.ptm_ptmMat_mask_rect[selectNo] = PtmView.arg_ptmMat_mask_rect;
+			para.ptm_templatRect[selectNo] = PtmView.arg_ptm_templatRect;
 
-			para.ptm_fil_detectionCnt[selectBtn] = PtmView.arg_detectionCnt;
+			updateImageView(ptm_img, Utils.mat2Image(ptm_ImgMat[pObj.select][selectNo]));
 
-			para.ptm_fil_gauusianCheck[selectBtn] = PtmView.arg_gauusianCheck;
-			para.ptm_fil_gauusianX[selectBtn] = PtmView.arg_gauusianSliderX;
-			para.ptm_fil_gauusianY[selectBtn]  = PtmView.arg_gauusianSliderY;
-			para.ptm_fil_gauusianValue[selectBtn] = PtmView.arg_gauusianSliderA;
+			para.ptm_fil_detectionCnt[selectNo] = PtmView.arg_detectionCnt;
 
-			para.ptm_fil_dilateCheck[selectBtn] = PtmView.arg_dilateCheck;
-			para.ptm_fil_dilateValue[selectBtn] = PtmView.arg_dilateSliderN;
+			para.ptm_fil_gauusianCheck[selectNo] = PtmView.arg_gauusianCheck;
+			para.ptm_fil_gauusianX[selectNo] = PtmView.arg_gauusianSliderX;
+			para.ptm_fil_gauusianY[selectNo]  = PtmView.arg_gauusianSliderY;
+			para.ptm_fil_gauusianValue[selectNo] = PtmView.arg_gauusianSliderA;
 
-			para.ptm_fil_erodeCheck[selectBtn] = PtmView.arg_erodeCheck;
-			para.ptm_fil_erodeValue[selectBtn] = PtmView.arg_erodeSliderN;
+			para.ptm_fil_dilateCheck[selectNo] = PtmView.arg_dilateCheck;
+			para.ptm_fil_dilateValue[selectNo] = PtmView.arg_dilateSliderN;
 
-			para.ptm_fil_threshholdCheck[selectBtn] = PtmView.arg_threshholdCheck;
-			para.ptm_fil_threshhold_Invers[selectBtn] = PtmView.arg_threshhold_Inverse;
-			para.ptm_fil_threshholdValue[selectBtn] = PtmView.arg_threshholdSlider;//2値化閾値
+			para.ptm_fil_erodeCheck[selectNo] = PtmView.arg_erodeCheck;
+			para.ptm_fil_erodeValue[selectNo] = PtmView.arg_erodeSliderN;
 
-			para.ptm_fil_cannyCheck[selectBtn] = PtmView.arg_cannyCheck;
-			para.ptm_fil_cannyThresh1[selectBtn] = PtmView.arg_cannyThresh1;
-			para.ptm_fil_cannyThresh2[selectBtn] = PtmView.arg_cannyThresh2;
+			para.ptm_fil_threshholdCheck[selectNo] = PtmView.arg_threshholdCheck;
+			para.ptm_fil_threshhold_Invers[selectNo] = PtmView.arg_threshhold_Inverse;
+			para.ptm_fil_threshholdValue[selectNo] = PtmView.arg_threshholdSlider;//2値化閾値
 
-			para.ptm_threshValue[selectBtn] = PtmView.arg_ptmThreshSliderN;//閾値
-			para.ptm_zoomValue_slider[selectBtn] = PtmView.arg_zoomValue_slider;
-			para.ptm_rectsDetection[selectBtn] =  PtmView.arg_rectsDetection;//検出範囲
-			para.ptm_detectionScale[selectBtn] = PtmView.arg_detectionScale;//検出倍率の逆数
+			para.ptm_fil_cannyCheck[selectNo] = PtmView.arg_cannyCheck;
+			para.ptm_fil_cannyThresh1[selectNo] = PtmView.arg_cannyThresh1;
+			para.ptm_fil_cannyThresh2[selectNo] = PtmView.arg_cannyThresh2;
+
+			para.ptm_threshValue[selectNo] = PtmView.arg_ptmThreshSliderN;//閾値
+			para.ptm_zoomValue_slider[selectNo] = PtmView.arg_zoomValue_slider;
+			para.ptm_rectsDetection[selectNo] =  PtmView.arg_rectsDetection;//検出範囲
+			para.ptm_detectionScale[selectNo] = PtmView.arg_detectionScale;//検出倍率の逆数
 		}
         //パターンマッチング用パラメータ設定
     	ptm_patternMatchParaSet();
-*/
-    }
-
-    /**
-     * 画像パターンの登録
-     * @param event
-     */
-    @FXML
-    void onPtmSetImage(ActionEvent e) {
-    	/*
-    	if( saveImgUseFlg ) {
-    		Platform.runLater(() ->info2.appendText("保存画像を使用してパターンの登録はできません\n"));
-    		return;
-    	}
-    	if( srcMat.width() < 10 ) {
-    		Platform.runLater(() ->info2.appendText("登録パターンが小さすぎます\n"));
-    		return;
-    	}
-    	Mat roi = srcMat.submat(new Rect(draggingRect.x,draggingRect.y,draggingRect.width,draggingRect.height)).clone();
-
-    	Object eObject = e.getSource();
-    	if( eObject == this.ptm_set_pt1 ) {
-    		updateImageView(ptm_img1, Utils.mat2Image(roi));
-    		ptm_ImgMat[pObj.select][0] = roi;
-    	}else if( eObject == this.ptm_set_pt2 ) {
-    		updateImageView(ptm_img2, Utils.mat2Image(roi));
-    		ptm_ImgMat[pObj.select][1] = roi;
-    	}else if( eObject == this.ptm_set_pt3 ) {
-    		updateImageView(ptm_img3, Utils.mat2Image(roi));
-    		ptm_ImgMat[pObj.select][2] = roi;
-    	}else if( eObject == this.ptm_set_pt4 ) {
-    		updateImageView(ptm_img4, Utils.mat2Image(roi));
-    		ptm_ImgMat[pObj.select][3] = roi;
-    	}
-        //パターンマッチング用パラメータ設定
-    	ptm_patternMatchParaSet();
-*/
-    }
-
-    @FXML
-    void onPtmEnabeChk(MouseEvent event) {
-    	ptm_templateMatchingObj.tmpara.ptmEnable[0] = this.ptm_pt1_enable.isSelected();
-    	ptm_templateMatchingObj.tmpara.ptmEnable[1] = this.ptm_pt2_enable.isSelected();
-    	ptm_templateMatchingObj.tmpara.ptmEnable[2] = this.ptm_pt3_enable.isSelected();
-    	ptm_templateMatchingObj.tmpara.ptmEnable[3] = this.ptm_pt4_enable.isSelected();
     }
 
     @FXML
@@ -2798,7 +2889,6 @@ public class VisonController2{
     }
     //寸法測定メソッド群
     //登録パターンなどの詳細設定
-    /*
     @FXML
     void onDimSetPara(ActionEvent e) {
     	Button obj = (Button)e.getSource();
@@ -2823,9 +2913,13 @@ public class VisonController2{
     	parameter para = pObj.para[pObj.select];
 
 		//パラメーターを渡す
-		PtmView.ptmSrcMat = srcMat.clone();
+		PtmView.arg_ptmSrcMat = srcMat.clone();
 
 		PtmView.arg_ptmMat = dim_ImgMat[pObj.select][selectBtn].clone();
+
+		PtmView.arg_ptmMat_mask_rect = para.dim_ptmMat_mask_rect[selectBtn];
+		PtmView.arg_ptm_templatRect = para.dim_templatRect[selectBtn];
+
 		PtmView.arg_detectionCnt = para.dim_fil_detectionCnt[selectBtn];
 
 		PtmView.arg_gauusianCheck = para.dim_fil_gauusianCheck[selectBtn];
@@ -2871,6 +2965,8 @@ public class VisonController2{
 		if( PtmView.confimFlg ) {
 			dim_ImgMat[pObj.select][selectBtn] = PtmView.arg_ptmMat;
 			updateImageView(iv, Utils.mat2Image(dim_ImgMat[pObj.select][selectBtn]));
+			para.dim_ptmMat_mask_rect[selectBtn] = PtmView.arg_ptmMat_mask_rect;
+			para.dim_templatRect[selectBtn] = PtmView.arg_ptm_templatRect;
 
 			para.dim_fil_detectionCnt[selectBtn] = PtmView.arg_detectionCnt;
 
@@ -2915,7 +3011,7 @@ public class VisonController2{
 	    	pObj.para[pObj.select].dimPixel_mm = pixel_mm;
     	}
     }
-*/
+
     @FXML
     /**
      * グラフ表示
@@ -2979,14 +3075,13 @@ public class VisonController2{
      */
     @FXML
     void onParaInitBtn(ActionEvent event) {
-    	pObj = new preSet2();
+    	pObj = new preSet();
     }
 
     /**
      * 寸法オフセットのチェンジリスナー
      * @param event
      */
-    /*
     @FXML
     void onDimOffsetChange(KeyEvent  e) {
     	String p2_offset_1 = dim_offset_P2_1.getText();
@@ -3009,7 +3104,6 @@ public class VisonController2{
     		Platform.runLater( () ->this.info2.appendText("offsetは数値で入力してください\n"));
     	}
     }
-    */
 
 
     /**
@@ -3018,8 +3112,8 @@ public class VisonController2{
      */
     @FXML
     void onPara_12st_shot_change(ActionEvent event) {
-    	if(targetSetParaNO == 0) {
-    		targetSetParaNO = 1;
+    	if(targetSetParaNO == 1) {
+    		targetSetParaNO = 2;
         	Platform.runLater( () ->para_12st_shot.setText("2nd."));
         	Platform.runLater( () ->para_12st_shot1.setText("2nd."));
         	Platform.runLater( () ->para_12st_shot11.setText("2nd."));
@@ -3028,7 +3122,7 @@ public class VisonController2{
         	Platform.runLater( () ->para_12st_shot11.setSelected(true));
 
     	}else{
-    		targetSetParaNO = 0;
+    		targetSetParaNO = 1;
         	Platform.runLater( () ->para_12st_shot.setText("1st."));
         	Platform.runLater( () ->para_12st_shot1.setText("1st."));
         	Platform.runLater( () ->para_12st_shot11.setText("1st."));
@@ -3040,6 +3134,87 @@ public class VisonController2{
 
     }
 
+    /**
+     * 照明キャリブレーション終了
+     */
+    void offCalibLite() {
+    	if( calibLiteFlg ) {
+	    	VisonController2.timerCalib.shutdown();
+			try {
+				VisonController2.timerCalib.awaitTermination(33, TimeUnit.MICROSECONDS);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			calibLiteFlg = false;
+			Platform.runLater(() ->info2.appendText("**************************\n"));
+			Platform.runLater(() ->info2.appendText("照明キャリブレーション終了\n"));
+			Platform.runLater(() ->info2.appendText("**************************\n"));
+			Platform.runLater( () ->throughImageChk.setSelected(false));
+    	}
+    }
+    /**
+     * 照明キャリブレーション開始
+     * @param event
+     */
+    @FXML
+    void onCalibLite(ActionEvent event) {
+
+    	if( calibLiteFlg ) {
+    		offCalibLite();
+			return;
+    	}
+
+    	if( realMat == null) {
+			Platform.runLater(() ->info2.appendText("スルー画像が取り込みできていません。\n"
+					+ "キャリブレーションが開始できません\n"));
+    		return;
+    	}
+
+    	calibLiteFlg = true;
+		Platform.runLater(() ->info2.appendText("**************************\n"));
+		Platform.runLater(() ->info2.appendText("照明キャリブレーション開始\n"));
+		Platform.runLater(() ->info2.appendText("**************************\n"));
+		Platform.runLater( () ->throughImageChk.setSelected(true));
+
+		Runnable calibLiter = new Runnable() {
+			@Override
+			public void run() {
+		    	if( triggerCCircle.getFill() != Color.YELLOW) {
+		    		Platform.runLater( () ->triggerCCircle.setFill(Color.YELLOW));
+		    	}else {
+		    		Platform.runLater( () ->triggerCCircle.setFill(Color.WHITE));
+		    	}
+
+		    	parameter para = pObj.para[pObj.select];
+		    	Double luminanceAverage = 0.0;
+		    	int cnt = 0;
+		    	for( int i=0;i<4;i++) {
+			    	if( para.hole_DetectFlg[i] ) {
+				    	Rectangle r = para.hole_rects[i];//検査範囲
+				    	luminanceAverage += Core.mean(realMat.submat(new Rect(r.x,r.y,r.width,r.height))).val[0];
+				    	cnt++;
+			    	}
+		    	}
+
+		    	if( cnt > 0 ) {
+		    		luminanceAverage = luminanceAverage / cnt;
+		        	final double d = luminanceAverage;
+		        	final int c = cnt;
+		        	Platform.runLater( () ->calib_label.setText(
+		        			String.format("領域=%d箇所 ",c) +
+		        			String.format("平均輝度=%.1f",d)));
+		    	}else {
+		        	Platform.runLater( () ->calib_label.setText( "領域設定不足"));
+		    	}
+
+			}
+		};
+
+		timerCalib = Executors.newSingleThreadScheduledExecutor();
+		timerCalib.scheduleAtFixedRate(calibLiter, 0, 100, TimeUnit.MILLISECONDS);
+
+
+    }
     @FXML
     void initialize() {
 
@@ -3058,13 +3233,27 @@ public class VisonController2{
         chartTab_F = new Tab[2];
         dataset_P2 = new XYSeriesCollection[2];
         dataset_F = new XYSeriesCollection[2];
-        //chartFact();
+        chartFact();
+        //寸法表示用テーブル
+        dim_table_item.setCellValueFactory(new PropertyValueFactory<Dim_itemValue,String>("item"));
+        dim_table_P2.setCellValueFactory(new PropertyValueFactory<Dim_itemValue,Double>("P2"));
+        dim_table_F.setCellValueFactory(new PropertyValueFactory<Dim_itemValue,Double>("F"));
+        dim_table_E.setCellValueFactory(new PropertyValueFactory<Dim_itemValue,Double>("E"));
+   		Platform.runLater( () ->dim_table.getItems().clear());
+		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("①列",0.0,0.0,0.0)));
+		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("ave.",0.0,0.0,0.0)));
+		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("②列",0.0,0.0,0.0)));
+		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("ave.",0.0,0.0,0.0)));
 
 		//イニシャルinfo2の内容保存
 		initInfo2 = this.info2.getText();
-/*
+
+		//パターンマッチング用オブジェクトの初期化
+		ptm_tmpara = new TMpara(parameter.ptm_arrySize);
+
 		loadAllPara();
 		dim_patternMatchParaSet();
+
 
         updateImageView(imgGLAY1, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
         updateImageView(imgGLAY2, Utils.mat2Image(new Mat(1,1,CvType.CV_8U)));
@@ -3082,14 +3271,17 @@ public class VisonController2{
                     	}else if(old_val == ptm_setting_accordion ) {
                     		ptmSetStartFlg = false;
                         	parameter para = pObj.para[pObj.select];
-                        	para.ptm_Enable[0] = ptm_pt1_enable.isSelected();
-                        	para.ptm_Enable[1] = ptm_pt2_enable.isSelected();
-                        	para.ptm_Enable[2] = ptm_pt3_enable.isSelected();
-                        	para.ptm_Enable[3] = ptm_pt4_enable.isSelected();
                         	ptm_patternMatchParaSet();
                     	}
                   }
             });
+
+        //*************************************************************************************************************
+        //パターンマッチング設定選択用スピナー　イベントリスナー
+        ptm_selectNo.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
+            	onPtmSelectNoSP(Integer.valueOf(newValue));
+        });
+        //*************************************************************************************************************
 
     	try {
 	    	int fileCnt = FileClass.getFiles(new File("./ok_image")).length;
@@ -3113,6 +3305,15 @@ public class VisonController2{
 		}
 
         onAllClear(null);
+    }
+
+    /**
+     * パターンマッチング　セレクタスピナーイベント
+     * @param event
+     */
+    void onPtmSelectNoSP( int no ) {
+    	updateImageView(ptm_img, Utils.mat2Image(ptm_ImgMat[pObj.select][no]));
+    	Platform.runLater(() ->ptm_pt_enable.setSelected(pObj.para[pObj.select].ptm_Enable[no]));
     }
 
     private void chartFact() {
@@ -3156,7 +3357,6 @@ public class VisonController2{
 			dataTabpane.getTabs().add(chartTab_P2[i]);
 	        dataTabpane.getTabs().add(chartTab_F[i]);
         }
-        */
     }
     /**
      * グラフの雛形作成
@@ -3170,15 +3370,15 @@ public class VisonController2{
     	JFreeChart chart = ChartFactory.createXYLineChart(title,categoryAxisLabel,valueAxisLabel,
                 dataset,//データーセット
                 PlotOrientation.VERTICAL,//値の軸方向
-                true,//凡例
+                false,//凡例
                 false,//tooltips
                 false);//urls
         // 背景色を設定
     	chart.setBackgroundPaint(ChartColor.WHITE);
 
         // 凡例の設定
-        LegendTitle lt = chart.getLegend();
-        lt.setFrame(new BlockBorder(1d, 2d, 3d, 4d, ChartColor.WHITE));
+        //LegendTitle lt = chart.getLegend();
+        //lt.setFrame(new BlockBorder(1d, 2d, 3d, 4d, ChartColor.WHITE));
 
         XYPlot plot = (XYPlot) chart.getPlot();
         // 背景色
@@ -3205,11 +3405,11 @@ public class VisonController2{
         yAxis.setRange(lower,upper);
 
         // プロットをつける
-        XYLineAndShapeRenderer  renderer = new XYLineAndShapeRenderer();
+        XYLineAndShapeRenderer  renderer = new XYLineAndShapeRenderer(true,false);
         plot.setRenderer(renderer);
         //renderer.setDefaultShapesVisible(true);
         //renderer.setDefaultShapesFilled(true);
-        // プロットのサイズ
+        //プロットのサイズ
         Stroke stroke = new BasicStroke(1.0f);
         renderer.setSeriesStroke(0, stroke);
 		//色

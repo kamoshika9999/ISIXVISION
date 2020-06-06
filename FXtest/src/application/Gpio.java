@@ -28,7 +28,7 @@ public class Gpio {
 		adcThresh = adc_thresh;
 		adcFlg = analog;
 		//デバッグコード-----
-		if( VisonController.debugFlg ) {
+		if( VisonController2.debugFlg ) {
 			try {
 				Thread.sleep(debugSleepTime);
 			} catch (InterruptedException e) {
@@ -72,7 +72,7 @@ public class Gpio {
 	 */
 	public static boolean close() {
 		//デバッグコード---------
-		if( VisonController.debugFlg ) {
+		if( VisonController2.debugFlg ) {
 			try {
 				Thread.sleep(debugSleepTime);
 			} catch (InterruptedException e) {
@@ -113,7 +113,7 @@ public class Gpio {
 	 */
 	public static String clearSignal(){
 		//デバッグコード----
-		if( VisonController.debugFlg ) {
+		if( VisonController2.debugFlg ) {
 			try {
 				Thread.sleep(debugSleepTime);
 			} catch (InterruptedException e) {
@@ -200,7 +200,7 @@ public class Gpio {
 	 */
 	public static String shutterSignal(){
 		//デバッグコード----
-		if( VisonController.debugFlg ) {
+		if( VisonController2.debugFlg ) {
 			try {
 				Thread.sleep(debugSleepTime);
 			} catch (InterruptedException e) {
@@ -289,7 +289,7 @@ public class Gpio {
 	 */
 	public static boolean OkSignalON(){
 		//デバッグコード----
-		if( VisonController.debugFlg ) {
+		if( VisonController2.debugFlg ) {
 			try {
 				Thread.sleep(debugSleepTime);
 			} catch (InterruptedException e) {
@@ -331,7 +331,7 @@ public class Gpio {
 	 */
 	public static boolean ngSignalON() {
 		//デバッグコード----
-		if( VisonController.debugFlg ) {
+		if( VisonController2.debugFlg ) {
 			try {
 				Thread.sleep(debugSleepTime);
 			} catch (InterruptedException e) {

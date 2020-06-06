@@ -20,7 +20,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		AnchorPane root;
 		try {
-			root = (AnchorPane)FXMLLoader.load(getClass().getResource("Sample3.fxml"));
+			root = (AnchorPane)FXMLLoader.load(getClass().getResource("Sample4.fxml"));
 			Scene scene = new Scene(root,1209,709);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
@@ -31,18 +31,18 @@ public class Main extends Application {
 		}
 		primaryStage.showingProperty().addListener((observable, oldValue, newValue) -> {
 		    if (oldValue == true && newValue == false) {
-				if( VisonController.capObj != null ) {
-					VisonController.capObj.release();
+				if( VisonController2.capObj != null ) {
+					VisonController2.capObj.release();
 				}
-				if (VisonController.timer != null && VisonController.timer.isShutdown() == false) {
+				if (VisonController2.timer != null && VisonController2.timer.isShutdown() == false) {
 					try {
-						if( VisonController.timer != null ) {
-							VisonController.timer.shutdown();
-							VisonController.timer.awaitTermination(33, TimeUnit.MICROSECONDS);
+						if( VisonController2.timer != null ) {
+							VisonController2.timer.shutdown();
+							VisonController2.timer.awaitTermination(33, TimeUnit.MICROSECONDS);
 						}
-						if( VisonController.timer2 != null ) {
-							VisonController.timer2.shutdown();
-							VisonController.timer2.awaitTermination(10, TimeUnit.MICROSECONDS);
+						if( VisonController2.timer2 != null ) {
+							VisonController2.timer2.shutdown();
+							VisonController2.timer2.awaitTermination(10, TimeUnit.MICROSECONDS);
 						}
 					} catch(Exception e) {
 						// log any exception

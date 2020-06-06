@@ -71,8 +71,8 @@ public class OKimageController {
     @FXML
     void onUseImageSetting(ActionEvent event) {
         if( files.length > 0 ) {
-	    	VisonController.saveImgUseFlg = true;//現在表示中のイメージを使用して設定
-	    	VisonController.saveImgMat = img;//Matを渡す
+	    	VisonController2.saveImgUseFlg = true;//現在表示中のイメージを使用して設定
+	    	VisonController2.saveImgMat = img;//Matを渡す
         }
 		Scene scene = ((Node) event.getSource()).getScene();
 		Window window = scene.getWindow();

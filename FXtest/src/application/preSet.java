@@ -3,6 +3,7 @@ package application;
 import java.io.Serializable;
 
 public class preSet implements Serializable{
+	int presetMaxCount = 4;
 	parameter[] para;
 	int select;
 	int portNo;
@@ -15,12 +16,14 @@ public class preSet implements Serializable{
 	boolean holeDispChk;
 	boolean patternDispChk;
 
+	String[] presetNameText = {"TO220","D2PAK","TOGL","LEDIP"};
+
 
 	public preSet() {
 		portNo = 4;
 
-		para = new parameter[4];
-		for(int i=0;i<4;i++) {
+		para = new parameter[presetMaxCount];
+		for(int i=0;i<presetMaxCount;i++) {
 			para[i] = new parameter();
 			select = 1;
 			cameraID = 1;
