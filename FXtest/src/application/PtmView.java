@@ -81,7 +81,8 @@ public class PtmView {
 	public static double arg_cannyThresh1;
 	public static double arg_cannyThresh2;
 
-	public static double arg_ptmThreshSliderN;//マッチングの閾値
+	public static double arg_ptmThreshSliderN;//判定閾値
+	public static double arg_ptmThreshSliderN_K;//警報閾値
 	public static double arg_zoomValue_slider;
 	public static Rectangle arg_rectsDetection;
 	private Rectangle tmp_rectsDetection;
@@ -127,10 +128,16 @@ public class PtmView {
     private Label threshholdLabel11;
     @FXML
     private Spinner<Integer> ptm_sp;
+
     @FXML
-    private Slider ptmThreshSliderN;
+    private Slider ptmThreshSliderN;//判定閾値スライダー
     @FXML
     private Label threshLabel;
+    @FXML
+    private Slider ptmThreshSliderN_K;//警報閾値スライダー
+    @FXML
+    private Label threshLabel_K;
+
     @FXML
     private TextArea ptmInfo;
     @FXML
@@ -251,6 +258,8 @@ public class PtmView {
 
     	Platform.runLater(() ->threshLabel.setText(
     			String.format("%.3f",this.ptmThreshSliderN.getValue())));
+    	Platform.runLater(() ->threshLabel_K.setText(
+    			String.format("%.3f",this.ptmThreshSliderN_K.getValue())));
 
         rePaint();
     }
@@ -426,6 +435,8 @@ public class PtmView {
     	arg_cannyThresh2 = cannyThresh2.getValue();
 
     	arg_ptmThreshSliderN = ptmThreshSliderN.getValue();
+    	arg_ptmThreshSliderN_K = ptmThreshSliderN_K.getValue();
+
     	arg_zoomValue_slider = zoomValue_slider.getValue();
 
     	arg_ptmMat = tmp_ptmMat.clone();
@@ -849,7 +860,7 @@ public class PtmView {
 
     	//マスク画像
     	tmp_ptmMat = arg_ptmMat.clone();
-        
+
     	tmp_ptm_templatRect = (Rectangle)arg_ptm_templatRect.clone();
     	tmp_ptmMat_mask_rect = (Rectangle)arg_ptmMat_mask_rect.clone();
     	Mat disp_ptmMat = tmp_ptmMat.clone();

@@ -14,6 +14,7 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.PtmView">
    <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="38.0" layoutX="15.0" layoutY="661.0" stroke="BLACK" strokeType="INSIDE" width="568.0" />
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="84.0" layoutX="242.0" layoutY="574.0" stroke="BLACK" strokeType="INSIDE" width="296.0" />
       <ImageView fx:id="ptmMainView" fitHeight="320.0" fitWidth="320.0" layoutX="4.0" layoutY="50.0" onMouseDragged="#mouseDragged" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" onScroll="#onWheel" pickOnBounds="true" preserveRatio="true" smooth="false">
          <viewport>
@@ -54,14 +55,13 @@
       <Label fx:id="threshholdLabel11" layoutX="302.0" layoutY="617.0" text="Thre②" />
       <Spinner fx:id="ptm_sp" layoutX="109.0" layoutY="624.0" onMouseClicked="#onDragDone" prefHeight="25.0" prefWidth="68.0" />
       <Label layoutX="30.0" layoutY="628.0" prefHeight="17.0" prefWidth="68.0" text="検出数閾値" />
-      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="38.0" layoutX="15.0" layoutY="661.0" stroke="BLACK" strokeType="INSIDE" width="863.0" />
-      <Slider fx:id="ptmThreshSliderN" blockIncrement="1.0" layoutX="94.0" layoutY="662.0" majorTickUnit="0.025" max="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="38.0" prefWidth="670.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="0.8" />
-      <Label fx:id="threshLabel" layoutX="768.0" layoutY="669.0" prefHeight="17.0" prefWidth="81.0" text="Label" />
+      <Slider fx:id="ptmThreshSliderN" blockIncrement="1.0" layoutX="94.0" layoutY="662.0" majorTickUnit="0.025" max="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="38.0" prefWidth="398.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="0.8" />
+      <Label fx:id="threshLabel" layoutX="496.0" layoutY="666.0" prefHeight="17.0" prefWidth="81.0" text="Label" />
       <TextArea fx:id="ptmInfo" layoutX="549.0" layoutY="485.0" prefHeight="173.0" prefWidth="327.0" />
       <Button fx:id="ptmConfirm" layoutX="894.0" layoutY="486.0" mnemonicParsing="false" onAction="#onPtmConfirm" prefHeight="25.0" prefWidth="57.0" text="確定" />
       <Button fx:id="ptmCancel" layoutX="894.0" layoutY="516.0" mnemonicParsing="false" onAction="#onPtmCancel" text="取り消し" />
-      <Button fx:id="ptmTest" layoutX="894.0" layoutY="583.0" mnemonicParsing="false" onAction="#onPtmTest" prefHeight="39.0" prefWidth="264.0" text="テスト" />
-      <Button fx:id="ptmReturn" layoutX="894.0" layoutY="643.0" mnemonicParsing="false" onAction="#onPtmReturn" prefHeight="25.0" prefWidth="264.0" text="戻る" />
+      <Button fx:id="ptmTest" layoutX="894.0" layoutY="548.0" mnemonicParsing="false" onAction="#onPtmTest" prefHeight="39.0" prefWidth="264.0" text="テスト" />
+      <Button fx:id="ptmReturn" layoutX="894.0" layoutY="594.0" mnemonicParsing="false" onAction="#onPtmReturn" prefHeight="25.0" prefWidth="264.0" text="戻る" />
       <Button fx:id="patternSet" layoutX="957.0" layoutY="20.0" mnemonicParsing="false" onAction="#onPatternSet" text="パターン登録" />
       <Button fx:id="move_up_btn" layoutX="73.0" layoutY="403.0" mnemonicParsing="false" onAction="#onMoveBtn" text="↑" />
       <Button fx:id="move_left_btn" layoutX="44.0" layoutY="416.0" mnemonicParsing="false" onAction="#onMoveBtn" text="←" />
@@ -96,5 +96,9 @@
       <Button fx:id="rinearnData" layoutX="981.0" layoutY="486.0" mnemonicParsing="false" onAction="#rinearnDataUpdate" prefHeight="25.0" prefWidth="140.0" text="Rinearn解析" />
       <Button fx:id="maskSet" layoutX="1051.0" layoutY="20.0" mnemonicParsing="false" onAction="#onMaskSet" text="マスク領域" />
       <CheckBox fx:id="dispEntryAreaChk" layoutX="203.0" layoutY="33.0" mnemonicParsing="false" onMouseClicked="#onDispEntryArea" selected="true" text="登録領域表示" />
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="38.0" layoutX="609.0" layoutY="661.0" stroke="BLACK" strokeType="INSIDE" width="559.0" />
+      <Slider fx:id="ptmThreshSliderN_K" blockIncrement="1.0" layoutX="687.0" layoutY="659.0" majorTickUnit="0.025" max="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="38.0" prefWidth="370.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="0.9" />
+      <Label fx:id="threshLabel_K" layoutX="1068.0" layoutY="666.0" prefHeight="17.0" prefWidth="81.0" text="Label" />
+      <Label layoutX="614.0" layoutY="669.0" prefHeight="17.0" prefWidth="59.0" text="警戒閾値" />
    </children>
 </AnchorPane>

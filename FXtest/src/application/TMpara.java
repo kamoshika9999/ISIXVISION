@@ -16,7 +16,9 @@ import org.opencv.imgproc.Imgproc;
 public class TMpara implements Cloneable{
 	public int arrayCnt;
 	public int[] matchingTreshDetectCnt;//マッチングパターン数の閾値
-	public double[] matchingThresh;//テンプレートマッチングの閾値
+	public double[] matchingThresh;//テンプレートマッチングの判定閾値
+	public double[] matchingThresh_K;//テンプレートマッチングの警報閾値
+
 	public Mat[] paternMat;//パターンマッチングの登録Mat
 	public boolean[] ptmEnable;//パターンマッチング有効無効フラグ
 	public Rectangle[] detectionRects;//パターンマッチング検出エリア

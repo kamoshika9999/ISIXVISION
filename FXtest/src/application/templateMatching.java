@@ -39,11 +39,11 @@ public class templateMatching {
 	 * @param areaMat 8UC1
 	 * @param dstMat  8UC3
 	 * @param settingFlg セッティングモード時 true
-	 * @return  true:合格  false:不合格
+	 * @return  0:合格  1:検出個数不足 2:警報閾値未満有
 	 */
-	public boolean detectPattern(Mat areaMat, Mat dstMat,boolean settingFlg,boolean patternDispChk) {
+	public int detectPattern(Mat areaMat, Mat dstMat,boolean settingFlg,boolean patternDispChk) {
 
-		boolean resultFlg = true;
+		int resultStatus = 0;
 		Mat c_areaMat;//検出エリアMatクローン用
 		TMpara c_tmpara;//検出用パラメータクローン用オブジェクト
 
@@ -285,6 +285,12 @@ public class templateMatching {
 	    		    	resultValue[n].detectMax = resultValue[n].detectMax<ratio?ratio:resultValue[n].detectMax;
 	    		    	resultValue[n].detectMin = resultValue[n].detectMin>ratio?ratio:resultValue[n].detectMin;
 	    		    	resultValue[n].detectAve += finedPointThresh.get(i);
+
+	    		    	//警報閾値未満判定
+	    		    	if( finedPointThresh.get(i) < c_tmpara.matchingThresh_K[n] ) {
+	    		    		resultStatus = 2;
+	    		    	}
+
 	    		    	//パターン中心計算
 	    		    	resultValue[n].centerPositionX.add(
 	    		    			(double)c_tmpara.detectionRects[n].x*c_tmpara.scale[n] +
@@ -305,10 +311,10 @@ public class templateMatching {
 				}
 				resultValue[n].detectAve /= (double)searchCnt;
 				if( resultValue[n].cnt < c_tmpara.matchingTreshDetectCnt[n] ) {
-					resultFlg = false;
+					resultStatus = 1;
 				}
 			}
 		}
-		return resultFlg;
+		return resultStatus;
 	}
 }

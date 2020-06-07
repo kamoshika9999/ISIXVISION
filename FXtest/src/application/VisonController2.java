@@ -1447,20 +1447,20 @@ public class VisonController2{
 
 
 	        //パターンマッチング
-        	boolean tmFlg;
+        	int tmStatus;
         	if( !ptm_disableChk.isSelected() ) {//パターンマッチングが強制的に無効になっているか？
-        		tmFlg = ptm_templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
+        		tmStatus = ptm_templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
         											,false,patternDispChk.isSelected());
         	}else {
-        		tmFlg = true;
+        		tmStatus = 0;
         	}
 
 
         	//寸法測定
-        	boolean dimFlg;
-       		dimFlg = dim_templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
+        	int dimStatus;
+        	dimStatus = dim_templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
         											,false,dimensionDispChk.isSelected());
-       		if( dimFlg ) {
+       		if( dimStatus == 0 ) {
         	for(int g=0;g<2;g++) {
         		if( ((g==0 && dim_1_enable.isSelected()) || ((g==1) && dim_2_enable.isSelected())) && shotCnt>0) {
         			double P2 = 0.0;
@@ -1519,7 +1519,7 @@ public class VisonController2{
 	        	if( shotCnt < 21 ) { //20ショットまでは判定無視
 		        	Platform.runLater( () ->judg.setText( String.valueOf(20-shotCnt)) );
 		        	Platform.runLater( () ->judg.setTextFill( Color.GREEN) );
-	        	}else if(judgCnt==4 && tmFlg ) {//judgCntが穴判定  tmFlgがテンプレートマッチング判定
+	        	}else if(judgCnt==4 && (tmStatus==0 || tmStatus==2) ) {//judgCntが穴判定  tmStatusがテンプレートマッチング判定
 		        	Platform.runLater( () ->judg.setText("OK") );
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN) );
 		        	//画像保存
@@ -2356,8 +2356,9 @@ public class VisonController2{
     private void ptm_patternMatchParaSet() {
     	parameter para = pObj.para[pObj.select];
         for(int i=0;i<ptm_tmpara.arrayCnt;i++) {
-        	ptm_tmpara.matchingTreshDetectCnt[i] = para.ptm_fil_detectionCnt[i];
-        	ptm_tmpara.matchingThresh[i] = para.ptm_threshValue[i];
+        	ptm_tmpara.matchingTreshDetectCnt[i] = para.ptm_fil_detectionCnt[i];//検出個数の判定数
+        	ptm_tmpara.matchingThresh[i] = para.ptm_threshValue[i];//判定閾値
+        	ptm_tmpara.matchingThresh_K[i] = para.ptm_threshValue_K[i];//警報閾値
         	ptm_tmpara.paternMat[i] = ptm_ImgMat[pObj.select][i];
         	ptm_tmpara.ptmEnable[i] = para.ptm_Enable[i];
         	ptm_tmpara.detectionRects[i] = para.ptm_rectsDetection[i];
@@ -2822,7 +2823,9 @@ public class VisonController2{
 		PtmView.arg_cannyThresh1 = para.ptm_fil_cannyThresh1[selectNo];
 		PtmView.arg_cannyThresh2 = para.ptm_fil_cannyThresh2[selectNo];
 
-		PtmView.arg_ptmThreshSliderN = para.ptm_threshValue[selectNo];//閾値
+		PtmView.arg_ptmThreshSliderN = para.ptm_threshValue[selectNo];//判定閾値
+		PtmView.arg_ptmThreshSliderN_K = para.ptm_threshValue_K[selectNo];//警報閾値
+
 		PtmView.arg_zoomValue_slider = para.ptm_zoomValue_slider[selectNo];
 		PtmView.arg_rectsDetection =  para.ptm_rectsDetection[selectNo];//検出範囲
 
@@ -2871,7 +2874,9 @@ public class VisonController2{
 			para.ptm_fil_cannyThresh1[selectNo] = PtmView.arg_cannyThresh1;
 			para.ptm_fil_cannyThresh2[selectNo] = PtmView.arg_cannyThresh2;
 
-			para.ptm_threshValue[selectNo] = PtmView.arg_ptmThreshSliderN;//閾値
+			para.ptm_threshValue[selectNo] = PtmView.arg_ptmThreshSliderN;//判定閾値
+			para.ptm_threshValue_K[selectNo] = PtmView.arg_ptmThreshSliderN_K;//警報閾値
+
 			para.ptm_zoomValue_slider[selectNo] = PtmView.arg_zoomValue_slider;
 			para.ptm_rectsDetection[selectNo] =  PtmView.arg_rectsDetection;//検出範囲
 			para.ptm_detectionScale[selectNo] = PtmView.arg_detectionScale;//検出倍率の逆数
