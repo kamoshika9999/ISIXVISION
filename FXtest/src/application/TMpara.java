@@ -47,6 +47,8 @@ public class TMpara implements Cloneable{
 
 		matchingTreshDetectCnt = new int[arrayCnt];
 		matchingThresh = new double[arrayCnt];
+		matchingThresh_K = new double[arrayCnt];
+		
 		paternMat = new Mat[arrayCnt];
 		ptmEnable = new boolean[arrayCnt];
 		detectionRects = new Rectangle[arrayCnt];
