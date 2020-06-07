@@ -57,7 +57,7 @@ public class parameter implements Serializable {
 
 
 	//パターンマッチングに適用されるフィルタ
-	public int[] ptm_fil_detectionCnt;
+	//public int[] ptm_fil_detectionCnt;
 	public boolean[] ptm_fil_threshholdCheck;
 	public boolean[] ptm_fil_threshhold_Invers;
 	public double[] ptm_fil_threshholdValue;
@@ -150,7 +150,7 @@ public class parameter implements Serializable {
 
 		ptm_DetectCnt = new int[ptm_arrySize];
 		ptm_Enable = new boolean[ptm_arrySize];
-		ptm_fil_detectionCnt = new int[ptm_arrySize];
+		//ptm_fil_detectionCnt = new int[ptm_arrySize];
 		ptm_detectionScale = new double[ptm_arrySize];
 
 		ptm_fil_gauusianCheck = new boolean[ptm_arrySize];

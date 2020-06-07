@@ -259,7 +259,7 @@ public class templateMatching {
 				    		resultValue[n].y_subPixel.add(y);
 
 				    	}catch(Exception e) {
-				    		System.out.println("サブピクセル計測失敗　寸法測定分解能低下。検出位置がサーチ範囲の端にかかっています。");
+				    		System.out.println("サブピクセル計測失敗　寸法測定分解能低下。\n検出位置がサーチ範囲の端にかかっています。");
 				    		resultValue[n].x_subPixel.add(finedPoint.get(index).x );
 				    		resultValue[n].y_subPixel.add(finedPoint.get(index).y);
 				    	}

@@ -159,7 +159,6 @@ public class VisonController2{
 	long lockedTimer = 0;
 	final long lockedTimerThresh = 1000 * 60 *5;
 	//パターンマッチング用
-	private boolean ptmSetStartFlg = false;
 	public Mat[][] ptm_ImgMat = new Mat[4][parameter.ptm_arrySize];//[presetNo][ptm1～ptm4]
 	private TMpara ptm_tmpara;
 	private templateMatching ptm_templateMatchingObj;
@@ -1312,21 +1311,19 @@ public class VisonController2{
 		        			draggingRect.x,
 		        			draggingRect.x+draggingRect.width);
 		        	//穴検出
-		        	if( !ptmSetStartFlg ) {
-			            int foundCircle_result_int = foundCircle(
-			            		fillterAftterMatRoi,//検出領域のサブMAT
-			            		mainViewMat,//結果の描画
-			            		(int)sliderDetecPara5.getValue(),//穴間距離の閾値
-			            		(int)sliderDetecPara9.getValue(),//穴径の最大値
-			            		(int)sliderDetecPara8.getValue(),//穴径の最小値
-			            		sliderDetecPara7.getValue(),//円形度
-			            		-1,//穴数の閾値 設定領域の為「-1」と入れ区別する
-			            		whiteRatioMaxSp.getValue(),//白面積の最大値
-			            		whiteRatioMinSp.getValue(),//白面積の最小値
-			            		true,//インフォメーションに表示する
-			            		draggingRect.x,draggingRect.y
-			            		);
-					}
+		            int foundCircle_result_int = foundCircle(
+		            		fillterAftterMatRoi,//検出領域のサブMAT
+		            		mainViewMat,//結果の描画
+		            		(int)sliderDetecPara5.getValue(),//穴間距離の閾値
+		            		(int)sliderDetecPara9.getValue(),//穴径の最大値
+		            		(int)sliderDetecPara8.getValue(),//穴径の最小値
+		            		sliderDetecPara7.getValue(),//円形度
+		            		-1,//穴数の閾値 設定領域の為「-1」と入れ区別する
+		            		whiteRatioMaxSp.getValue(),//白面積の最大値
+		            		whiteRatioMinSp.getValue(),//白面積の最小値
+		            		true,//インフォメーションに表示する
+		            		draggingRect.x,draggingRect.y
+		            		);
 		        }
 	            Imgproc.rectangle(mainViewMat,
 	            		new Point(draggingRect.x,draggingRect.y),
@@ -2356,7 +2353,7 @@ public class VisonController2{
     private void ptm_patternMatchParaSet() {
     	parameter para = pObj.para[pObj.select];
         for(int i=0;i<ptm_tmpara.arrayCnt;i++) {
-        	ptm_tmpara.matchingTreshDetectCnt[i] = para.ptm_fil_detectionCnt[i];//検出個数の判定数
+        	ptm_tmpara.matchingTreshDetectCnt[i] = para.ptm_DetectCnt[i];//検出個数の判定数
         	ptm_tmpara.matchingThresh[i] = para.ptm_threshValue[i];//判定閾値
         	ptm_tmpara.matchingThresh_K[i] = para.ptm_threshValue_K[i];//警報閾値
         	ptm_tmpara.paternMat[i] = ptm_ImgMat[pObj.select][i];
@@ -2776,8 +2773,7 @@ public class VisonController2{
      */
     @FXML
     void onOpenPtmAccordion(MouseEvent event) {
-    	ptmSetStartFlg = true;
-
+    	onPtmSelectNoSP(ptm_selectNo.getValue());
     	System.out.println("open_ptm");
 
     }
@@ -2802,7 +2798,7 @@ public class VisonController2{
 		PtmView.arg_ptmMat_mask_rect = para.ptm_ptmMat_mask_rect[selectNo];
 		PtmView.arg_ptm_templatRect = para.ptm_templatRect[selectNo];
 
-		PtmView.arg_detectionCnt = para.ptm_fil_detectionCnt[selectNo];
+		PtmView.arg_detectionCnt = para.ptm_DetectCnt[selectNo];
 
 		PtmView.arg_gauusianCheck = para.ptm_fil_gauusianCheck[selectNo];
 		PtmView.arg_gauusianSliderX = para.ptm_fil_gauusianX[selectNo];
@@ -2853,7 +2849,7 @@ public class VisonController2{
 
 			updateImageView(ptm_img, Utils.mat2Image(ptm_ImgMat[pObj.select][selectNo]));
 
-			para.ptm_fil_detectionCnt[selectNo] = PtmView.arg_detectionCnt;
+			para.ptm_DetectCnt[selectNo] = PtmView.arg_detectionCnt;
 
 			para.ptm_fil_gauusianCheck[selectNo] = PtmView.arg_gauusianCheck;
 			para.ptm_fil_gauusianX[selectNo] = PtmView.arg_gauusianSliderX;
@@ -3275,9 +3271,7 @@ public class VisonController2{
                     	if( new_val == ptm_setting_accordion) {
                     		onOpenPtmAccordion(null);
                     	}else if(old_val == ptm_setting_accordion ) {
-                    		ptmSetStartFlg = false;
-                        	parameter para = pObj.para[pObj.select];
-                        	ptm_patternMatchParaSet();
+                        	ptm_patternMatchParaSet();//パターンマッチングのアコーディオンを閉じたときに変更を反映させる
                     	}
                   }
             });
@@ -3286,6 +3280,7 @@ public class VisonController2{
         //パターンマッチング設定選択用スピナー　イベントリスナー
         ptm_selectNo.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
             	onPtmSelectNoSP(Integer.valueOf(newValue));
+
         });
         //*************************************************************************************************************
 
@@ -3318,8 +3313,24 @@ public class VisonController2{
      * @param event
      */
     void onPtmSelectNoSP( int no ) {
+    	parameter para = pObj.para[pObj.select];
+
     	updateImageView(ptm_img, Utils.mat2Image(ptm_ImgMat[pObj.select][no]));
-    	Platform.runLater(() ->ptm_pt_enable.setSelected(pObj.para[pObj.select].ptm_Enable[no]));
+    	Platform.runLater(() ->ptm_pt_enable.setSelected(para.ptm_Enable[no]));
+
+    	Mat tmpMat = srcMat.clone();
+        Imgproc.rectangle(tmpMat,
+        		new Point(para.ptm_rectsDetection[no].getX(),para.ptm_rectsDetection[no].getY()),
+        		new Point(para.ptm_rectsDetection[no].getWidth()+para.ptm_rectsDetection[no].getX(),
+        				para.ptm_rectsDetection[no].getHeight()+para.ptm_rectsDetection[no].getY()),
+        		new Scalar(255,0,0),3);
+    	updateImageView(imgORG, Utils.mat2Image(tmpMat));
+
+    	String info = "判定個数= " + para.ptm_DetectCnt[no] +"\n" +
+    				"判定閾値= " + String.format("%.2f", para.ptm_threshValue[no]) + "\n" +
+    				"警報閾値= " + String.format("%.2f", para.ptm_threshValue_K[no]) + "\n";
+
+    	Platform.runLater(() ->this.ptm_textArea.setText(info));
     }
 
     private void chartFact() {
