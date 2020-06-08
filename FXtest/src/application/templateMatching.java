@@ -224,7 +224,7 @@ public class templateMatching {
 
 								finedPointThresh.set(i, finedPointThresh.get(j));
 								finedPointThresh.set(j,tmpRatio);
-								finedPoint.set(i, tmpPoint);
+								finedPoint.set(i, finedPoint.get(j));
 								finedPoint.set(j, tmpPoint);
 							}
 						}
