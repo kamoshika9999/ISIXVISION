@@ -39,10 +39,9 @@ public class templateMatching {
 	 * @param areaMat 8UC1
 	 * @param dstMat  8UC3
 	 * @param settingFlg セッティングモード時 true
-	 * @return  0:合格  1:検出個数不足 2:警報閾値未満有
+	 * @return  0:合格又は検出無効  1:検出個数不足 2:警報閾値未満有 3:検出個数過多
 	 */
 	public int detectPattern(Mat areaMat, Mat dstMat,boolean settingFlg,boolean patternDispChk) {
-
 		int resultStatus = 0;
 		Mat c_areaMat;//検出エリアMatクローン用
 		TMpara c_tmpara;//検出用パラメータクローン用オブジェクト
@@ -312,9 +311,12 @@ public class templateMatching {
 				resultValue[n].detectAve /= (double)searchCnt;
 				if( resultValue[n].cnt < c_tmpara.matchingTreshDetectCnt[n] ) {
 					resultStatus = 1;
+				}else if( resultValue[n].cnt > c_tmpara.matchingTreshDetectCnt[n] ) {
+					resultStatus = 3;
 				}
 			}
 		}
+
 		return resultStatus;
 	}
 }

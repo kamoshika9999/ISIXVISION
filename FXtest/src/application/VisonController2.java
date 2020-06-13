@@ -1458,57 +1458,77 @@ public class VisonController2{
         	dimStatus = dim_templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
         											,false,dimensionDispChk.isSelected());
        		if( dimStatus == 0 ) {
-        	for(int g=0;g<2;g++) {
-        		if( ((g==0 && dim_1_enable.isSelected()) || ((g==1) && dim_2_enable.isSelected())) && shotCnt>0) {
-        			double P2 = 0.0;
-        			double F = 0.0;
-        			if( dim_templateMatchingObj.resultValue[g*2].cnt == 1 &&
-        					dim_templateMatchingObj.resultValue[g*2+1].cnt == 1) {
-		        		double p2_x0 = dim_templateMatchingObj.resultValue[g*2].centerPositionX.get(0);
-		        		double p2_x1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionX.get(0);
-		        		//System.out.println("X0 = " + String.format("%.4f", p2_x0));
-		        		//System.out.println("X1 = " + String.format("%.4f", p2_x1));
-		        		P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
-		        		P2_sum[g] += P2;
-		        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
-		        		double f_y1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionY.get(0);
-		        		F = Math.abs(f_y0 - f_y1)*para.dimPixel_mm+para.dim_offset_F[g];
-		        		F_sum[g] += F;
-        			}
-        			final int g2 =g;
+	        	for(int g=0;g<2;g++) {
+	        		if( ((g==0 && dim_1_enable.isSelected()) || ((g==1) && dim_2_enable.isSelected())) && shotCnt>0) {
+	        			double P2 = 0.0;
+	        			double F = 0.0;
+	        			if( dim_templateMatchingObj.resultValue[g*2].cnt == 1 &&
+	        					dim_templateMatchingObj.resultValue[g*2+1].cnt == 1) {
+			        		double p2_x0 = dim_templateMatchingObj.resultValue[g*2].centerPositionX.get(0);
+			        		double p2_x1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionX.get(0);
+			        		//System.out.println("X0 = " + String.format("%.4f", p2_x0));
+			        		//System.out.println("X1 = " + String.format("%.4f", p2_x1));
+			        		P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
+			        		P2_sum[g] += P2;
+			        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
+			        		double f_y1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionY.get(0);
+			        		F = Math.abs(f_y0 - f_y1)*para.dimPixel_mm+para.dim_offset_F[g];
+			        		F_sum[g] += F;
+	        			}else {
+	        				P2 =0.0;
+	        				F=0.0;
+	        			}
+	        			final int g2 =g;
 
-        			final double _P2 =Double.valueOf(String.format("%.3f",P2)).doubleValue();
-        			final double _F = Double.valueOf(String.format("%.3f",F)).doubleValue();
-        			final double P2_ave = P2_sum[g]/shotCnt;
-        			final double F_ave = F_sum[g]/shotCnt;
-        			final double _P2_ave = Double.valueOf(String.format("%.3f",P2_ave)).doubleValue();
-        			final double _F_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
+	        			final double _P2 =Double.valueOf(String.format("%.3f",P2)).doubleValue();
+	        			final double _F = Double.valueOf(String.format("%.3f",F)).doubleValue();
+	        			final double P2_ave = P2_sum[g]/shotCnt;
+	        			final double F_ave = F_sum[g]/shotCnt;
+	        			final double _P2_ave = Double.valueOf(String.format("%.3f",P2_ave)).doubleValue();
+	        			final double _F_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
 
-        			final double P2_final = P2;
-        			final double F_final = F;
-        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,P2_final));
-	        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,F_final));
-	        		//寸法表示テーブルの更新
-	        		Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(_P2));
-	        		Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(_F));
-	        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(_P2_ave));
-	        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).FProperty().set(_F_ave));
+	        			final double P2_final = P2;
+	        			final double F_final = F;
+	        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,P2_final));
+		        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,F_final));
+		        		//寸法表示テーブルの更新
+		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(_P2));
+		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(_F));
+		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(_P2_ave));
+		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).FProperty().set(_F_ave));
 
 
-	        		//軸の設定更新
-	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getDomainAxis()).
-																setRange(shotCnt<=200?0:shotCnt-200,shotCnt));
-	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getDomainAxis()).
-	        													setRange(shotCnt<=200?0:shotCnt-200,shotCnt));
-	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getRangeAxis()).
-							setRange(1.8,2.2));
-	        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
-							setRange(11.3,11.7));
-        		}
-        	}
+		        		//軸の設定更新
+		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getDomainAxis()).
+																	setRange(shotCnt<=200?0:shotCnt-200,shotCnt));
+		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getDomainAxis()).
+		        													setRange(shotCnt<=200?0:shotCnt-200,shotCnt));
+		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getRangeAxis()).
+								setRange(1.8,2.2));
+		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
+								setRange(11.3,11.7));
+	        		}else {
+	        			final int g2 =g;
+	        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,0.000f));
+	        			Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,0.000f));
+		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(0.000f));
+		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).FProperty().set(0.000f));
+		        		//寸法表示テーブルの更新
+		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(0.000f));
+		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(0.000f));
+	        			
+	        		}
+	        	}
        		}else {
        			Platform.runLater( () ->this.info2.appendText("寸法測定に失敗しました\n"));
-       			Platform.runLater( () ->this.info2.appendText("登録領域が画像端ギリギリすぎると推定します。\n"));
+       			for(int m=0;m<2;m++) {
+	       			if( dim_templateMatchingObj.resultValue[m*2].cnt > 1 ||
+	    					dim_templateMatchingObj.resultValue[m*2+1].cnt > 1) {
+	    				Platform.runLater( () ->this.info2.appendText(
+	    						"寸法測定に失敗しました\n領域内の検出個数が1個ではありまえん。\n"));
+	       			}
+       			}
+    				//Platform.runLater( () ->this.info2.appendText("登録領域が画像端ギリギリすぎると推定します。\n"));
        		}
 
 	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
@@ -2618,12 +2638,15 @@ public class VisonController2{
 			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));
 		}
 		//寸法表示テーブルの更新
-		Platform.runLater( () ->dim_table.getItems().get(0).P2Property().set(0.0));
-		Platform.runLater( () ->dim_table.getItems().get(0).FProperty().set(0.0));
-		Platform.runLater( () ->dim_table.getItems().get(0).EProperty().set(0.0));
-		Platform.runLater( () ->dim_table.getItems().get(1).P2Property().set(0.0));
-		Platform.runLater( () ->dim_table.getItems().get(1).FProperty().set(0.0));
-		Platform.runLater( () ->dim_table.getItems().get(1).EProperty().set(0.0));
+		for(int g=0;g<2;g++) {
+			final int g2=g;
+			Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(0.0));
+			Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(0.0));
+			Platform.runLater( () ->dim_table.getItems().get(g2*2).EProperty().set(0.0));
+			Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(0.0));
+			Platform.runLater( () ->dim_table.getItems().get(g2*2+1).FProperty().set(0.0));
+			Platform.runLater( () ->dim_table.getItems().get(g2*2+1).EProperty().set(0.0));
+		}
 		P2_sum[0] = 0;P2_sum[1] = 0;
 		F_sum[0] = 0;F_sum[1] = 0;
 		E_sum[0] = 0;E_sum[1] = 0;
@@ -3009,7 +3032,7 @@ public class VisonController2{
 	    		pixel_mm = 0.0;
 	    	}
 	    	final Double tmp_pixel_mm = pixel_mm;
-	    	Platform.runLater( () ->this.dimSettingLabel.setText(String.format("%.0f μm/pixel", tmp_pixel_mm*1000)));
+	    	Platform.runLater( () ->this.dimSettingLabel.setText(String.format("%.3f μm/pixel", tmp_pixel_mm*1000)));
 	    	pObj.para[pObj.select].dimPixel_mm = pixel_mm;
     	}
     }
