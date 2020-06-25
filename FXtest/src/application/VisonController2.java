@@ -802,7 +802,7 @@ public class VisonController2{
 				distortionCoefficients = calibrationMats.get("DistortionCoefficients");//歪み係数
 			}
 		}
-		source_video = new VideoCapture("./test4.mp4" );//デモモード用動画
+		source_video = new VideoCapture("./test15.mp4" );//デモモード用動画
 		double video_width = source_video.get( Videoio.CAP_PROP_FRAME_WIDTH ); // 横幅を取得
 		double video_height = source_video.get( Videoio.CAP_PROP_FRAME_HEIGHT ); // 縦幅を取得
 		double video_frame_count = source_video.get( Videoio.CAP_PROP_FRAME_COUNT ); // フレーム数を取得
