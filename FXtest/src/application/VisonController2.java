@@ -1516,7 +1516,7 @@ public class VisonController2{
 		        		//寸法表示テーブルの更新
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(0.000f));
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(0.000f));
-	        			
+
 	        		}
 	        	}
        		}else {
@@ -2335,10 +2335,12 @@ public class VisonController2{
     	dellySpinner2.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 900,para.delly2,1));
 
     	camIDspinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 9,pObj.cameraID,1));
-    	adc_thresh_value.setText( String.valueOf(pObj.adc_thresh));
-    	capH_text.setText( String.valueOf(pObj.cameraHeight));
-    	capW_text.setText( String.valueOf(pObj.cameraWidth));
+    	Platform.runLater( () ->adc_thresh_value.setText( String.valueOf(pObj.adc_thresh)));
+    	Platform.runLater( () ->capH_text.setText( String.valueOf(pObj.cameraHeight)));
+    	Platform.runLater( () ->capW_text.setText( String.valueOf(pObj.cameraWidth)));
     	adc_flg.setSelected(pObj.adcFlg);
+
+    	Platform.runLater( () ->camera_revers_chk.setSelected(pObj.camera_revers));
 
     	//パターンマッチング部
     	ptm_selectNo.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 49,0,1));
