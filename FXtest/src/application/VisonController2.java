@@ -1469,11 +1469,18 @@ public class VisonController2{
 			        		//System.out.println("X0 = " + String.format("%.4f", p2_x0));
 			        		//System.out.println("X1 = " + String.format("%.4f", p2_x1));
 			        		P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
-			        		P2_sum[g] += P2;
+
+			        		//21ショット目から加算
+			        		if( shotCnt > 20 ) {
+			        			P2_sum[g] += P2;
+			        		}
 			        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
 			        		double f_y1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionY.get(0);
 			        		F = Math.abs(f_y0 - f_y1)*para.dimPixel_mm+para.dim_offset_F[g];
-			        		F_sum[g] += F;
+			        		//21ショット目から加算
+			        		if( shotCnt > 20 ) {
+			        			F_sum[g] += F;
+			        		}
 	        			}else {
 	        				P2 =0.0;
 	        				F=0.0;
@@ -1482,8 +1489,9 @@ public class VisonController2{
 
 	        			final double _P2 =Double.valueOf(String.format("%.3f",P2)).doubleValue();
 	        			final double _F = Double.valueOf(String.format("%.3f",F)).doubleValue();
-	        			final double P2_ave = P2_sum[g]/shotCnt;
-	        			final double F_ave = F_sum[g]/shotCnt;
+
+	        			final double P2_ave = P2_sum[g]/(shotCnt-20);//21ショット目から加算の為
+	        			final double F_ave = F_sum[g]/(shotCnt-20);//21ショット目から加算の為
 	        			final double _P2_ave = Double.valueOf(String.format("%.3f",P2_ave)).doubleValue();
 	        			final double _F_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
 
