@@ -18,4 +18,19 @@ public class TMResult {
 	public double detectMin = 1.0;//一致率の最小値
 	public double detectAve = 0;//一致率の平均
 
+	public void listClear() {
+		x.clear();
+		y.clear();
+		x_subPixel.clear();
+		y_subPixel.clear();
+		ratio.clear();
+		centerPositionX.clear();
+		centerPositionY.clear();
+
+		cnt = 0;
+		detectMax =0;
+		detectMin = 1.0;
+		detectAve = 0;
+	}
+
 }

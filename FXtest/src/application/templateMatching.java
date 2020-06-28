@@ -53,6 +53,7 @@ public class templateMatching {
 		}
 
 		for(int n=0;n<c_tmpara.arrayCnt;n++) {
+			resultValue[n].listClear();
 			if( c_tmpara.ptmEnable[n] ) {
 				int searchCnt = 1;
 
@@ -299,6 +300,19 @@ public class templateMatching {
 	    		    			(double)c_tmpara.detectionRects[n].y*c_tmpara.scale[n] +
 	    		    			resultValue[n].y_subPixel.get(i)*c_tmpara.scale[n]+
 	    		    			c_tmpara.paternMat[n].height()*c_tmpara.scale[n]/2);
+	    		    	
+	    		    	/*
+	    		    	System.out.println("length="+resultValue[n].centerPositionX.size());
+	    		    	if(resultValue[n].centerPositionX.size()>0) {
+		    		    	System.out.println("x[0]="+resultValue[n].centerPositionX.get(0)+
+		    		    			" y[0]="+resultValue[n].centerPositionY.get(0));
+	    		    	}
+	    		    	if(resultValue[n].centerPositionX.size()>1) {
+		    		    	System.out.println("x[1]="+resultValue[n].centerPositionX.get(1)+
+		    		    			" y[1]="+resultValue[n].centerPositionY.get(1));
+	    		    	}
+	    		    	*/
+	    		    	
 	    		    	//クロスマーク表示
 	    		    	int orgX = (int)( resultValue[n].centerPositionX.get(i).doubleValue() );
 	    		    	int orgY = (int)( resultValue[n].centerPositionY.get(i).doubleValue() );
