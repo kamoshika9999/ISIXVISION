@@ -83,6 +83,10 @@ public class PtmView {
 
 	public static double arg_ptmThreshSliderN;//判定閾値
 	public static double arg_ptmThreshSliderN_K;//警報閾値
+	public static double arg_ptmDispersionThreshSliderN;//分散判定閾値
+	public static double arg_ptmDispersionThreshSliderN_K;//分散警報閾値
+
+
 	public static double arg_zoomValue_slider;
 	public static Rectangle arg_rectsDetection;
 	private Rectangle tmp_rectsDetection;
@@ -139,6 +143,15 @@ public class PtmView {
     private Label threshLabel_K;
 
     @FXML
+    private Slider ptmDispersionThreshSliderN_K;
+    @FXML
+    private Label dispersionThreshLabel_K;
+    @FXML
+    private Slider ptmDispersionThreshSliderN;
+    @FXML
+    private Label dispersionThreshLabel;
+
+    @FXML
     private TextArea ptmInfo;
     @FXML
     private Button ptmConfirm;
@@ -180,6 +193,12 @@ public class PtmView {
     private Label detectRationMin;
     @FXML
     private Label detectRationAve;
+    @FXML
+    private Label dispersionMax;
+    @FXML
+    private Label dispersionMin;
+    @FXML
+    private Label dispersionAve;
     @FXML
     private Slider scaleSlider;
     @FXML
@@ -260,7 +279,10 @@ public class PtmView {
     			String.format("%.3f",this.ptmThreshSliderN.getValue())));
     	Platform.runLater(() ->threshLabel_K.setText(
     			String.format("%.3f",this.ptmThreshSliderN_K.getValue())));
-
+		Platform.runLater(() ->dispersionThreshLabel_K.setText(
+				String.format("%.1f",this.ptmDispersionThreshSliderN_K.getValue())));
+		Platform.runLater(() ->dispersionThreshLabel.setText(
+				String.format("%.1f",this.ptmDispersionThreshSliderN.getValue())));
         rePaint();
     }
 
@@ -436,6 +458,9 @@ public class PtmView {
 
     	arg_ptmThreshSliderN = ptmThreshSliderN.getValue();
     	arg_ptmThreshSliderN_K = ptmThreshSliderN_K.getValue();
+
+    	arg_ptmDispersionThreshSliderN = ptmDispersionThreshSliderN.getValue();
+    	arg_ptmDispersionThreshSliderN_K = ptmDispersionThreshSliderN_K.getValue();
 
     	arg_zoomValue_slider = zoomValue_slider.getValue();
 
@@ -734,10 +759,16 @@ public class PtmView {
 	    	final double tmp_detectMax = templateMatchingInstance.resultValue[0].detectMax;
 	    	final double tmp_detectMin = templateMatchingInstance.resultValue[0].detectMin;
 	    	final double tmp_detectAve = templateMatchingInstance.resultValue[0].detectAve;
+	    	final double tmp_dispersionMax =templateMatchingInstance.resultValue[0].dispersionMax;
+	    	final double tmp_dispersionMin =templateMatchingInstance.resultValue[0].dispersionMin;
+	    	final double tmp_dispersionAve =templateMatchingInstance.resultValue[0].dispersionAve;
 	    	Platform.runLater(() ->detectCntLabel.setText(String.valueOf(tmp_cnt)));
 	    	Platform.runLater(() ->detectRationMax.setText(String.format("%.3f",tmp_detectMax)));
 	    	Platform.runLater(() ->detectRationMin.setText(String.format("%.3f",tmp_detectMin)));
 	    	Platform.runLater(() ->detectRationAve.setText(String.format("%.3f",tmp_detectAve)));
+	    	Platform.runLater(() ->dispersionMax.setText(String.format("%.3f",tmp_dispersionMax)));
+	    	Platform.runLater(() ->dispersionMin.setText(String.format("%.3f",tmp_dispersionMin)));
+	    	Platform.runLater(() ->dispersionAve.setText(String.format("%.3f",tmp_dispersionAve)));
 			updateImageView(ptmMainViewDst,Utils.mat2Image(areaMat));
     	}
 
@@ -782,11 +813,18 @@ public class PtmView {
 
 		Platform.runLater(() ->ptmThreshSliderN.setValue(arg_ptmThreshSliderN));
     	Platform.runLater(() ->threshLabel.setText(String.format("%.3f",this.ptmThreshSliderN.getValue())));
-    	
+
     	Platform.runLater(() ->ptmThreshSliderN_K.setValue(arg_ptmThreshSliderN_K));
-		Platform.runLater(() ->threshLabel_K.setText(String.valueOf(arg_ptmThreshSliderN_K)));
-    	
-    	
+		Platform.runLater(() ->threshLabel_K.setText(String.format("%.3f",this.ptmThreshSliderN_K.getValue())));
+
+		Platform.runLater(() ->ptmDispersionThreshSliderN_K.setValue(arg_ptmDispersionThreshSliderN_K));
+		Platform.runLater(() ->dispersionThreshLabel_K.setText(
+						String.format("%.1f",this.ptmDispersionThreshSliderN_K.getValue())));
+
+		Platform.runLater(() ->ptmDispersionThreshSliderN.setValue(arg_ptmDispersionThreshSliderN));
+		Platform.runLater(() ->dispersionThreshLabel.setText(
+						String.format("%.1f",this.ptmDispersionThreshSliderN.getValue())));
+
 		Platform.runLater(() ->ptm_sp.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,
 				999,arg_detectionCnt,1)));
 

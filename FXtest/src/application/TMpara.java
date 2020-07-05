@@ -18,6 +18,8 @@ public class TMpara implements Cloneable{
 	public int[] matchingTreshDetectCnt;//マッチングパターン数の閾値
 	public double[] matchingThresh;//テンプレートマッチングの判定閾値
 	public double[] matchingThresh_K;//テンプレートマッチングの警報閾値
+	public double[] matchingDispersionThresh;//テンプレートマッチングの分散判定閾値
+	public double[] matchingDispersionThresh_K;//テンプレートマッチングの分散警報閾値
 
 	public Mat[] paternMat;//パターンマッチングの登録Mat
 	public boolean[] ptmEnable;//パターンマッチング有効無効フラグ
@@ -48,7 +50,11 @@ public class TMpara implements Cloneable{
 		matchingTreshDetectCnt = new int[arrayCnt];
 		matchingThresh = new double[arrayCnt];
 		matchingThresh_K = new double[arrayCnt];
-		
+		matchingDispersionThresh = new double[arrayCnt];
+		matchingDispersionThresh_K = new double[arrayCnt];
+
+
+
 		paternMat = new Mat[arrayCnt];
 		ptmEnable = new boolean[arrayCnt];
 		detectionRects = new Rectangle[arrayCnt];
@@ -81,6 +87,9 @@ public class TMpara implements Cloneable{
         b.matchingTreshDetectCnt = this.matchingTreshDetectCnt;
         b.matchingThresh = this.matchingThresh;
         b.matchingThresh_K = this.matchingThresh_K;
+        b.matchingDispersionThresh = this.matchingDispersionThresh;
+        b.matchingDispersionThresh_K = this.matchingDispersionThresh_K;
+
         b.ptmEnable = this.ptmEnable;
         b.scale = this.scale;
 

@@ -931,6 +931,8 @@ public class VisonController2{
 							shutterSignal4secInterval = true;
 							Gpio.ngSignalON();
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+							logdata.csvWrite();
+							logdata.clear();
 						}
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//照明キャリブレーション中はＮＧ信号発信
@@ -1453,7 +1455,28 @@ public class VisonController2{
         	}else {
         		tmStatus = 0;
         	}
+        	if( tmStatus == 2 ) {//パターンマッチング　警告レベル
+				Imgproc.putText(mainViewMat, "Pattern Warning",
+						new Point(1920/2,1080/2),
+						Imgproc.FONT_HERSHEY_SIMPLEX,2.0,new Scalar(0,0,255),6);
+		        Platform.runLater( () ->info2.appendText("パターンマッチングが警告レベルを下回っている領域があります\n"));
+        	}
+        	if( tmStatus == 4 ) {//分散警告レベル
+				Imgproc.putText(mainViewMat, "Dispersion Warning",
+						new Point(1920/2,1080/2+40),
+						Imgproc.FONT_HERSHEY_SIMPLEX,2.0,new Scalar(0,0,255),6);
+		        Platform.runLater( () ->info2.appendText("分散が警告レベルを上回っている領域があります\n"));
+        	}
+        	if( tmStatus == 5 ) {//分散 閾値レベル
+				Imgproc.putText(mainViewMat, "Dispersion Error",
+						new Point(200,1080/2+40),
+						Imgproc.FONT_HERSHEY_SIMPLEX,4.0,new Scalar(0,0,255),20);
+		        Platform.runLater( () ->info2.appendText("分散が閾値レベルを上回っている領域があります\n"));
+        	}
 
+        	double[] P2_log = new double[2];
+        	double[] F_log = new double[2];
+        	double[] E_log = new double[2];
 
         	//寸法測定
         	int dimStatus;
@@ -1499,6 +1522,12 @@ public class VisonController2{
 
 	        			final double P2_final = P2;
 	        			final double F_final = F;
+
+	        			//ログデーター処理用
+	        			P2_log[g] = P2;
+	        			F_log[g] = F;
+	        			E_log[g] =0.0;//未実装
+
 	        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,P2_final));
 		        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,F_final));
 		        		//寸法表示テーブルの更新
@@ -1517,6 +1546,7 @@ public class VisonController2{
 								setRange(1.8,2.2));
 		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
 								setRange(11.3,11.7));
+
 	        		}else {
 	        			final int g2 =g;
 	        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,0.000f));
@@ -1529,6 +1559,7 @@ public class VisonController2{
 
 	        		}
 	        	}
+
        		}else {
        			Platform.runLater( () ->this.info2.appendText("寸法測定に失敗しました\n"));
        			for(int m=0;m<2;m++) {
@@ -1541,10 +1572,12 @@ public class VisonController2{
     				//Platform.runLater( () ->this.info2.appendText("登録領域が画像端ギリギリすぎると推定します。\n"));
        		}
 
-       		//ログデーター処理
-       		logdata.addData(P2_1_, P2_2_, F_1_, F_2_, E_1_, E_2_, tmr_);
 
 	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
+	        	if( shotCnt > 20 ) { //20ショットまではログ無し
+		       		//ログデーター処理
+		       		logdata.addData(P2_log,F_log,E_log, ptm_templateMatchingObj.resultValue);
+	        	}
 		        //最終判定
 	        	if( shotCnt < 21 ) { //20ショットまでは判定無視
 		        	Platform.runLater( () ->judg.setText( String.valueOf(20-shotCnt)) );
@@ -2193,7 +2226,7 @@ public class VisonController2{
      * @throws IOException
      */
     public void saveAllPara() throws IOException{
-		FileOutputStream fo = new FileOutputStream("./conf14.txt");
+		FileOutputStream fo = new FileOutputStream("./conf15.txt");
 		ObjectOutputStream objOut = new ObjectOutputStream(fo);
 
 		pObj.dimensionDispChk =  dimensionDispChk.isSelected();
@@ -2307,7 +2340,7 @@ public class VisonController2{
      */
     public void loadAllPara(){
     	try {
-	    	FileInputStream fi = new FileInputStream("./conf14.txt");
+	    	FileInputStream fi = new FileInputStream("./conf15.txt");
 	    	ObjectInputStream objIn = new ObjectInputStream(fi);
 
 	    	pObj = (preSet)objIn.readObject();
@@ -2391,6 +2424,9 @@ public class VisonController2{
         	ptm_tmpara.matchingTreshDetectCnt[i] = para.ptm_DetectCnt[i];//検出個数の判定数
         	ptm_tmpara.matchingThresh[i] = para.ptm_threshValue[i];//判定閾値
         	ptm_tmpara.matchingThresh_K[i] = para.ptm_threshValue_K[i];//警報閾値
+        	ptm_tmpara.matchingDispersionThresh[i] = para.ptm_dispersionThreshValue[i];//分散判定閾値
+        	ptm_tmpara.matchingDispersionThresh_K[i] = para.ptm_dispersionThreshValue_K[i];//分散警報閾値
+
         	ptm_tmpara.paternMat[i] = ptm_ImgMat[pObj.select][i];
         	ptm_tmpara.ptmEnable[i] = para.ptm_Enable[i];
         	ptm_tmpara.detectionRects[i] = para.ptm_rectsDetection[i];
@@ -2428,6 +2464,7 @@ public class VisonController2{
 
     /**
      * 寸法測定用パターンマッチングパラメータ設定
+     * マッチングには、警報値と分散は不使用の為、設定していない
      */
     private void dim_patternMatchParaSet() {
     	parameter para = pObj.para[pObj.select];
@@ -2666,6 +2703,9 @@ public class VisonController2{
 		F_sum[0] = 0;F_sum[1] = 0;
 		E_sum[0] = 0;E_sum[1] = 0;
 
+		//ログデーター処理用
+		logdata.csvWrite();
+		logdata.clear();
 
 		shotCnt= 0;
 		shutterSignal4secInterval=false;//NG画像保存開始
@@ -2860,6 +2900,9 @@ public class VisonController2{
 		PtmView.arg_ptmThreshSliderN = para.ptm_threshValue[selectNo];//判定閾値
 		PtmView.arg_ptmThreshSliderN_K = para.ptm_threshValue_K[selectNo];//警報閾値
 
+		PtmView.arg_ptmDispersionThreshSliderN = para.ptm_dispersionThreshValue[selectNo];//分散判定閾値
+		PtmView.arg_ptmDispersionThreshSliderN_K = para.ptm_dispersionThreshValue_K[selectNo];//分散警報閾値
+
 		PtmView.arg_zoomValue_slider = para.ptm_zoomValue_slider[selectNo];
 		PtmView.arg_rectsDetection =  para.ptm_rectsDetection[selectNo];//検出範囲
 
@@ -2910,6 +2953,9 @@ public class VisonController2{
 
 			para.ptm_threshValue[selectNo] = PtmView.arg_ptmThreshSliderN;//判定閾値
 			para.ptm_threshValue_K[selectNo] = PtmView.arg_ptmThreshSliderN_K;//警報閾値
+
+			para.ptm_dispersionThreshValue[selectNo] = PtmView.arg_ptmDispersionThreshSliderN;//分散判定閾値
+			para.ptm_dispersionThreshValue_K[selectNo] = PtmView.arg_ptmDispersionThreshSliderN_K;//分散警報閾値
 
 			para.ptm_zoomValue_slider[selectNo] = PtmView.arg_zoomValue_slider;
 			para.ptm_rectsDetection[selectNo] =  PtmView.arg_rectsDetection;//検出範囲

@@ -6,6 +6,7 @@ import java.util.List;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -39,7 +40,7 @@ public class templateMatching {
 	 * @param areaMat 8UC1
 	 * @param dstMat  8UC3
 	 * @param settingFlg セッティングモード時 true
-	 * @return  0:合格又は検出無効  1:検出個数不足 2:警報閾値未満有 3:検出個数過多
+	 * @return  0:合格又は検出無効  1:検出個数不足 2:警報閾値未満有 3:検出個数過多 4:分散警報閾値以上 5:分散閾値以上
 	 */
 	public int detectPattern(Mat areaMat, Mat dstMat,boolean settingFlg,boolean patternDispChk) {
 		int resultStatus = 0;
@@ -275,10 +276,38 @@ public class templateMatching {
 	    		    			new Point((p.x+c_tmpara.paternMat[n].width())*c_tmpara.scale[n],
 	    		    			(p.y+c_tmpara.paternMat[n].height())*c_tmpara.scale[n]),
 	    		    			new Scalar(0,255,255),3);
-	    		    	if(patternDispChk)Imgproc.putText(dstRoi,
+	    		    	//検出位置の分散を計算---------------------------------------
+	    		    	Mat dispersionMat = areaRoi.submat(
+	    		    			(int)(p.y),
+	    		    			(int)(p.y+ c_tmpara.paternMat[n].height()),
+	    		    			(int)(p.x),
+	    		    			(int)(p.x + c_tmpara.paternMat[n].width()));
+	    		    	MatOfDouble mu = new MatOfDouble(); // mean
+	    		    	MatOfDouble sigma = new MatOfDouble(); // standard deviation
+	    		    	Core.meanStdDev(dispersionMat, mu, sigma,c_tmpara.ptm_ptmMat_mask[n]);
+	    		    	double variance = Math.pow(sigma.get(0,0)[0], 2);
+	    		    	resultValue[n].dispersion.add(variance);
+	    		    	if(variance > resultValue[n].dispersionMax ) {
+	    		    		resultValue[n].dispersionMax =variance;
+	    		    	}
+	    		    	if(variance < resultValue[n].dispersionMin ) {
+	    		    		resultValue[n].dispersionMin =variance;
+	    		    	}
+	    		    	resultValue[n].dispersionAve+=variance;
+
+	    		    	//-------------------------------------------------------------
+
+	    		    	if(patternDispChk) {
+	    		    		Imgproc.putText(dstRoi,
 								String.format("%.3f", ratio),
 								new Point(p.x*c_tmpara.scale[n],p.y*c_tmpara.scale[n]),
 								Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,new Scalar(0,255,255),7);
+
+	    		    		Imgproc.putText(dstRoi,
+								String.format("%.1f", variance),
+								new Point(p.x*c_tmpara.scale[n],(p.y+c_tmpara.paternMat[n].height())*c_tmpara.scale[n]),
+								Imgproc.FONT_HERSHEY_SIMPLEX, 1.0,new Scalar(0,255,100),3);
+	    		    	}
 	    		    	resultValue[n].x.add((int)((c_tmpara.detectionRects[n].x+p.x)*c_tmpara.scale[n]));//X座標格納
 	    		    	resultValue[n].y.add((int)((c_tmpara.detectionRects[n].y+p.y)*c_tmpara.scale[n]));//y座標格納
 	    		    	resultValue[n].ratio.add(ratio);//類似度格納
@@ -289,6 +318,16 @@ public class templateMatching {
 	    		    	//警報閾値未満判定
 	    		    	if( finedPointThresh.get(i) < c_tmpara.matchingThresh_K[n] ) {
 	    		    		resultStatus = 2;
+	    		    	}
+	    		    	//分散警報閾値未満判定
+	    		    	if( variance > c_tmpara.matchingDispersionThresh_K[n] && 
+	    		    				c_tmpara.matchingDispersionThresh_K[n] > 0.0) {
+	    		    		resultStatus = 4;
+	    		    	}
+	    		    	//分散閾値未満判定
+	    		    	if( variance > c_tmpara.matchingDispersionThresh[n] && 
+	    		    			c_tmpara.matchingDispersionThresh[n] > 0.0) {
+	    		    		resultStatus = 5;
 	    		    	}
 
 	    		    	//パターン中心計算
@@ -323,6 +362,7 @@ public class templateMatching {
 			   		 }
 				}
 				resultValue[n].detectAve /= (double)searchCnt;
+				resultValue[n].dispersionAve /= (double)searchCnt;
 				if( resultValue[n].cnt < c_tmpara.matchingTreshDetectCnt[n] ) {
 					resultStatus = 1;
 				}else if( resultValue[n].cnt > c_tmpara.matchingTreshDetectCnt[n] ) {

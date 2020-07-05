@@ -54,7 +54,8 @@ public class parameter implements Serializable {
 	public double[] ptm_zoomValue_slider;
 	public double[] ptm_threshValue;//検出閾値
 	public double[] ptm_threshValue_K;//警報閾値
-
+	public double[] ptm_dispersionThreshValue;//分散閾値 0.0で無効
+	public double[] ptm_dispersionThreshValue_K;//分散警報閾値 0.0で無効
 
 	//パターンマッチングに適用されるフィルタ
 	//public int[] ptm_fil_detectionCnt;
@@ -175,6 +176,9 @@ public class parameter implements Serializable {
 		ptm_threshValue = new double[ptm_arrySize];
 		ptm_threshValue_K = new double[ptm_arrySize];
 
+		ptm_dispersionThreshValue = new double[ptm_arrySize];
+		ptm_dispersionThreshValue_K = new double[ptm_arrySize];
+
 		ptm_zoomValue_slider = new double[ptm_arrySize];
 		ptm_rectsDetection = new Rectangle[ptm_arrySize];
 		//マスク処理用
@@ -264,6 +268,8 @@ public class parameter implements Serializable {
 			ptm_threshValue[i] = 0.8;
 			ptm_threshValue_K[i] = 0.9;
 
+			ptm_dispersionThreshValue[i] = 0.0;
+			ptm_dispersionThreshValue_K[i] =0.0;
 			ptm_zoomValue_slider[i] = 0.3;
 
 			ptm_templatRect[i] = new Rectangle();
