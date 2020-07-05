@@ -300,7 +300,7 @@ public class templateMatching {
 	    		    			(double)c_tmpara.detectionRects[n].y*c_tmpara.scale[n] +
 	    		    			resultValue[n].y_subPixel.get(i)*c_tmpara.scale[n]+
 	    		    			c_tmpara.paternMat[n].height()*c_tmpara.scale[n]/2);
-	    		    	
+
 	    		    	/*
 	    		    	System.out.println("length="+resultValue[n].centerPositionX.size());
 	    		    	if(resultValue[n].centerPositionX.size()>0) {
@@ -312,7 +312,7 @@ public class templateMatching {
 		    		    			" y[1]="+resultValue[n].centerPositionY.get(1));
 	    		    	}
 	    		    	*/
-	    		    	
+
 	    		    	//クロスマーク表示
 	    		    	int orgX = (int)( resultValue[n].centerPositionX.get(i).doubleValue() );
 	    		    	int orgY = (int)( resultValue[n].centerPositionY.get(i).doubleValue() );
@@ -329,8 +329,8 @@ public class templateMatching {
 					resultStatus = 3;
 				}
 			}
+			resultValue[n].resultStatus = resultStatus;
 		}
-
 		return resultStatus;
 	}
 }

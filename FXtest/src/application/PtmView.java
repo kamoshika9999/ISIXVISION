@@ -781,9 +781,12 @@ public class PtmView {
 		Platform.runLater(() ->cannyThresh2.setValue(arg_cannyThresh2));
 
 		Platform.runLater(() ->ptmThreshSliderN.setValue(arg_ptmThreshSliderN));
-		Platform.runLater(() ->threshLabel.setText(String.valueOf(arg_ptmThreshSliderN)));
     	Platform.runLater(() ->threshLabel.setText(String.format("%.3f",this.ptmThreshSliderN.getValue())));
-
+    	
+    	Platform.runLater(() ->ptmThreshSliderN_K.setValue(arg_ptmThreshSliderN_K));
+		Platform.runLater(() ->threshLabel_K.setText(String.valueOf(arg_ptmThreshSliderN_K)));
+    	
+    	
 		Platform.runLater(() ->ptm_sp.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,
 				999,arg_detectionCnt,1)));
 

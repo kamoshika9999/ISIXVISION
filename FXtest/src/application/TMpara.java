@@ -80,6 +80,7 @@ public class TMpara implements Cloneable{
 
         b.matchingTreshDetectCnt = this.matchingTreshDetectCnt;
         b.matchingThresh = this.matchingThresh;
+        b.matchingThresh_K = this.matchingThresh_K;
         b.ptmEnable = this.ptmEnable;
         b.scale = this.scale;
 
