@@ -92,6 +92,8 @@ public class VisonController2{
 	//デバッグフラグ
 	public static boolean debugFlg = false;
 
+	//ログデーター
+	public logData logdata = new logData();
 	//検査したカウント数
 	public int shotCnt = 0;
 	//シャッター間隔が4秒以上あいた時にセットされる
@@ -1538,6 +1540,9 @@ public class VisonController2{
        			}
     				//Platform.runLater( () ->this.info2.appendText("登録領域が画像端ギリギリすぎると推定します。\n"));
        		}
+
+       		//ログデーター処理
+       		logdata.addData(P2_1_, P2_2_, F_1_, F_2_, E_1_, E_2_, tmr_);
 
 	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
 		        //最終判定
