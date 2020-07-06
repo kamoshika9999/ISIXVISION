@@ -20,7 +20,7 @@
          <viewport>
             <Rectangle2D />
          </viewport></ImageView>
-      <ImageView fx:id="ptmSubView" fitHeight="165.0" fitWidth="214.0" layoutX="701.0" layoutY="50.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="ptmSubView" fitHeight="165.0" fitWidth="214.0" layoutX="731.0" layoutY="50.0" pickOnBounds="true" preserveRatio="true">
         </ImageView>
       <Label layoutX="14.0" layoutY="24.0" text="取り込み画像">
          <font>
