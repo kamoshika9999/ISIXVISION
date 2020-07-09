@@ -905,8 +905,10 @@ public class VisonController2{
 		timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
 
 		if( Gpio.openFlg ) {
-			Gpio.ngSignalON();
-			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+			//Gpio.ngSignalON();
+			Gpio.OkSignalON();//#55テストコード
+			//Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));//#55テストコード
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 			//GPIOからのトリガ信号を受信するループ
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -929,8 +931,8 @@ public class VisonController2{
 						if( !shutterSignal4secInterval && System.currentTimeMillis() -
 																			shutterSignalIntervalTime > 1000*4) {
 							shutterSignal4secInterval = true;
-							Gpio.ngSignalON();
-							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+							//Gpio.ngSignalON();
+							//Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 							logdata.csvWrite();
 							logdata.clear();
 						}
