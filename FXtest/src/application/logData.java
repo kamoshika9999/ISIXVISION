@@ -102,6 +102,8 @@ public class logData {
 		cnt++;
 	}
 
+	//public void addHoleData()
+
 	/**
 	 * 保持データークリア
 	 */
@@ -171,7 +173,7 @@ public class logData {
 
 		        	for(int j=0;j<parameter.ptm_arrySize;j++) {
 		        		for(int k=0;k<8;k++) {
-		        			subStr[8+j*8+k] = tmResult.get(j*8+k);
+		        			subStr[8+j*8+k] = tmResult.get(i*(8*parameter.ptm_arrySize)+(j*8+k));
 		        		}
 		        	}
 		        	writer.writeNext(subStr);
