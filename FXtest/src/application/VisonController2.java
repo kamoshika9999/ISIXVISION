@@ -804,7 +804,7 @@ public class VisonController2{
 				distortionCoefficients = calibrationMats.get("DistortionCoefficients");//歪み係数
 			}
 		}
-		source_video = new VideoCapture("./test16.mp4" );//デモモード用動画
+		source_video = new VideoCapture("./test17.mp4" );//デモモード用動画
 		double video_width = source_video.get( Videoio.CAP_PROP_FRAME_WIDTH ); // 横幅を取得
 		double video_height = source_video.get( Videoio.CAP_PROP_FRAME_HEIGHT ); // 縦幅を取得
 		double video_frame_count = source_video.get( Videoio.CAP_PROP_FRAME_COUNT ); // フレーム数を取得
@@ -931,7 +931,7 @@ public class VisonController2{
 						if( !shutterSignal4secInterval && System.currentTimeMillis() -
 																			shutterSignalIntervalTime > 1000*4) {
 							shutterSignal4secInterval = true;
-							//Gpio.ngSignalON();
+							//Gpio.ngSignalON();//#55の制御に互換性を持たせる為
 							//Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 							logdata.csvWrite();
 							logdata.clear();
@@ -1380,7 +1380,7 @@ public class VisonController2{
 		            		para.hole_whiteAreaMax[i],//白面積の最大値
 		            		para.hole_whiteAreaMin[i],//白面積の最小値
 		            		false,//インフォメーションに表示する
-		            		r.x,r.y
+		            		r.x,r.y//結果図形・文字描画時のmainVierMatの絶対位置(検出領域の左上と同値)
 		            		);
 		    		}
 
@@ -2509,9 +2509,9 @@ public class VisonController2{
     			return;
     		}
     	}
-    	int max_ptm_array = pObj.para[pObj.select].ptm_arrySize;
+
     	for( int i=0;i<4;i++) {
-    		for( int j=0;j<max_ptm_array;j++) {
+    		for( int j=0;j<parameter.ptm_arrySize;j++) {
     	    	Mat tmpMat = Imgcodecs.imread(
     	    			"./ptm_image/ptm"+String.format("_%d_%d", i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
     	    	if( tmpMat.width() > 0 &&  pObj.para[i].ptm_Enable[j]) {
