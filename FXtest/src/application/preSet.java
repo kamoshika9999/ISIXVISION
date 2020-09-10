@@ -3,7 +3,7 @@ package application;
 import java.io.Serializable;
 
 public class preSet implements Serializable{
-	int presetMaxCount = 4;
+	int presetMaxCount = 10;
 	parameter[] para;
 	int select;
 	int portNo;

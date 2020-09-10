@@ -62,6 +62,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
@@ -561,13 +562,24 @@ public class VisonController2{
     @FXML
     private Label calib_label;//キャリブレーション用輝度平均表示
 
-
-
     @FXML
+    private ComboBox<String> selectPreSetCB;//品種選択用
+
+    /**
+     * 品種の選択
+     * @param event
+     */
+    @FXML
+    void onSelectPreset(ActionEvent event) {
+    	System.out.println("品種の選択コンボボックス操作");
+
+    }
+
     /**
      * スライダーの値を対応するテキストフィールドに入力する
      * @param event
      */
+    @FXML
     void onDragDone(MouseEvent event) {
     	Platform.runLater(() ->textFieldDetecPara4.setText(
     			String.valueOf(String.format("%.1f",sliderDetecPara4.getValue()))));
@@ -2407,6 +2419,9 @@ public class VisonController2{
     	Platform.runLater( () ->dim_offset_F_2.setText(String.valueOf(para.dim_offset_F[1])));
     	Platform.runLater( () ->dim_offset_E_2.setText(String.valueOf(para.dim_offset_E[1])));
 
+
+    	//品種の選択コンボボックスのデーターロード
+    	selectPreSetCB
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
     }

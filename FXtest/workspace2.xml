@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project ISIX-T1">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="${dir.buildfile}/.."/>
+    <property name="dir.jarfile" value="//192.168.5.59/raspberry_pi"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/test.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="application.Main"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${dir.buildfile}/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/javafx-sdk-11.0.2/lib/javafx.base.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/javafx-sdk-11.0.2/lib/javafx.controls.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/javafx-sdk-11.0.2/lib/javafx.fxml.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/javafx-sdk-11.0.2/lib/javafx.graphics.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/javafx-sdk-11.0.2/lib/javafx.media.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/javafx-sdk-11.0.2/lib/javafx.swing.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/javafx-sdk-11.0.2/lib/javafx.web.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/javafx-sdk-11.0.2/lib/javafx-swt.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/jfreechart-1.5.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/jfreechart-fx-1.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/junit.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-core.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-core-javadoc.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-core-sources.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-device.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-device-javadoc.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-device-sources.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-example.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-example-javadoc.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-example-sources.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-gpio-extension.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-gpio-extension-javadoc.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/pi4j-1.2/lib/pi4j-gpio-extension-sources.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/opencsv-5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/commons-lang3-3.11.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/isix/fxgraphics2d-1.6.jar"/>
+        </jar>
+    </target>
+</project>
