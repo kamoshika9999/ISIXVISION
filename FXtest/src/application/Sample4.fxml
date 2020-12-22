@@ -284,7 +284,7 @@
                               <Font name="System Bold" size="13.0" />
                            </font>
                         </ToggleButton>
-                        <ComboBox fx:id="selectPreSetCB" layoutX="263.0" layoutY="199.0" onAction="#onSelectPreset" prefHeight="25.0" prefWidth="262.0" />
+                        <ComboBox fx:id="selectPreSetCB" disable="true" layoutX="528.0" layoutY="199.0" onAction="#onSelectPreset" prefHeight="25.0" prefWidth="35.0" />
                      </children>
                   </AnchorPane>
             </content>
@@ -413,7 +413,7 @@
             <Font size="36.0" />
          </font>
       </Label>
-      <Label fx:id="presetText" layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver3.3" textFill="#0a22d7">
+      <Label fx:id="presetText" layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver3.4" textFill="#0a22d7">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>

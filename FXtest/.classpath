@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="D:/OPENCV3/opencv4/opencv/build/java/opencv-420.jar">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="D:/OPENCV3/opencv4/opencv/build/java/x64"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
@@ -13,13 +8,21 @@
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="jssc-2.9.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="slf4j-simple-1.7.9.jar"/>
-	<classpathentry exported="true" kind="lib" path="D:/OPENCV3/jar_files/fxgraphics2d-1.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="D:/OPENCV3/jar_files/jfreechart-1.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="D:/OPENCV3/jar_files/jfreechart-fx-1.0.0.jar"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/JAVAFX11">
+	<classpathentry exported="true" kind="lib" path="C:/isix/opencv/build/java/opencv-420.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="D:/OPENCV3/javafx-sdk-11.0.2/bin"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/isix/opencv/build/java/x64"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="C:/isix/fxgraphics2d-1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/isix/jfreechart-1.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/isix/jfreechart-fx-1.0.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/isix/RinearnGraph3D.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/JAVAFX">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/isix/javafx-sdk-11.0.2/bin"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="opencsv-5.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/PI4J"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

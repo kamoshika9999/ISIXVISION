@@ -235,7 +235,7 @@
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Button fx:id="preset1" layoutX="272.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="TO220SM">
+                        <Button fx:id="preset1" layoutX="272.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="TO220SM" visible="false">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -243,7 +243,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
-                        <Button fx:id="preset2" layoutX="336.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="D2PAK">
+                        <Button fx:id="preset2" layoutX="336.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="D2PAK" visible="false">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -251,7 +251,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
-                        <Button fx:id="preset3" layoutX="400.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="TOGL">
+                        <Button fx:id="preset3" layoutX="400.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="TOGL" visible="false">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -259,7 +259,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
-                        <Button fx:id="preset4" layoutX="464.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="LEDIP">
+                        <Button fx:id="preset4" layoutX="464.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="LEDIP" visible="false">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -284,7 +284,6 @@
                               <Font name="System Bold" size="13.0" />
                            </font>
                         </ToggleButton>
-                        <ComboBox fx:id="selectPreSetCB" disable="true" layoutX="528.0" layoutY="199.0" onAction="#onSelectPreset" prefHeight="25.0" prefWidth="35.0" />
                      </children>
                   </AnchorPane>
             </content>
@@ -589,5 +588,6 @@
          <font>
             <Font name="System Bold" size="18.0" />
          </font></Label>
+      <ComboBox fx:id="selectPreSetCB" layoutX="775.0" layoutY="384.0" onAction="#onSelectPreset" prefHeight="25.0" prefWidth="262.0" />
    </children>
 </AnchorPane>

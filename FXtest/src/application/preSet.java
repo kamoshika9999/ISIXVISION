@@ -3,7 +3,7 @@ package application;
 import java.io.Serializable;
 
 public class preSet implements Serializable{
-	int presetMaxCount = 10;
+	int presetMaxCount = 4;
 	parameter[] para;
 	int select;
 	int portNo;
@@ -18,7 +18,7 @@ public class preSet implements Serializable{
 
 	boolean camera_revers;
 
-	String[] presetNameText = {"TO220","D2PAK","TOGL","LEDIP"};
+	String[] presetNameText = {"①","②","③","④"};
 
 
 	public preSet() {

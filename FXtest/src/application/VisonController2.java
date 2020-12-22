@@ -98,7 +98,7 @@ public class VisonController2{
 	//検査したカウント数
 	public int shotCnt = 0;
 	//シャッター間隔が4秒以上あいた時にセットされる
-	boolean shutterSignal4secInterval=true;
+	boolean shutterSignal4secInterval=false;
 
 	//保存される画像の最大数
 	final int saveMax_all = 255;
@@ -943,10 +943,13 @@ public class VisonController2{
 						if( !shutterSignal4secInterval && System.currentTimeMillis() -
 																			shutterSignalIntervalTime > 1000*4) {
 							shutterSignal4secInterval = true;
-							//Gpio.ngSignalON();//#55の制御に互換性を持たせる為
+							//Gpio.ngSignalON();//#55の制御に互換性を持たせる為無効化
 							//Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 							logdata.csvWrite();
 							logdata.clear();
+							//シャッタートリガ受信インジケーター色変更
+				    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.WHITE));
+
 						}
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//照明キャリブレーション中はＮＧ信号発信
@@ -2324,6 +2327,94 @@ public class VisonController2{
 		Platform.runLater( () ->info2.appendText("設定が保存されました。\n"));
     }
     /**
+     * CSVに設定を保存
+     * @throws IOException
+     */
+    public void saveCsvAllPara() throws IOException{
+		FileOutputStream fo = new FileOutputStream("./conf16.csv");
+		ObjectOutputStream objOut = new ObjectOutputStream(fo);
+
+		pObj.dimensionDispChk =  dimensionDispChk.isSelected();
+	    pObj.holeDispChk = holeDispChk.isSelected();
+	    pObj.patternDispChk = patternDispChk.isSelected();
+		pObj.camera_revers = camera_revers_chk.isSelected();
+
+
+    	parameter para = pObj.para[pObj.select];
+		para.hole_rects[4] =  (Rectangle)draggingRect.clone();
+		para.hole_viewRect[0] = imgORG.getViewport().getMinX();
+		para.hole_viewRect[1] = imgORG.getViewport().getMinY();
+		para.hole_viewRect[2] = imgORG.getViewport().getWidth();
+		para.hole_viewRect[3] = imgORG.getViewport().getHeight();
+		para.hole_circlePara4[4] = sliderDetecPara4.getValue();
+		para.hole_circlePara5[4] = sliderDetecPara5.getValue();
+		para.hole_circlePara6[4] = sliderDetecPara6.getValue();
+		para.hole_circlePara7[4] = sliderDetecPara7.getValue();
+		para.hole_circlePara8[4] = sliderDetecPara8.getValue();
+		para.hole_circlePara9[4] = sliderDetecPara9.getValue();
+		para.hole_fil_gauusianCheck[4] = gauusianCheck.isSelected();
+		para.hole_fil_gauusianX[4] = gauusianSliderX.getValue();
+		para.hole_fil_gauusianY[4] = gauusianSliderY.getValue();
+		para.hole_fil_gauusianValue[4] = gauusianSliderK.getValue();
+		para.hole_fil_dilateCheck[4] = dilateCheck.isSelected();
+		para.hole_fil_dilateValue[4] = (int)dilateSliderN.getValue();
+		para.hole_zoom = zoomValue_slider.getValue();
+		para.hole_fil_threshholdCheck[4] = threshholdCheck.isSelected();
+		para.hole_fil_threshhold[4] = threshholdSlider.getValue();
+		para.hole_fil_threshhold_Invers[4] = threshhold_Inverse.isSelected();
+
+		para.dim_1_enable = dim_1_enable.isSelected();
+		para.dim_2_enable = dim_2_enable.isSelected();
+		para.dim_Enable[0] = dim_1_enable.isSelected();
+		para.dim_Enable[1] = dim_1_enable.isSelected();
+		para.dim_Enable[2] = dim_2_enable.isSelected();
+		para.dim_Enable[3] = dim_2_enable.isSelected();
+
+	    para.dim_offset_P2[0] = Double.valueOf(dim_offset_P2_1.getText());
+	    para.dim_offset_F[0] = Double.valueOf(dim_offset_F_1.getText());
+	    para.dim_offset_E[0] = Double.valueOf(dim_offset_E_1.getText());
+	    para.dim_offset_P2[1] = Double.valueOf(dim_offset_P2_2.getText());
+	    para.dim_offset_F[1] = Double.valueOf(dim_offset_F_2.getText());
+	    para.dim_offset_E[1] = Double.valueOf(dim_offset_E_2.getText());
+
+		//para.dimPixel_mm = dimSetting_offset.getText()
+
+		pObj.portNo = portNoSpin.getValue().intValue();
+		pObj.cameraID = camIDspinner.getValue().intValue();
+		pObj.adc_thresh = Integer.valueOf(adc_thresh_value.getText());
+		pObj.cameraHeight = Integer.valueOf(capH_text.getText());
+		pObj.cameraWidth = Integer.valueOf(capW_text.getText());
+		pObj.adcFlg = adc_flg.isSelected();
+
+		para.delly = dellySpinner.getValue().intValue();
+		para.trigger_2nd_chk = this.trigger_2nd_chk.isSelected();
+		para.delly2 = dellySpinner2.getValue().intValue();
+
+		objOut.writeObject(pObj);
+		objOut.flush();
+		objOut.close();
+
+		//パターンマッチング画像の保存 ptmImgMat[preSetNo][ptm1～ptm4]
+    	int max_ptm_array = pObj.para[pObj.select].ptm_arrySize;
+		for(int i=0;i<4;i++) {
+			for(int j=0;j<max_ptm_array;j++) {
+				if( ptm_ImgMat[i][j] != null ) {
+					savePtmImg(ptm_ImgMat[i][j],"ptm"+String.format("_%d_%d", i,j));
+				}
+			}
+		}
+		//寸法測定用画像保存
+		for(int i=0;i<4;i++) {
+			for(int j=0;j<4;j++) {
+				if( dim_ImgMat[i][j] != null ) {
+					savePtmImg(dim_ImgMat[i][j],"dim"+String.format("_%d_%d", i,j));
+				}
+			}
+		}
+
+		Platform.runLater( () ->info2.appendText("設定が保存されました。\n"));
+    }
+    /**
      * パターンマッチング画像の保存
      * @param imgMat
      * @param fileName
@@ -2421,7 +2512,6 @@ public class VisonController2{
 
 
     	//品種の選択コンボボックスのデーターロード
-    	selectPreSetCB
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
 
     }
@@ -2430,6 +2520,9 @@ public class VisonController2{
     @FXML
     void onCSVout(ActionEvent event) {
     	Platform.runLater( () ->this.info2.appendText("設定をCSVファイルへ書き出し（未実装)\n"));
+
+
+
     }
 
     /**
