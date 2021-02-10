@@ -1841,9 +1841,35 @@ public class VisonController2{
 	  	if( cnt == 0 ) {
 	  		return 3;
 	  	}
+	  	
+		//径と距離算出 X順で並び替え
+		Point tmpPoint;
+		float tmpRadius;
+		for(int i=0;i<cnt;i++) {
+			for(int j=i+1;j<cnt;j++) {
+				if( centers[i].x > centers[j].x ) {
+					tmpPoint = centers[i].clone();
+					centers[i] = centers[j].clone();
+					centers[j] = tmpPoint;
+
+					tmpRadius = radius[i][0];
+					radius[i][0] = radius[j][0];
+					radius[j][0] = tmpRadius;
+				}
+			}
+		}
+		//穴間平均距離
+		for(int i=0;i<cnt-1;i++) {
+			distAve += centers[i+1].x - centers[i].x;
+
+			if( holeLength > centers[i+1].x - centers[i].x ) {
+				result = 4;
+			}
+		}
 	  	//*************************************************************************************************************
 	  	//検出円描画、検出矩形描画
 	  	//*************************************************************************************************************
+	  	
 	  	for( int i=0; i<cnt; i++ ) {
 		  	if(holeDispChk.isSelected()) {
 	            Scalar color = new Scalar(0,255,255);
@@ -1869,7 +1895,7 @@ public class VisonController2{
 	  		whiteAreaMax = whiteAreaMax < whiteArea?whiteArea:whiteAreaMax;
 	  		whiteAreaMin = whiteAreaMin > whiteArea?whiteArea:whiteAreaMin;
 	  		if( whiteArea > threshholdAreaMax || whiteArea < threshholdAreaMin) {
-	  			result = 1;
+	  			result += 1;
 	  		}
   		}
 		if( settingModeFlg ) {
@@ -1881,7 +1907,13 @@ public class VisonController2{
   		whiteAreaAverage /= cnt;
 
         if(holeDispChk.isSelected()) {
-    		if( result == 0 ) {
+        	if( result >= 4 ) {
+				Imgproc.putText(dst_,
+						"Distance NG",
+						new Point(offset_x-20,offset_y-26),
+						Imgproc.FONT_HERSHEY_SIMPLEX, 1.0,new Scalar(0,0,255),2);
+        	}
+        	if( result == 0 || result == 4 ) {
 				Imgproc.putText(dst_,
 						"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
 								" Max=" + String.format("%d",whiteAreaMax) +
@@ -1907,22 +1939,7 @@ public class VisonController2{
 					new Point(offset_x-60,offset_y-6),
 					Imgproc.FONT_HERSHEY_SIMPLEX, 2.0,new Scalar(128,255,128),2);
         }
-		//径と距離算出 X順で並び替え
-		Point tmpPoint;
-		float tmpRadius;
-		for(int i=0;i<cnt;i++) {
-			for(int j=i+1;j<cnt;j++) {
-				if( centers[i].x > centers[j].x ) {
-					tmpPoint = centers[i].clone();
-					centers[i] = centers[j].clone();
-					centers[j] = tmpPoint;
 
-					tmpRadius = radius[i][0];
-					radius[i][0] = radius[j][0];
-					radius[j][0] = tmpRadius;
-				}
-			}
-		}
 		//穴径(最大、最小、平均算出)
 		for(int i=0;i<cnt;i++) {
 			if( radius[i][0] > radiusMax ) {
@@ -1935,14 +1952,7 @@ public class VisonController2{
 		}
 		radiusAve /= cnt;
 
-		//穴間平均距離
-		for(int i=0;i<cnt-1;i++) {
-			distAve += centers[i+1].x - centers[i].x;
 
-			if( holeLength > centers[i+1].x - centers[i].x ) {
-				result = 4;
-			}
-		}
 
 		distAve /= cnt - 1;
 		holeDist_DimSetting = distAve;//寸法測定に使用する値
