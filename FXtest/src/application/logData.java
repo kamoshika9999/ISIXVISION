@@ -27,6 +27,9 @@ public class logData {
 
 	//テンプレートマッチング
 	public List<String> tmResult = new ArrayList<String>();
+
+	//穴検出
+	public List<String> holeCnt = new ArrayList<String>();
 	/*
 	public List<Integer> x = new ArrayList<Integer>();//ピクセル単位での検出位置リスト
 	public List<Integer> y =new ArrayList<Integer>();
@@ -69,15 +72,14 @@ public class logData {
 
 	/**
 	 * ログデーター追加
-	 * @param P2_1_
-	 * @param P2_2_
-	 * @param F_1_
-	 * @param F_2_
-	 * @param E_1_
-	 * @param E_2_
-	 * @param tmr
+	 * @param P2_log_
+	 * @param F_log_
+	 * @param E_log_
+	 * @param resultValue_
+	 * @param holeCnt_
 	 */
-	public void addData(double[] P2_log_,double[] F_log_,double[] E_log_,TMResult[] resultValue_) {
+	public void addData(double[] P2_log_,double[] F_log_,double[] E_log_,TMResult[] resultValue_,
+																						Integer[] holeCnt_) {
 		P2_1.add(String.valueOf(P2_log_[0]));
 		P2_2.add(String.valueOf(P2_log_[1]));
 		F_1.add(String.valueOf(F_log_[0]));
@@ -94,6 +96,10 @@ public class logData {
 			tmResult.add(String.valueOf(resultValue_[i].dispersionMin));
 			tmResult.add(String.valueOf(resultValue_[i].dispersionAve));
 			tmResult.add(String.valueOf(resultValue_[i].resultStatus));
+		}
+
+		for(int i=0;i<holeCnt_.length;i++) {
+			holeCnt.add(String.valueOf(holeCnt_[i]));
 		}
 
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -133,7 +139,7 @@ public class logData {
 	 */
 	public boolean csvWrite() {
 		if(cnt>3) {
-			String[] headStr = new String[8 + parameter.ptm_arrySize*8];
+			String[] headStr = new String[8 + 4 + parameter.ptm_arrySize*8];
 			headStr[0]="n"; //データー番号
 			headStr[1]="date";//データー追加日時
 			headStr[2]="P2_1";
@@ -142,15 +148,20 @@ public class logData {
 			headStr[5]="F_2";
 			headStr[6]="E_1";
 			headStr[7]="E_2";
+
+			for(int i=0;i<4;i++) {
+				headStr[8+i]="HoleCnt"+String.valueOf(i+1);
+			}
+
 			for(int i=0;i<parameter.ptm_arrySize;i++) {
-				headStr[8 + i*8 + 0] = String.valueOf(i)+"_TM_cnt";
-				headStr[8 + i*8 + 1] = String.valueOf(i)+"_TM_detectMax";
-				headStr[8 + i*8 + 2] = String.valueOf(i)+"_TM_detectMin";
-				headStr[8 + i*8 + 3] = String.valueOf(i)+"_TM_detectAve";
-				headStr[8 + i*8 + 4] = String.valueOf(i)+"_TM_dispersionMax";
-				headStr[8 + i*8 + 5] = String.valueOf(i)+"_TM_dispersionMin";
-				headStr[8 + i*8 + 6] = String.valueOf(i)+"_TM_dispersionAve";
-				headStr[8 + i*8 + 7] = String.valueOf(i)+"_TM_resultStatus";
+				headStr[12 + i*8 + 0] = String.valueOf(i)+"_TM_cnt";
+				headStr[12 + i*8 + 1] = String.valueOf(i)+"_TM_detectMax";
+				headStr[12 + i*8 + 2] = String.valueOf(i)+"_TM_detectMin";
+				headStr[12 + i*8 + 3] = String.valueOf(i)+"_TM_detectAve";
+				headStr[12 + i*8 + 4] = String.valueOf(i)+"_TM_dispersionMax";
+				headStr[12 + i*8 + 5] = String.valueOf(i)+"_TM_dispersionMin";
+				headStr[12 + i*8 + 6] = String.valueOf(i)+"_TM_dispersionAve";
+				headStr[12 + i*8 + 7] = String.valueOf(i)+"_TM_resultStatus";
 			}
 
 
@@ -161,7 +172,7 @@ public class logData {
 		        writer.writeNext(headStr);  //ヘッダー書き込み
 
 		        for(int i=0;i<cnt;i++) {
-		        	String[] subStr= new String[8 + parameter.ptm_arrySize*8];
+		        	String[] subStr= new String[8 + 4 + parameter.ptm_arrySize*8];
 		        	subStr[0] = String.valueOf(i);
 		        	subStr[1] = date.get(i);
 		        	subStr[2] = P2_1.get(i);
@@ -171,9 +182,13 @@ public class logData {
 		        	subStr[6] = E_1.get(i);
 		        	subStr[7] = E_2.get(i);
 
+		        	for(int j=0;j<4;j++) {
+		        		subStr[8+j] = holeCnt.get(i);
+		        	}
+
 		        	for(int j=0;j<parameter.ptm_arrySize;j++) {
 		        		for(int k=0;k<8;k++) {
-		        			subStr[8+j*8+k] = tmResult.get(i*(8*parameter.ptm_arrySize)+(j*8+k));
+		        			subStr[12+j*8+k] = tmResult.get(i*(8*parameter.ptm_arrySize)+(j*8+k));
 		        		}
 		        	}
 		        	writer.writeNext(subStr);

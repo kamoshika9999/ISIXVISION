@@ -154,7 +154,6 @@ public class VisonController2{
 	long fpsEnd;
 	int fpsCnt=0;//カウント用
 	double fps =0;
-	String password = "7777";
 	double framCnt = 0;
 	VideoCapture source_video;
 	//設定自動ロック用
@@ -1192,6 +1191,10 @@ public class VisonController2{
 
 
     private void rePaint() {
+    	final int disableJudgeCnt = 30;//スタートから判定を無効にするショット数
+    	Integer[] holeCnt_log = new Integer[4];
+    	int kyouseiTeisshiNgCnt = 0;
+
     	if( saveImgUseFlg ) {
     		srcMat = saveImgMat.clone();
     	}
@@ -1332,6 +1335,7 @@ public class VisonController2{
 		        			draggingRect.x,
 		        			draggingRect.x+draggingRect.width);
 		        	//穴検出
+	        		Integer[] dummy_integer = new Integer[1];
 		            int foundCircle_result_int = foundCircle(
 		            		fillterAftterMatRoi,//検出領域のサブMAT
 		            		mainViewMat,//結果の描画
@@ -1343,7 +1347,8 @@ public class VisonController2{
 		            		whiteRatioMaxSp.getValue(),//白面積の最大値
 		            		whiteRatioMinSp.getValue(),//白面積の最小値
 		            		true,//インフォメーションに表示する
-		            		draggingRect.x,draggingRect.y
+		            		draggingRect.x,draggingRect.y,
+		            		dummy_integer,0//ダミー変数を渡す
 		            		);
 		        }
 	            Imgproc.rectangle(mainViewMat,
@@ -1391,11 +1396,13 @@ public class VisonController2{
 		            		(int)para.hole_circlePara9[i],//穴径の最大値
 		            		(int)para.hole_circlePara8[i],//穴径の最小値
 		            		para.hole_circlePara7[i],//円形度
-		            		para.hole_cntHoleTh[i],//穴数の閾値 設定領域の為「-1」と入れ区別する
+		            		para.hole_cntHoleTh[i],//穴数の閾値 -1の場合は設定領域を示す
 		            		para.hole_whiteAreaMax[i],//白面積の最大値
 		            		para.hole_whiteAreaMin[i],//白面積の最小値
 		            		false,//インフォメーションに表示する
-		            		r.x,r.y//結果図形・文字描画時のmainVierMatの絶対位置(検出領域の左上と同値)
+		            		r.x,r.y,//結果図形・文字描画時のmainVierMatの絶対位置(検出領域の左上と同値)
+		            		holeCnt_log,//穴検出数※参照渡し
+		            		i//検査領域のインデックス番号
 		            		);
 		    		}
 
@@ -1411,6 +1418,7 @@ public class VisonController2{
 		            			Platform.runLater( () ->okuri1_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.RED));
 		            			ngFlg = true;
+		            			kyouseiTeisshiNgCnt++;
 		            		}
 		            		break;
 		            	case 1:
@@ -1422,6 +1430,7 @@ public class VisonController2{
 		            			Platform.runLater( () ->okuri2_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.RED));
 		            			ngFlg = true;
+		            			kyouseiTeisshiNgCnt++;
 		            		}
 		            		break;
 		            	case 2:
@@ -1432,7 +1441,8 @@ public class VisonController2{
 		            		}else {
 		            			Platform.runLater( () ->okuri3_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.RED));
-		            			ngFlg = true;			            		}
+		            			ngFlg = true;
+		            			kyouseiTeisshiNgCnt++;}
 		            		break;
 		            	case 3:
 		            		if( foundCircle_result_int == 0 ) {
@@ -1443,6 +1453,7 @@ public class VisonController2{
 		            			Platform.runLater( () ->okuri4_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.RED));
 		            			ngFlg = true;
+		            			kyouseiTeisshiNgCnt++;
 		            		}
 		            		break;
 		            	}
@@ -1512,15 +1523,15 @@ public class VisonController2{
 			        		//System.out.println("X1 = " + String.format("%.4f", p2_x1));
 			        		P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
 
-			        		//21ショット目から加算
-			        		if( shotCnt > 20 ) {
+			        		//disableJudgeCntショット目から加算
+			        		if( shotCnt > disableJudgeCnt ) {
 			        			P2_sum[g] += P2;
 			        		}
 			        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
 			        		double f_y1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionY.get(0);
 			        		F = Math.abs(f_y0 - f_y1)*para.dimPixel_mm+para.dim_offset_F[g];
-			        		//21ショット目から加算
-			        		if( shotCnt > 20 ) {
+			        		//disableJudgeCntショット目から加算
+			        		if( shotCnt > disableJudgeCnt ) {
 			        			F_sum[g] += F;
 			        		}
 	        			}else {
@@ -1591,13 +1602,13 @@ public class VisonController2{
 
 
 	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
-	        	if( shotCnt > 20 ) { //20ショットまではログ無し
+	        	if( shotCnt > disableJudgeCnt ) { //disableJudgeCntショットまではログ無し
 		       		//ログデーター処理
-		       		logdata.addData(P2_log,F_log,E_log, ptm_templateMatchingObj.resultValue);
+		       		logdata.addData(P2_log,F_log,E_log, ptm_templateMatchingObj.resultValue,holeCnt_log);
 	        	}
 		        //最終判定
-	        	if( shotCnt < 21 ) { //20ショットまでは判定無視
-		        	Platform.runLater( () ->judg.setText( String.valueOf(20-shotCnt)) );
+	        	if( shotCnt < disableJudgeCnt+1 ) { //disableJudgeCnt+1ショットまでは判定無視
+		        	Platform.runLater( () ->judg.setText( String.valueOf(disableJudgeCnt-shotCnt)) );
 		        	Platform.runLater( () ->judg.setTextFill( Color.GREEN) );
 	        	}else if(judgCnt==4 && (tmStatus==0 || tmStatus==2) ) {//judgCntが穴判定  tmStatusがテンプレートマッチング判定
 		        	Platform.runLater( () ->judg.setText("OK") );
@@ -1620,7 +1631,7 @@ public class VisonController2{
 		        	if( ngCnt < 999) ngCnt++;
 
 		        	//出力トリガが無効で無い場合
-		        	if( !outTrigDisableChk.isSelected() ){
+		        	if( !outTrigDisableChk.isSelected() || kyouseiTeisshiNgCnt>1){
 		        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
 		        		if( Gpio.openFlg) {
 		        			while( Gpio.useFlg ) {
@@ -1779,11 +1790,15 @@ public class VisonController2{
      * @param threshholdAreaMax 検出矩形の白面積 最大値閾値
      * @param threshholdAreaMin 検出矩形の白面積 最小値閾値
      * @para infoFlg インフォメーションテキストに値を表示させるか？
+     * @para holeCnt_log_ integer[]型で穴検出数をログへ書き込み為の参照渡しの変数
+     * @para hokeCnt_log_のインデックスで使用
      * @return 判定結果 0:合格 1:面積判定NG 2:個数ＮＧ 3:(面積判定、個数ＮＧ)
      */
     private int foundCircle(Mat src_,Mat dst_,int holeLength,int max_diameter_,int min_diameter_,double circularity_
     			,int circleCountThresh,double threshholdAreaMax,double threshholdAreaMin,
-    			boolean infoFlg,int offset_x,int offset_y) {
+    			boolean infoFlg,int offset_x,int offset_y,
+    			Integer[] holeCnt_log_,int index
+    			) {
 
 		List<MatOfPoint> contours=new ArrayList<MatOfPoint>();
 		Mat hierarchy = new Mat();
@@ -1833,15 +1848,19 @@ public class VisonController2{
 	            centers[cnt] = new Point();
     			Imgproc.minEnclosingCircle(contoursPoly[cnt], centers[cnt], radius[cnt]);
     			}catch(Exception e){
-    				System.out.println(e);
+    				System.out.println(e+"円検出エラー");
     			}
     			cnt++;
     		}
         }
+
+	  	//穴検出数を参照渡しの変数へ格納
+	  	holeCnt_log_[index] = cnt;
+
 	  	if( cnt == 0 ) {
 	  		return 3;
 	  	}
-	  	
+
 		//径と距離算出 X順で並び替え
 		Point tmpPoint;
 		float tmpRadius;
@@ -1869,7 +1888,7 @@ public class VisonController2{
 	  	//*************************************************************************************************************
 	  	//検出円描画、検出矩形描画
 	  	//*************************************************************************************************************
-	  	
+
 	  	for( int i=0; i<cnt; i++ ) {
 		  	if(holeDispChk.isSelected()) {
 	            Scalar color = new Scalar(0,255,255);
@@ -2697,8 +2716,6 @@ public class VisonController2{
 
     	//選択されている品種の表示
     	Platform.runLater( () ->presetText.setText(pObj.presetNameText[pObj.select]));
-
-
 
     }
     @FXML

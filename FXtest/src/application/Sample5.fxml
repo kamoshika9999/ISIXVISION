@@ -235,7 +235,7 @@
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Button fx:id="preset1" layoutX="272.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="TO220SM" visible="false">
+                        <Button fx:id="preset1" layoutX="335.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="①">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -243,7 +243,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
-                        <Button fx:id="preset2" layoutX="336.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="D2PAK" visible="false">
+                        <Button fx:id="preset2" layoutX="399.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="②">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -251,7 +251,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
-                        <Button fx:id="preset3" layoutX="400.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="TOGL" visible="false">
+                        <Button fx:id="preset3" layoutX="463.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="③">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -259,7 +259,7 @@
                               <DropShadow blurType="GAUSSIAN" color="#fc0000" />
                            </effect>
                         </Button>
-                        <Button fx:id="preset4" layoutX="464.0" layoutY="198.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="LEDIP" visible="false">
+                        <Button fx:id="preset4" layoutX="527.0" layoutY="206.0" mnemonicParsing="false" onAction="#onPreset" prefWidth="61.0" text="④">
                            <font>
                               <Font size="11.0" />
                            </font>
@@ -284,6 +284,7 @@
                               <Font name="System Bold" size="13.0" />
                            </font>
                         </ToggleButton>
+                        <Label layoutX="283.0" layoutY="210.0" text="品種番号" />
                      </children>
                   </AnchorPane>
             </content>
@@ -412,7 +413,7 @@
             <Font size="36.0" />
          </font>
       </Label>
-      <Label fx:id="presetText" layoutX="2.0" layoutY="5.0" text="ISIX VISON  Ver3.4" textFill="#0a22d7">
+      <Label fx:id="presetText" layoutX="2.0" layoutY="5.0" prefHeight="17.0" prefWidth="123.0" text="ISIX VISON  Ver3.4.1" textFill="#0a22d7">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
@@ -488,7 +489,7 @@
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;v2.9 2020/06/02 HoleDedection Change&#10;v3.0 2020/06/06 patternMatching maxCount=20&#10;v3.1 2020/06/26 microBugFix&#10;v3.2 2020/07/05 DispersionMesureADD/Log Enable&#10;v3.3 2020/07/15 Log bugfix&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;v2.9 2020/06/02 HoleDedection Change&#10;v3.0 2020/06/06 patternMatching maxCount=20&#10;v3.1 2020/06/26 microBugFix&#10;v3.2 2020/07/05 DispersionMesureADD/Log Enable&#10;v3.3 2020/07/15 Log bugfix&#10;v3.4.1 2021/3/9 #55 designated version&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="設定">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />
