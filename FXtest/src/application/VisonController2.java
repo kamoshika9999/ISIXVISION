@@ -564,6 +564,10 @@ public class VisonController2{
     @FXML
     private ComboBox<String> selectPreSetCB;//品種選択用
 
+    @FXML
+    private CheckBox autoGainChk;//オートゲインチェックボックス　※デフォルトはselected状態
+    @FXML
+    private TextField autoGainText;//オートゲインテキスト
     /**
      * 品種の選択
      * @param event
@@ -3382,18 +3386,30 @@ public class VisonController2{
     @FXML
     void onCalibLite(ActionEvent event) {
 
+    	//現在のゲインを取得
+    	double gain = capObj.get(Videoio.CAP_PROP_GAIN);
+    	if( gain<40 || gain>60) {
+			Platform.runLater(() ->info2.appendText("初期ゲインを40～60の間に設定する必要があります\n"));
+    		return;
+    	}
+
     	if( calibLiteFlg ) {
+    		throughImageChk.setSelected(false);//スルー画像表示フラグ無効
     		offCalibLite();
 			return;
     	}
 
+    	throughImageChk.setSelected(true);//スルー画像表示フラグ有効 RealMatがスレッドで自動取得される
+
     	if( realMat == null) {
-			Platform.runLater(() ->info2.appendText("スルー画像が取り込みできていません。\n"
-					+ "キャリブレーションが開始できません\n"));
+			Platform.runLater(() ->info2.appendText("スルー画像準備中...\n"));
     		return;
+    	}else {
+        	//キャリブレーション中フラグセット
+        	calibLiteFlg = true;
     	}
 
-    	calibLiteFlg = true;
+
 		Platform.runLater(() ->info2.appendText("**************************\n"));
 		Platform.runLater(() ->info2.appendText("照明キャリブレーション開始\n"));
 		Platform.runLater(() ->info2.appendText("**************************\n"));

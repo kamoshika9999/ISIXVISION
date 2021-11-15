@@ -133,6 +133,22 @@
                            </font>
                         </Button>
                         <CheckBox fx:id="camera_revers_chk" layoutX="587.0" layoutY="104.0" mnemonicParsing="false" selected="true" text="Camera上下反転" />
+                        <Button fx:id="calib_btn" layoutX="233.0" layoutY="74.0" mnemonicParsing="false" onAction="#onCalibLite" prefHeight="25.0" prefWidth="123.0" text="照明キャリブ(測光)" />
+                        <Label fx:id="calib_label" layoutX="360.0" layoutY="73.0" prefHeight="27.0" prefWidth="40.0" text="1000" textAlignment="RIGHT">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <CheckBox fx:id="autoGainChk" layoutX="177.0" layoutY="216.0" mnemonicParsing="false" prefHeight="19.0" prefWidth="174.0" selected="true" text="オートゲイン">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </CheckBox>
+                        <TextField fx:id="autoGainText" layoutX="267.0" layoutY="216.0" prefHeight="24.0" prefWidth="123.0" promptText="00%">
+                           <font>
+                              <Font name="System Bold" size="11.0" />
+                           </font>
+                        </TextField>
                      </children>
                   </AnchorPane>
             </content>
@@ -413,7 +429,7 @@
             <Font size="36.0" />
          </font>
       </Label>
-      <Label fx:id="presetText" layoutX="2.0" layoutY="5.0" prefHeight="17.0" prefWidth="123.0" text="ISIX VISON  Ver3.4.1" textFill="#0a22d7">
+      <Label fx:id="presetText" layoutX="2.0" layoutY="5.0" prefHeight="17.0" prefWidth="123.0" text="ISIX VISON  Ver3.5.0" textFill="#0a22d7">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
@@ -489,7 +505,7 @@
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;v2.9 2020/06/02 HoleDedection Change&#10;v3.0 2020/06/06 patternMatching maxCount=20&#10;v3.1 2020/06/26 microBugFix&#10;v3.2 2020/07/05 DispersionMesureADD/Log Enable&#10;v3.3 2020/07/15 Log bugfix&#10;v3.4.1 2021/3/9 #55 designated version&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;v2.9 2020/06/02 HoleDedection Change&#10;v3.0 2020/06/06 patternMatching maxCount=20&#10;v3.1 2020/06/26 microBugFix&#10;v3.2 2020/07/05 DispersionMesureADD/Log Enable&#10;v3.3 2020/07/15 Log bugfix&#10;v3.4.1 2021/3/9 #55 designated version&#10;v3.5.0 2021/11/15 照明オートゲイン機能追加&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="設定">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />
@@ -508,11 +524,6 @@
       <Circle fx:id="GPIO_STATUS_PIN0" fill="#c8c8c8" layoutX="860.0" layoutY="342.0" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
       <Circle fx:id="GPIO_STATUS_PIN3" fill="#c8c8c8" layoutX="860.0" layoutY="356.0" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
       <Circle fx:id="GPIO_STATUS_PIN1" fill="#c8c8c8" layoutX="860.0" layoutY="370.0" radius="7.0" stroke="#393636" strokeType="INSIDE" />
-      <CheckBox fx:id="throughImageChk" layoutX="958.0" layoutY="338.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="137.0" text="スルー画像表示">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </CheckBox>
       <Button fx:id="shotImgBtn" layoutX="1097.0" layoutY="344.0" mnemonicParsing="false" onAction="#onShotImg" prefHeight="25.0" prefWidth="90.0" text="ショット撮影" />
       <Button fx:id="dimensionBtn" disable="true" layoutX="836.0" layoutY="396.0" mnemonicParsing="false" onAction="#onDimensionBtn" prefHeight="39.0" prefWidth="63.0" text="Dimension Viewer" visible="false" wrapText="true">
          <effect>
@@ -584,11 +595,7 @@
             <TableColumn fx:id="dim_table_E" editable="false" minWidth="0.0" prefWidth="45.0" resizable="false" sortable="false" text="E" />
         </columns>
       </TableView>
-      <Button fx:id="calib_btn" layoutX="348.0" layoutY="321.0" mnemonicParsing="false" onAction="#onCalibLite" prefHeight="25.0" prefWidth="123.0" text="照明キャリブ(測光)" />
-      <Label fx:id="calib_label" layoutX="471.0" layoutY="323.0" prefHeight="27.0" prefWidth="262.0" text="00000000000" textAlignment="RIGHT">
-         <font>
-            <Font name="System Bold" size="18.0" />
-         </font></Label>
       <ComboBox fx:id="selectPreSetCB" layoutX="775.0" layoutY="384.0" onAction="#onSelectPreset" prefHeight="25.0" prefWidth="262.0" />
+      <CheckBox fx:id="throughImageChk" layoutX="334.0" layoutY="321.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="137.0" text="スルー画像表示" />
    </children>
 </AnchorPane>

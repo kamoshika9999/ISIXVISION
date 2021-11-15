@@ -17,12 +17,11 @@
 	<classpathentry exported="true" kind="lib" path="C:/isix/jfreechart-1.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/isix/jfreechart-fx-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/isix/RinearnGraph3D.jar"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/JAVAFX">
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JAVAFX">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/isix/javafx-sdk-11.0.2/bin"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="opencsv-5.2.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/PI4J"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
