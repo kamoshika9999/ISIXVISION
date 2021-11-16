@@ -1689,6 +1689,7 @@ public class VisonController2{
 	        			}
 	        		}
 	        		Platform.runLater(() ->info2.appendText("!!!照明異常停止!!!\n"));
+	        		Platform.runLater(() ->info2.appendText("オートゲインの調整範囲を超えた為、強制的に停止\n"));
 	        		Platform.runLater(() ->info2.appendText("照明キャリブレーションが必要\n"));
 	        	}
 	    	}
@@ -3427,6 +3428,7 @@ public class VisonController2{
     	double gain = capObj.get(Videoio.CAP_PROP_GAIN);
     	//ゲインの調整幅20～80
     	if( gain <=20 || gain >=80) {
+    		Platform.runLater( () ->calib_label.setText(String.format("平均輝度=%.1f",luminanceAverage)));
     		return 2;
     	}
 
@@ -3437,6 +3439,7 @@ public class VisonController2{
     	}
     	final double g = gain;
     	Platform.runLater( () ->autoGainText.setText(String.format("%.1f",g)));
+    	Platform.runLater( () ->calib_label.setText(String.format("平均輝度=%.1f",luminanceAverage)));
     	return 1;
     }
 
