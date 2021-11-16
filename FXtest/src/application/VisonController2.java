@@ -1903,6 +1903,7 @@ public class VisonController2{
 		//径と距離算出 X順で並び替え
 		Point tmpPoint;
 		float tmpRadius;
+		Rect tmpBoundRect;
 		for(int i=0;i<cnt;i++) {
 			for(int j=i+1;j<cnt;j++) {
 				if( centers[i].x > centers[j].x ) {
@@ -1913,15 +1914,36 @@ public class VisonController2{
 					tmpRadius = radius[i][0];
 					radius[i][0] = radius[j][0];
 					radius[j][0] = tmpRadius;
+
+					tmpBoundRect = boundRect[i];
+					boundRect[i] = boundRect[j];
+					boundRect[j] = tmpBoundRect;
 				}
 			}
 		}
+		/*
 		//穴間平均距離
 		for(int i=0;i<cnt-1;i++) {
 			distAve += centers[i+1].x - centers[i].x;
 
 			if( holeLength > centers[i+1].x - centers[i].x ) {
 				result = 4;
+			}
+		}
+		*/
+		//穴間平均距離を測定し次添え時の配列を詰める
+		for(int i=0;i<cnt-1;i++) {
+
+			if( holeLength > centers[i+1].x - centers[i].x ) {
+				for(int j=i+1;j<cnt-1;j++) {
+					centers[j] = centers[j+1];
+					radius[j] = radius[j+1];
+					boundRect[j] = boundRect[j+1];
+				}
+				cnt--;
+				i--;
+			}else {
+				distAve += centers[i+1].x - centers[i].x;
 			}
 		}
 	  	//*************************************************************************************************************
