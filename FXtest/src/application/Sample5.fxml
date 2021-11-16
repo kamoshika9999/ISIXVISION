@@ -134,7 +134,7 @@
                         </Button>
                         <CheckBox fx:id="camera_revers_chk" layoutX="587.0" layoutY="104.0" mnemonicParsing="false" selected="true" text="Camera上下反転" />
                         <Button fx:id="calib_btn" layoutX="233.0" layoutY="74.0" mnemonicParsing="false" onAction="#onCalibLite" prefHeight="25.0" prefWidth="123.0" text="照明キャリブ(測光)" />
-                        <Label fx:id="calib_label" layoutX="360.0" layoutY="73.0" prefHeight="27.0" prefWidth="40.0" text="1000" textAlignment="RIGHT">
+                        <Label fx:id="calib_label" layoutX="360.0" layoutY="73.0" prefHeight="27.0" prefWidth="180.0" text="1000" textAlignment="RIGHT">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>
@@ -595,7 +595,7 @@
             <TableColumn fx:id="dim_table_E" editable="false" minWidth="0.0" prefWidth="45.0" resizable="false" sortable="false" text="E" />
         </columns>
       </TableView>
-      <ComboBox fx:id="selectPreSetCB" layoutX="775.0" layoutY="384.0" onAction="#onSelectPreset" prefHeight="25.0" prefWidth="262.0" />
+      <ComboBox fx:id="selectPreSetCB" layoutX="775.0" layoutY="384.0" onAction="#onSelectPreset" prefHeight="25.0" prefWidth="262.0" visible="false" />
       <CheckBox fx:id="throughImageChk" layoutX="334.0" layoutY="321.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="137.0" text="スルー画像表示" />
    </children>
 </AnchorPane>

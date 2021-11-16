@@ -1659,6 +1659,40 @@ public class VisonController2{
     	}catch(Exception e) {
     		Platform.runLater(() ->info2.appendText(e+"\n:検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n"));
     	}
+
+    	//オートゲイン
+    	if( autoGainChk.isSelected() && !saveImgUseFlg &&!demoFlg) {
+	    	Double luminanceAverage = 0.0;
+	    	parameter para = pObj.para[pObj.select];
+	    	int cnt = 0;
+	    	for( int i=0;i<4;i++) {
+		    	if( para.hole_DetectFlg[i] ) {
+			    	Rectangle r = para.hole_rects[i];//検査範囲
+			    	luminanceAverage += Core.mean(srcMat.submat(new Rect(r.x,r.y,r.width,r.height))).val[0];
+			    	cnt++;
+		    	}
+	    	}
+	    	if( cnt > 0 ) {
+	    		luminanceAverage = luminanceAverage / cnt;
+	        	int err = exeAutoGain(luminanceAverage);
+	        	if( err == 2) {
+	        		//照明異常矯正停止
+	        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(128,0,128,0.5);"));
+	        		if( Gpio.openFlg) {
+	        			while( Gpio.useFlg ) {
+	        				System.out.println("rePaint() Gpio.useFlg=true");
+	        			}
+	        			if( Gpio.ngSignalON() ) {
+				    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
+	        			}else {
+				    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+	        			}
+	        		}
+	        		Platform.runLater(() ->info2.appendText("!!!照明異常停止!!!\n"));
+	        		Platform.runLater(() ->info2.appendText("照明キャリブレーションが必要\n"));
+	        	}
+	    	}
+    	}
     }
 
     /**
@@ -3379,14 +3413,43 @@ public class VisonController2{
 			Platform.runLater( () ->throughImageChk.setSelected(false));
     	}
     }
+
+    /**
+     * USBカメラオートゲイン
+     * @param luminanceAverage 穴認識領域の平均輝度　規格100±2
+     * @return 0:調整不要  1:調整実施 2:調整範囲オーバー
+     */
+    int exeAutoGain(double luminanceAverage) {
+    	if( luminanceAverage >=98 || luminanceAverage<=102) {
+        	Platform.runLater( () ->calib_label.setText(String.format("平均輝度=%.1f",luminanceAverage)));
+    		return 0;
+    	}
+    	double gain = capObj.get(Videoio.CAP_PROP_GAIN);
+    	//ゲインの調整幅20～80
+    	if( gain <=20 || gain >=80) {
+    		return 2;
+    	}
+
+    	if( luminanceAverage < 100) {
+    		capObj.set(Videoio.CAP_PROP_GAIN,gain++);
+    	}else {
+    		capObj.set(Videoio.CAP_PROP_GAIN,gain--);
+    	}
+    	final double g = gain;
+    	Platform.runLater( () ->autoGainText.setText(String.format("%.1f",g)));
+    	return 1;
+    }
+
     /**
      * 照明キャリブレーション開始
      * @param event
      */
     @FXML
     void onCalibLite(ActionEvent event) {
+    	if( demoFlg ) return;
 
     	//現在のゲインを取得
+    	//capObj.set(50.0);//強制的にゲインを50%にセットする。意図的に2021.11.16現在は実行しない
     	double gain = capObj.get(Videoio.CAP_PROP_GAIN);
     	if( gain<40 || gain>60) {
 			Platform.runLater(() ->info2.appendText("初期ゲインを40～60の間に設定する必要があります\n"));
@@ -3400,25 +3463,23 @@ public class VisonController2{
     	}
 
     	throughImageChk.setSelected(true);//スルー画像表示フラグ有効 RealMatがスレッドで自動取得される
-
-    	if( realMat == null) {
-			Platform.runLater(() ->info2.appendText("スルー画像準備中...\n"));
-    		return;
-    	}else {
-        	//キャリブレーション中フラグセット
-        	calibLiteFlg = true;
-    	}
-
-
+       	calibLiteFlg = true;//キャリブレーション中フラグセット
 		Platform.runLater(() ->info2.appendText("**************************\n"));
 		Platform.runLater(() ->info2.appendText("照明キャリブレーション開始\n"));
 		Platform.runLater(() ->info2.appendText("**************************\n"));
 		Platform.runLater( () ->throughImageChk.setSelected(true));
 
 		Runnable calibLiter = new Runnable() {
+			private boolean judgFlg = false;
+
 			@Override
 			public void run() {
-		    	if( triggerCCircle.getFill() != Color.YELLOW) {
+		    	if( realMat == null) {
+					Platform.runLater(() ->info2.appendText("スルー画像準備中...\n"));
+		    		return;
+		    	}
+
+				if( triggerCCircle.getFill() != Color.YELLOW) {
 		    		Platform.runLater( () ->triggerCCircle.setFill(Color.YELLOW));
 		    	}else {
 		    		Platform.runLater( () ->triggerCCircle.setFill(Color.WHITE));
@@ -3435,18 +3496,25 @@ public class VisonController2{
 			    	}
 		    	}
 
-		    	if( cnt > 0 ) {
+		    	if( cnt > 0 ){
 		    		luminanceAverage = luminanceAverage / cnt;
 		        	final double d = luminanceAverage;
-		        	final int c = cnt;
 		        	Platform.runLater( () ->calib_label.setText(
-		        			String.format("領域=%d箇所 ",c) +
 		        			String.format("平均輝度=%.1f",d)));
+		        	if( d>=98 && d<=102 ) {
+		        		if( !judgFlg )
+		        			Platform.runLater( () ->calib_label.setText( "照明キャリブレーション合格"));
+		        		judgFlg =true;
+		        	}else {
+		        		if(judgFlg) {
+			        		Platform.runLater( () ->calib_label.setText( "照明強度要調整"));
+		        			judgFlg = false;
+		        		}
+		        	}
 		    	}else {
 		        	Platform.runLater( () ->calib_label.setText( "領域設定不足"));
 		    	}
-
-			}
+		    }
 		};
 
 		timerCalib = Executors.newSingleThreadScheduledExecutor();
