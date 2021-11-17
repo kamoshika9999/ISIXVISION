@@ -1632,7 +1632,11 @@ public class VisonController2{
 		        		//final String infoText = fileString +"\n";
 		        		//Platform.runLater( () ->info2.appendText(infoText));
 		        	}
-		        	if( ngCnt < 999) ngCnt++;
+		        	if( ngCnt > 5000) {
+		        		kyouseiTeisshiNgCnt = 2;//強制停止
+		        	}else {
+		        		ngCnt++;
+		        	}
 
 		        	//出力トリガが無効で無い場合
 		        	if( !outTrigDisableChk.isSelected() || kyouseiTeisshiNgCnt>1){
@@ -1677,7 +1681,7 @@ public class VisonController2{
 	        	int err = exeAutoGain(luminanceAverage);
 	        	if( err == 2) {
 	        		//照明異常矯正停止
-	        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(128,0,128,0.5);"));
+	        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(0,0,0,0.5);"));
 	        		if( Gpio.openFlg) {
 	        			while( Gpio.useFlg ) {
 	        				System.out.println("rePaint() Gpio.useFlg=true");
@@ -1818,25 +1822,26 @@ public class VisonController2{
 
 
     /**
+     * 2021.11.17更新
      * ブロブによる円の検出
-     * @param src 2値化済画像
-     * @param dst 結果画像描画用MAT
-     * @para holeLength 検出円間最小距離
-     * @param max_diameter 検出円最大直径値　ピクセル
-     * @param min_diameter 検出円最小直径値　ピクセル
-     * @param circularity 円形度 0.0 - 1.0
-     * @param circleCountThresh 検出円個数　判定個数
-     * @param threshholdAreaMax 検出矩形の白面積 最大値閾値
-     * @param threshholdAreaMin 検出矩形の白面積 最小値閾値
-     * @para infoFlg インフォメーションテキストに値を表示させるか？
+     * @param src_ 2値化済画像
+     * @param dst_ 結果画像描画用MAT
+     * @para holeLength_ 検出円間最小距離
+     * @param max_diameter_ 検出円最大直径値　ピクセル
+     * @param min_diameter_ 検出円最小直径値　ピクセル
+     * @param circularity_ 円形度 0.0 - 1.0
+     * @param circleCountThresh_ 検出円個数　判定個数
+     * @param threshholdAreaMax_ 検出矩形の白面積 最大値閾値
+     * @param threshholdAreaMin_ 検出矩形の白面積 最小値閾値
+     * @para infoFlg_ インフォメーションテキストに値を表示させるか？
      * @para holeCnt_log_ integer[]型で穴検出数をログへ書き込み為の参照渡しの変数
-     * @para hokeCnt_log_のインデックスで使用
+     * @para index_ hokeCnt_log_のインデックスで使用
      * @return 判定結果 0:合格 1:面積判定NG 2:個数ＮＧ 3:(面積判定、個数ＮＧ)
      */
     private int foundCircle(Mat src_,Mat dst_,int holeLength,int max_diameter_,int min_diameter_,double circularity_
     			,int circleCountThresh,double threshholdAreaMax,double threshholdAreaMin,
     			boolean infoFlg,int offset_x,int offset_y,
-    			Integer[] holeCnt_log_,int index
+    			Integer[] holeCnt_log_,int index_
     			) {
 
 		List<MatOfPoint> contours=new ArrayList<MatOfPoint>();
@@ -1894,7 +1899,7 @@ public class VisonController2{
         }
 
 	  	//穴検出数を参照渡しの変数へ格納
-	  	holeCnt_log_[index] = cnt;
+	  	holeCnt_log_[index_] = cnt;
 
 	  	if( cnt == 0 ) {
 	  		return 3;
@@ -2033,9 +2038,8 @@ public class VisonController2{
 		radiusAve /= cnt;
 
 
-
-		distAve /= cnt - 1;
-		holeDist_DimSetting = distAve;//寸法測定に使用する値
+		if( cnt > 1 ) distAve /= cnt - 1;
+		holeDist_DimSetting = distAve;
 
 		whiteAreaAverage = whiteAreaAverage / cnt;
 
