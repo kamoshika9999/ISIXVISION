@@ -3459,9 +3459,9 @@ public class VisonController2{
     	}
 
     	if( luminanceAverage < 100) {
-    		capObj.set(Videoio.CAP_PROP_GAIN,gain++);
+    		capObj.set(Videoio.CAP_PROP_GAIN,++gain);
     	}else {
-    		capObj.set(Videoio.CAP_PROP_GAIN,gain--);
+    		capObj.set(Videoio.CAP_PROP_GAIN,--gain);
     	}
     	final double g = gain;
     	Platform.runLater( () ->autoGainText.setText(String.format("%.1f",g)));
