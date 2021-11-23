@@ -159,7 +159,7 @@ public class VisonController2{
 	//設定自動ロック用
 	boolean settingModeFlg = false;
 	long lockedTimer = 0;
-	final long lockedTimerThresh = 1000 * 60 *5;
+	final long lockedTimerThresh = 1000 * 60 *15;
 	//パターンマッチング用
 	public Mat[][] ptm_ImgMat = new Mat[4][parameter.ptm_arrySize];//[presetNo][ptm1～ptm4]
 	private TMpara ptm_tmpara;
@@ -1193,25 +1193,34 @@ public class VisonController2{
     	eventTrigger = true;
     }
 
-
+    /**
+     * 画像検査のメインメソッド
+     * srcMatに保存された画像が検査対象となる
+     * saveImgUseFlgがTrueの場合は保存画像が検査対象となる
+     */
     private void rePaint() {
     	final int disableJudgeCnt = 30;//スタートから判定を無効にするショット数
     	Integer[] holeCnt_log = new Integer[4];
-    	int kyouseiTeisshiNgCnt = 0;
+    	int kyouseiTeisshiNgCnt = 0;//穴検査が２領域以上NGであった場合停止させるフラグ
 
+    	//保存画像を使う場合srcMatへクローンする
     	if( saveImgUseFlg ) {
     		srcMat = saveImgMat.clone();
     	}
+
+    	//srcMatが正常に取得できていない場合処理を続行しない
     	if( srcMat.width() < 1) return;
 
 
     	try {
+    		//動作を確認する為のインジケーター処理
 	    	if( this.triggerCCircle.getFill() != Color.YELLOW) {
 	    		Platform.runLater( () ->this.triggerCCircle.setFill(Color.YELLOW));
 	    	}else {
 	    		Platform.runLater( () ->this.triggerCCircle.setFill(Color.GREEN));
 	    	}
 
+	    	//フレームレート計算
 	    	fpsCnt++;
 	    	if( fpsCnt == 30) {
 	    		fpsEnd = System.currentTimeMillis();
@@ -1223,24 +1232,26 @@ public class VisonController2{
 	    		fpsCnt=0;
 	    	}
 
-
+	    	//品番毎の設定を参照変数に入れる
 	    	parameter para = pObj.para[pObj.select];
 
 	    	Mat	mainViewMat = srcMat.clone();//srcMatは不変にしておく
 	    	Mat saveSrcMat = srcMat.clone();//画像保存用にオリジナルを保持させる
-	    	Mat mainViewGlayMat = new Mat();
+	    	Mat mainViewGlayMat = new Mat();//グレースケール変換用MAT
 
+	    	//グレースケール変換
 	    	Imgproc.cvtColor(mainViewMat, mainViewGlayMat, Imgproc.COLOR_BGR2GRAY);
 	    	//Imgproc.equalizeHist(mainViewGlayMat, mainViewGlayMat);//コントラスト均等化
 
 	    	Mat ptnAreaMat = mainViewGlayMat.clone();
 	    	Mat holeDetectAreaMat = mainViewGlayMat.clone();//各穴のパラメータに従った判定のベースMat
-	    	Mat tmp1Mat = new Mat();
-	    	Mat tmp2Mat = new Mat();
-	    	Mat tmp3Mat = new Mat();
-	    	Mat fillterAftterMat = mainViewGlayMat.clone();//セッティングモード時判定のベースMat
+	    	Mat tmp1Mat = new Mat();//ガウシアンフィルター適用後のMAT
+	    	Mat tmp2Mat = new Mat();//2値化フィルター適用後のMAT
+	    	Mat tmp3Mat = new Mat();//膨張フィルター適用後のMAT
+	    	Mat fillterAftterMat = mainViewGlayMat.clone();//設定モード時判定のベースMat
 	    	int filterUselFlg = 0;
 
+	    	//----------------ここから設定モードの処理-----------------------------------------------------------------
 	    	//ガウシアン→２値化→膨張の順番
 	    	if( gauusianCheck.isSelected() ) {
 	    		double sigmaX = gauusianSliderX.getValue();
@@ -1360,8 +1371,9 @@ public class VisonController2{
 	            		new Point(draggingRect.x+draggingRect.width,draggingRect.y+draggingRect.height),
 	            		new Scalar(0,255,0),2);
 	        }
+	        //------------------ここまでが設定モード-------------------------------------------------------------------
 
-	    	int judgCnt=0;
+	    	int judgCnt=0;//穴検査の合格エリア数　カウント数4で合格
 	    	shotCnt++;
 	    	String fileString = "x"+String.valueOf(shotCnt)+"x";//ショット数を入れる
 	    	Platform.runLater( () ->this.count_label.setText(String.valueOf(shotCnt)));//ショット数を更新
@@ -1473,7 +1485,7 @@ public class VisonController2{
 			            		color,4);
 					}
 		        }else {
-		        	judgCnt++;
+		        	judgCnt++;//判定しない時は合格ととしてカウント
 		        }
 
 	        }
@@ -1547,8 +1559,8 @@ public class VisonController2{
 	        			final double _P2 =Double.valueOf(String.format("%.3f",P2)).doubleValue();
 	        			final double _F = Double.valueOf(String.format("%.3f",F)).doubleValue();
 
-	        			final double P2_ave = P2_sum[g]/(shotCnt-20);//21ショット目から加算の為
-	        			final double F_ave = F_sum[g]/(shotCnt-20);//21ショット目から加算の為
+	        			final double P2_ave = P2_sum[g]/(shotCnt-disableJudgeCnt);//disableJudgeCnt+1ショット目から加算の為
+	        			final double F_ave = F_sum[g]/(shotCnt-disableJudgeCnt);//disableJudgeCnt+1ショット目から加算の為
 	        			final double _P2_ave = Double.valueOf(String.format("%.3f",P2_ave)).doubleValue();
 	        			final double _F_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
 
@@ -1638,7 +1650,7 @@ public class VisonController2{
 		        		ngCnt++;
 		        	}
 
-		        	//出力トリガが無効で無い場合
+		        	//出力トリガが無効で無い 又は　強制停止変数が1より大きい場合
 		        	if( !outTrigDisableChk.isSelected() || kyouseiTeisshiNgCnt>1){
 		        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
 		        		if( Gpio.openFlg) {
@@ -1665,7 +1677,7 @@ public class VisonController2{
     	}
 
     	//オートゲイン
-    	if( autoGainChk.isSelected() && !saveImgUseFlg &&!demoFlg) {
+    	if( autoGainChk.isSelected() && !saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-15) {
 	    	Double luminanceAverage = 0.0;
 	    	parameter para = pObj.para[pObj.select];
 	    	int cnt = 0;
@@ -3447,7 +3459,7 @@ public class VisonController2{
      * @return 0:調整不要  1:調整実施 2:調整範囲オーバー
      */
     int exeAutoGain(double luminanceAverage) {
-    	if( luminanceAverage >=98 || luminanceAverage<=102) {
+    	if( luminanceAverage >=98 && luminanceAverage<=102) {
         	Platform.runLater( () ->calib_label.setText(String.format("平均輝度=%.1f",luminanceAverage)));
     		return 0;
     	}
@@ -3460,12 +3472,19 @@ public class VisonController2{
 
     	if( luminanceAverage < 100) {
     		capObj.set(Videoio.CAP_PROP_GAIN,++gain);
+    		final double ga = gain;
+    		Platform.runLater( () ->this.info2.appendText(	String.format("照明ゲイン補正 %.1f \n", ga)));
+    		Platform.runLater( () ->this.autoGainText.setText(String.format("%.1f",ga)));
     	}else {
     		capObj.set(Videoio.CAP_PROP_GAIN,--gain);
+    		final double ga = gain;
+    		Platform.runLater( () ->this.info2.appendText(	String.format("照明ゲイン補正 %.1f \n", ga)));
+    		Platform.runLater( () ->this.autoGainText.setText(String.format("%.1f",ga)));
     	}
     	final double g = gain;
     	Platform.runLater( () ->autoGainText.setText(String.format("%.1f",g)));
     	Platform.runLater( () ->calib_label.setText(String.format("平均輝度=%.1f",luminanceAverage)));
+
     	return 1;
     }
 
