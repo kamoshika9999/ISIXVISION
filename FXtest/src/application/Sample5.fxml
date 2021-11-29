@@ -29,7 +29,7 @@
    <children>
       <Accordion fx:id="accordion_1" layoutY="350.0" prefHeight="343.0" prefWidth="768.0">
         <panes>
-          <TitledPane text="ハード 設定 / セーブ / ロード　">
+          <TitledPane fx:id="TiledPaneHardSET" text="ハード 設定 / セーブ / ロード　">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>

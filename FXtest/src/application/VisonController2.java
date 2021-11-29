@@ -568,6 +568,9 @@ public class VisonController2{
     private CheckBox autoGainChk;//オートゲインチェックボックス　※デフォルトはselected状態
     @FXML
     private TextField autoGainText;//オートゲインテキスト
+    @FXML
+    private TitledPane TiledPaneHardSET;//設定アコーディオンの初期ペイン
+
     /**
      * 品種の選択
      * @param event
@@ -3628,6 +3631,7 @@ public class VisonController2{
                     	}
                   }
             });
+        accordion_1.setExpandedPane(TiledPaneHardSET);
 
         //*************************************************************************************************************
         //パターンマッチング設定選択用スピナー　イベントリスナー
