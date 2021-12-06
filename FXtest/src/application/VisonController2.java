@@ -1710,6 +1710,7 @@ public class VisonController2{
 	        		Platform.runLater(() ->info2.appendText("!!!照明異常停止!!!\n"));
 	        		Platform.runLater(() ->info2.appendText("オートゲインの調整範囲を超えた為、強制的に停止\n"));
 	        		Platform.runLater(() ->info2.appendText("照明キャリブレーションが必要\n"));
+	        		setDefultGain();//ゲインをデフォルトにリセットする
 	        	}
 	    	}
     	}
@@ -3454,6 +3455,13 @@ public class VisonController2{
 			Platform.runLater(() ->info2.appendText("**************************\n"));
 			Platform.runLater( () ->throughImageChk.setSelected(false));
     	}
+    }
+
+    /**
+     * USBカメラのゲインをデフォルトにする
+     */
+    void setDefultGain() {
+    	capObj.set(Videoio.CAP_PROP_GAIN,50.0);
     }
 
     /**
