@@ -1711,6 +1711,7 @@ public class VisonController2{
 	        		Platform.runLater(() ->info2.appendText("オートゲインの調整範囲を超えた為、強制的に停止\n"));
 	        		Platform.runLater(() ->info2.appendText("照明キャリブレーションが必要\n"));
 	        		setDefultGain();//ゲインをデフォルトにリセットする
+
 	        	}
 	    	}
     	}
