@@ -198,6 +198,11 @@ public class VisonController2{
 	private double[] P2_sum = new double[2];
 	private double[] F_sum = new double[2];
 	private double[] E_sum = new double[2];
+	//寸法外れ判定用 5ショットの平均 2022.08.16追加
+	private int hantei_cnt=0;
+	private double[] P2_hantei = new double[5];
+	private double[] F_hantei = new double[5];
+	private boolean sunpou_hantei_NG = false;
 
 	@FXML
     private Spinner<Integer> dellySpinner;
@@ -1614,6 +1619,30 @@ public class VisonController2{
 		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
 								setRange(11.3,11.7));
 
+		        		//寸法外れ判定 2022.08.16
+		        		P2_hantei[hantei_cnt] = P2;
+		        		F_hantei[hantei_cnt] = F;
+		        		hantei_cnt++;
+	        			if( hantei_cnt == 5 ) {
+	        				hantei_cnt = 0;
+	        			}
+		        		if(shotCnt>200 ){
+		        			double P2_tmp=0;
+		        			double F_tmp=0;
+		        			double P2ave_tmp,Fave_tmp;
+		        			for(int i=0;i<5;i++) {
+		        				P2_tmp += P2_hantei[i];
+		        				F_tmp += F_hantei[i];
+		        			}
+		        			P2ave_tmp = P2_tmp/5;
+		        			Fave_tmp = F_tmp/5;
+		        			if( P2ave_tmp <1.9 || P2ave_tmp > 2.1 || Fave_tmp < 11.4 || Fave_tmp > 11.6) {
+		        				sunpou_hantei_NG = true;
+		        			}else {
+		        				sunpou_hantei_NG = false;
+		        			}
+		        		}
+
 	        		}else {
 	        			final int g2 =g;
 	        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,0.000f));
@@ -1674,7 +1703,7 @@ public class VisonController2{
 		        	}
 
 		        	//出力トリガが無効で無い 又は　強制停止変数が1より大きい場合
-		        	if( !outTrigDisableChk.isSelected() || kyouseiTeisshiNgCnt>1){
+		        	if( !outTrigDisableChk.isSelected() || kyouseiTeisshiNgCnt>1 || sunpou_hantei_NG){
 		        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
 		        		if( Gpio.openFlg) {
 		        			while( Gpio.useFlg ) {
@@ -1686,6 +1715,9 @@ public class VisonController2{
 					    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 		        			}
 		        		}
+
+		        		//寸法判定NGメッセージ表示
+		        		Platform.runLater(() ->info2.appendText("寸法NG : ５ショットの平均が規格から外れました\n"));
 		        	}
 
 		        	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
