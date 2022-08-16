@@ -178,6 +178,11 @@ public class VisonController2{
 	private Mat cameraMatrix;//内部パラメータ
 	private Mat distortionCoefficients;//歪み係数
 
+	//2022.08.16 クリア信号ノイズ入力回避用
+	boolean biginClearSignal = false;
+	long clearSignalTime = System.currentTimeMillis();
+
+
 
 	//インフォメーション
 	private String initInfo2;
@@ -837,6 +842,7 @@ public class VisonController2{
 		//GPIOボードオープン
 		Gpio.open(String.valueOf(pObj.portNo), pObj.adc_thresh,pObj.adcFlg);
 
+
 		//デバッグコード
 
 			//Gpio.readAll();
@@ -968,12 +974,26 @@ public class VisonController2{
 						//オールクリア信号受信
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						rt = Gpio.clearSignal();
-						if( rt == "1" && !clealFlg) {
+						//2022.08.16 クリア信号ノイズ回避
+						if( rt =="1" && !biginClearSignal ) {
+							clearSignalTime = System.currentTimeMillis();
+							biginClearSignal = true;
+						}
+						if( rt =="0" && biginClearSignal ) biginClearSignal = false;
+						if( rt =="1" && biginClearSignal ) {
+							if( System.currentTimeMillis() - clearSignalTime < 100) {
+								//コード内で指定されている時間クリア信号が継続しないとrtを１にしない
+								rt = "0";
+							}
+						}
+
+						if( rt == "1" && !clealFlg && biginClearSignal) {
+							biginClearSignal = false;//クリア信号ノイズ回避用フラグリセット
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
 							clealFlg = true;
 							onAllClear(null);
 				    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
-						}else {
+						}else if( rt == "0" && clealFlg ){//2022.07.13 バグ修正
 							clealFlg = false;
 							Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.LIGHTGRAY));
 						}
