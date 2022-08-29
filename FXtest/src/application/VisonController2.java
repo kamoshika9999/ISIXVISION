@@ -1638,7 +1638,7 @@ public class VisonController2{
 		        			Fave_tmp = F_tmp/5;
 
 
-		        			if( P2ave_tmp <1.9 || P2ave_tmp > 2.1 || Fave_tmp < 11.4 || Fave_tmp > 11.6) {
+		        			if( P2ave_tmp <1.8 || P2ave_tmp > 2.2 || Fave_tmp < 11.3 || Fave_tmp > 11.7) {
 		        				sunpou_hantei_NG = true;
 		        			}
 
@@ -1699,8 +1699,16 @@ public class VisonController2{
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
+		        		Platform.runLater( () ->info2.appendText(
+		        				"!shutterSignal4secInterval = "+String.valueOf(!shutterSignal4secInterval)+"\n" +
+		        				"imgSaveFlg.isSelected()=" +String.valueOf(imgSaveFlg.isSelected()) +"\n" +
+		        				"ngCnt < saveMax_ng=" + String.valueOf(ngCnt < saveMax_ng) +"\n" +
+		        				"!settingModeFlg="+String.valueOf(!settingModeFlg) +"\n"
+		        		));
 		        		//final String infoText = fileString +"\n";
 		        		//Platform.runLater( () ->info2.appendText(infoText));
+		        	}else {
+		        		Platform.runLater( () ->info2.appendText("NG画像保存は保存されませんでした\n"));
 		        	}
 		        	if( ngCnt > 5000 || sunpou_hantei_NG) {//2022.08.16寸法NGでも強制停止
 		        		kyouseiTeisshiNgCnt = 2;//強制停止
@@ -2994,6 +3002,8 @@ public class VisonController2{
 		shutterSignal4secInterval=false;//NG画像保存開始
     	Platform.runLater( () ->judg.setText("-"));
     	Platform.runLater( () ->judg.setTextFill(Color.GREEN));
+		Platform.runLater( () ->info2.appendText("\nクリア信号が受信されました\n"));
+
     }
 
 	/**
