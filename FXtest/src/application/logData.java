@@ -103,7 +103,7 @@ public class logData {
 		}
 
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH' h 'mm' m 'ss' s'");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		date.add(sdf.format(timestamp));
 		cnt++;
 	}
@@ -122,7 +122,7 @@ public class logData {
 		F_1.clear();
 		F_2.clear();
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH'h'mm'm'ss's'");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         initialDate = sdf.format(timestamp);
 	}
 
@@ -183,7 +183,7 @@ public class logData {
 		        	subStr[7] = E_2.get(i);
 
 		        	for(int j=0;j<4;j++) {
-		        		subStr[8+j] = holeCnt.get(i);
+		        		subStr[8+j] = holeCnt.get(i*4+j);//2022.11.4修正
 		        	}
 
 		        	for(int j=0;j<parameter.ptm_arrySize;j++) {

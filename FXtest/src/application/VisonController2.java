@@ -202,7 +202,9 @@ public class VisonController2{
 	private int hantei_cnt=0;
 	private double[][] P2_hantei = new double[2][5];
 	private double[][] F_hantei = new double[2][5];
-	private boolean sunpou_hantei_NG = false;
+	private boolean sunpou_hantei_NG_5Shot = false;
+	private boolean sunpou_hantei_NG_now = false;
+
 
 	@FXML
     private Spinner<Integer> dellySpinner;
@@ -958,7 +960,7 @@ public class VisonController2{
 						//シャッター信号の間隔が4秒以上開いた場合NG信号発信しフラグセット
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						if( !shutterSignal4secInterval && System.currentTimeMillis() -
-																			shutterSignalIntervalTime > 1000*4) {
+																			shutterSignalIntervalTime > 1000*1) {
 							shutterSignal4secInterval = true;
 							//Gpio.ngSignalON();//#55の制御に互換性を持たせる為無効化
 							//Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
@@ -1450,7 +1452,6 @@ public class VisonController2{
 		            		);
 		    		}
 
-
 					//判定
 		            switch(i) {
 		            	case 0:
@@ -1637,9 +1638,17 @@ public class VisonController2{
 		        			P2ave_tmp = P2_tmp/5;
 		        			Fave_tmp = F_tmp/5;
 
-
-		        			if( P2ave_tmp <1.8 || P2ave_tmp > 2.2 || Fave_tmp < 11.3 || Fave_tmp > 11.7) {
-		        				sunpou_hantei_NG = true;
+		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
+		        				sunpou_hantei_NG_now = true;
+		        				Imgproc.putText(mainViewMat, "寸法警告",
+		        						new Point(200,1080/5),
+		        						Imgproc.FONT_HERSHEY_SIMPLEX,6.0,new Scalar(0,0,255),20);
+		        		        Platform.runLater( () ->info2.appendText("寸法警告\n"));
+		        			}else {
+		        				sunpou_hantei_NG_now = false;
+		        			}
+		        			if( P2ave_tmp <1.88 || P2ave_tmp > 2.12 || Fave_tmp < 11.38 || Fave_tmp > 11.62) {
+		        				sunpou_hantei_NG_5Shot = true;
 		        			}
 
 		        			//デバッグ用
@@ -1667,7 +1676,7 @@ public class VisonController2{
 	       			if( dim_templateMatchingObj.resultValue[m*2].cnt > 1 ||
 	    					dim_templateMatchingObj.resultValue[m*2+1].cnt > 1) {
 	    				Platform.runLater( () ->this.info2.appendText(
-	    						"寸法測定に失敗しました\n領域内の検出個数が1個ではありまえん。\n"));
+	    						"寸法測定に失敗しました\n領域内の検出個数が1個ではありません。\n"));
 	       			}
        			}
     				//Platform.runLater( () ->this.info2.appendText("登録領域が画像端ギリギリすぎると推定します。\n"));
@@ -1683,7 +1692,7 @@ public class VisonController2{
 	        	if( shotCnt < disableJudgeCnt+1 ) { //disableJudgeCnt+1ショットまでは判定無視
 		        	Platform.runLater( () ->judg.setText( String.valueOf(disableJudgeCnt-shotCnt)) );
 		        	Platform.runLater( () ->judg.setTextFill( Color.GREEN) );
-	        	}else if(judgCnt==4 && (tmStatus==0 || tmStatus==2) &&!sunpou_hantei_NG) {//judgCntが穴判定  tmStatusがテンプレートマッチング判定
+	        	}else if(judgCnt==4 && (tmStatus==0 || tmStatus==2) &&!sunpou_hantei_NG_5Shot) {//judgCntが穴判定  tmStatusがテンプレートマッチング判定
 		        	Platform.runLater( () ->judg.setText("OK") );
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN) );
 		        	//画像保存
@@ -1695,7 +1704,8 @@ public class VisonController2{
 		        	Platform.runLater( () ->judg.setText("NG"));
 		        	Platform.runLater( () ->judg.setTextFill(Color.RED) );
 		        	//画像保存
-		        	if( !shutterSignal4secInterval && imgSaveFlg.isSelected() && ngCnt < saveMax_ng && !settingModeFlg) {
+		        	if( !shutterSignal4secInterval && imgSaveFlg.isSelected() && ngCnt < saveMax_ng
+		        			&& !settingModeFlg && sunpou_hantei_NG_now) {
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
@@ -1710,7 +1720,7 @@ public class VisonController2{
 		        	}else {
 		        		Platform.runLater( () ->info2.appendText("NG画像保存は保存されませんでした\n"));
 		        	}
-		        	if( ngCnt > 5000 || sunpou_hantei_NG) {//2022.08.16寸法NGでも強制停止
+		        	if( ngCnt > 5000 || sunpou_hantei_NG_5Shot) {//2022.08.16寸法NGでも強制停止
 		        		kyouseiTeisshiNgCnt = 2;//強制停止
 		        	}else {
 		        		ngCnt++;
@@ -1733,9 +1743,9 @@ public class VisonController2{
 		        		}
 
 		        		//寸法判定NGメッセージ表示
-		        		if( sunpou_hantei_NG ) {
+		        		if( sunpou_hantei_NG_5Shot ) {
 		        			Platform.runLater(() ->info2.appendText("寸法NG : ５ショットの平均が規格から外れました\n"));
-		        			sunpou_hantei_NG = false;
+		        			sunpou_hantei_NG_5Shot = false;
 		        		}
 		        	}
 
