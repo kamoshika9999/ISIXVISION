@@ -1647,7 +1647,7 @@ public class VisonController2{
 		        			}else {
 		        				sunpou_hantei_NG_now = false;
 		        			}
-		        			if( P2ave_tmp <1.88 || P2ave_tmp > 2.12 || Fave_tmp < 11.38 || Fave_tmp > 11.62) {
+		        			if( P2ave_tmp <1.82 || P2ave_tmp > 2.17 || Fave_tmp < 11.32 || Fave_tmp > 11.68) {
 		        				sunpou_hantei_NG_5Shot = true;
 		        			}
 
@@ -1692,7 +1692,8 @@ public class VisonController2{
 	        	if( shotCnt < disableJudgeCnt+1 ) { //disableJudgeCnt+1ショットまでは判定無視
 		        	Platform.runLater( () ->judg.setText( String.valueOf(disableJudgeCnt-shotCnt)) );
 		        	Platform.runLater( () ->judg.setTextFill( Color.GREEN) );
-	        	}else if(judgCnt==4 && (tmStatus==0 || tmStatus==2) &&!sunpou_hantei_NG_5Shot) {//judgCntが穴判定  tmStatusがテンプレートマッチング判定
+	        	}else if(judgCnt==4 && (tmStatus==0 || tmStatus==2) &&!sunpou_hantei_NG_5Shot
+	        			 && !sunpou_hantei_NG_now) {//judgCntが穴判定  tmStatusがテンプレートマッチング判定
 		        	Platform.runLater( () ->judg.setText("OK") );
 		        	Platform.runLater( () ->judg.setTextFill(Color.GREEN) );
 		        	//画像保存
@@ -1705,7 +1706,7 @@ public class VisonController2{
 		        	Platform.runLater( () ->judg.setTextFill(Color.RED) );
 		        	//画像保存
 		        	if( !shutterSignal4secInterval && imgSaveFlg.isSelected() && ngCnt < saveMax_ng
-		        			&& !settingModeFlg && sunpou_hantei_NG_now) {
+		        			&& !settingModeFlg) {
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
