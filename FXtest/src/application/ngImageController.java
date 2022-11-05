@@ -100,16 +100,21 @@ public class ngImageController {
     private File[] sortFile(File[] f) {
     	File tmp;
 
-    	for(int i=0;i<f.length;i++) {
-    		for(int j=i+1;j<f.length;j++) {
-    			int s1 = Integer.valueOf( f[i].toString().split("x")[1] );
-    			int s2 = Integer.valueOf( f[j].toString().split("x")[1] );
-    			if( s1 > s2 ) {
-    				tmp = f[i];
-    				f[i] = f[j];
-    				f[j] = tmp;
-    			}
-    		}
+    	if( f.length >0 ) {
+	    	for(int i=0;i<f.length;i++) {
+	    		for(int j=i+1;j<f.length;j++) {
+	    			System.out.println(f[i]);
+	    			if( !f[i].toString().contains("humbs") ) {
+		    			int s1 = Integer.valueOf( f[i].toString().split("x")[1] );
+		    			int s2 = Integer.valueOf( f[j].toString().split("x")[1] );
+		    			if( s1 > s2 ) {
+		    				tmp = f[i];
+		    				f[i] = f[j];
+		    				f[j] = tmp;
+		    			}
+	    			}
+	    		}
+	    	}
     	}
     	return f;
 

@@ -957,13 +957,13 @@ public class VisonController2{
 							debugCnt++;
 						}
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
-						//シャッター信号の間隔が4秒以上開いた場合NG信号発信しフラグセット
+						//シャッター信号の間隔が4秒以上開いた場合
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						if( !shutterSignal4secInterval && System.currentTimeMillis() -
-																			shutterSignalIntervalTime > 1000*1) {
+																			shutterSignalIntervalTime > 1000*4) {
 							shutterSignal4secInterval = true;
 							//Gpio.ngSignalON();//#55の制御に互換性を持たせる為無効化
-							//Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
 							logdata.csvWrite();
 							logdata.clear();
 							//シャッタートリガ受信インジケーター色変更
@@ -1714,7 +1714,8 @@ public class VisonController2{
 		        				"!shutterSignal4secInterval = "+String.valueOf(!shutterSignal4secInterval)+"\n" +
 		        				"imgSaveFlg.isSelected()=" +String.valueOf(imgSaveFlg.isSelected()) +"\n" +
 		        				"ngCnt < saveMax_ng=" + String.valueOf(ngCnt < saveMax_ng) +"\n" +
-		        				"!settingModeFlg="+String.valueOf(!settingModeFlg) +"\n"
+		        				"!settingModeFlg="+String.valueOf(!settingModeFlg) +"\n"+
+		        				"NG画像保存は保存されませんでした\n"
 		        		));
 		        		//final String infoText = fileString +"\n";
 		        		//Platform.runLater( () ->info2.appendText(infoText));
@@ -3757,6 +3758,7 @@ public class VisonController2{
 		}
 
         onAllClear(null);
+        Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
     }
 
     /**

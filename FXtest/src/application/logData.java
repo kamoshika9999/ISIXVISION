@@ -57,7 +57,7 @@ public class logData {
 	public logData() {
 		cnt = 0;
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH' h 'mm' m 'ss' s'");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH'h 'mm'm 'ss's 'SSS'ms'");
         initialDate = sdf.format(timestamp);
 
 		File folder = new File("./log");
@@ -103,7 +103,7 @@ public class logData {
 		}
 
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH'h 'mm'm 'ss's 'SSS'ms'");
 		date.add(sdf.format(timestamp));
 		cnt++;
 	}
@@ -122,7 +122,7 @@ public class logData {
 		F_1.clear();
 		F_2.clear();
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH'h 'mm'm 'ss's 'SSS'ms'");
         initialDate = sdf.format(timestamp);
 	}
 
