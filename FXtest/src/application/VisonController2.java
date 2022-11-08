@@ -917,6 +917,14 @@ public class VisonController2{
 					    	}
 						}
 			    	}else if(shutterFlg && !demoFlg && !saveImgUseFlg) {
+			    		//TriggerLoopから移動2022.11.10
+			    		try {
+							//PLCからのシャッター信号をオンディレーする
+							Thread.sleep( dellySpinner.getValue() );//←コントラストを取得して自動調整のロジックをいれたい　最大-中間-最小の中間を求める
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+
 						srcMat = grabFrame();
 				    	if( srcMat.width() > 0 ) {
 				    		rePaint();
@@ -1011,13 +1019,6 @@ public class VisonController2{
 							rt = Gpio.shutterSignal();
 							if( rt == "1") {
 								if( !offShutterFlg) {//シャッタートリガがoffになるまでshutterFlgをtrueにしない
-									try {
-										//PLCからのシャッター信号をオンディレーする
-										Thread.sleep( dellySpinner.getValue() );
-									} catch (InterruptedException e) {
-										e.printStackTrace();
-									}
-
 									shutterFlg = true;
 									offShutterFlg = true;
 
@@ -1640,14 +1641,14 @@ public class VisonController2{
 
 		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
 		        				sunpou_hantei_NG_now = true;
-		        				Imgproc.putText(mainViewMat, "寸法警告",
+		        				Imgproc.putText(mainViewMat, "Dimension Warning",
 		        						new Point(200,1080/5),
 		        						Imgproc.FONT_HERSHEY_SIMPLEX,6.0,new Scalar(0,0,255),20);
 		        		        Platform.runLater( () ->info2.appendText("寸法警告\n"));
 		        			}else {
 		        				sunpou_hantei_NG_now = false;
 		        			}
-		        			if( P2ave_tmp <1.82 || P2ave_tmp > 2.17 || Fave_tmp < 11.32 || Fave_tmp > 11.68) {
+		        			if( P2ave_tmp <1.82 || P2ave_tmp > 2.17 || Fave_tmp < 11.30 || Fave_tmp > 11.70) {
 		        				sunpou_hantei_NG_5Shot = true;
 		        			}
 
@@ -1764,7 +1765,8 @@ public class VisonController2{
     	}
 
     	//オートゲイン
-    	if( autoGainChk.isSelected() && !saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-15) {
+    	if( autoGainChk.isSelected() && !manualTrigger &&
+    			!saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-15) {
 	    	Double luminanceAverage = 0.0;
 	    	parameter para = pObj.para[pObj.select];
 	    	int cnt = 0;
