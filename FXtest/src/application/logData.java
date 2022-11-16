@@ -30,6 +30,9 @@ public class logData {
 
 	//穴検出
 	public List<String> holeCnt = new ArrayList<String>();
+
+	//ログメッセージ
+	public List<String> logMsg = new ArrayList<String>();
 	/*
 	public List<Integer> x = new ArrayList<Integer>();//ピクセル単位での検出位置リスト
 	public List<Integer> y =new ArrayList<Integer>();
@@ -79,7 +82,7 @@ public class logData {
 	 * @param holeCnt_
 	 */
 	public void addData(double[] P2_log_,double[] F_log_,double[] E_log_,TMResult[] resultValue_,
-																						Integer[] holeCnt_) {
+																						Integer[] holeCnt_,String logMsg_) {
 		P2_1.add(String.valueOf(P2_log_[0]));
 		P2_2.add(String.valueOf(P2_log_[1]));
 		F_1.add(String.valueOf(F_log_[0]));
@@ -102,6 +105,8 @@ public class logData {
 			holeCnt.add(String.valueOf(holeCnt_[i]));
 		}
 
+		logMsg.add(logMsg_);
+
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH'h 'mm'm 'ss's 'SSS'ms'");
 		date.add(sdf.format(timestamp));
@@ -121,6 +126,7 @@ public class logData {
 		P2_2.clear();
 		F_1.clear();
 		F_2.clear();
+		logMsg.clear();
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH'h 'mm'm 'ss's 'SSS'ms'");
         initialDate = sdf.format(timestamp);
@@ -139,7 +145,8 @@ public class logData {
 	 */
 	public boolean csvWrite() {
 		if(cnt>3) {
-			String[] headStr = new String[8 + 4 + parameter.ptm_arrySize*8];
+			final int headColummCount = 8 + 4 + parameter.ptm_arrySize*8 + 1;//ヘッダ列数
+			String[] headStr = new String[headColummCount];
 			headStr[0]="n"; //データー番号
 			headStr[1]="date";//データー追加日時
 			headStr[2]="P2_1";
@@ -164,6 +171,8 @@ public class logData {
 				headStr[12 + i*8 + 7] = String.valueOf(i)+"_TM_resultStatus";
 			}
 
+			headStr[headColummCount-1] = "logMessage";
+
 
 	        CSVWriter writer;
 	        System.out.println("cnt="+cnt+" List="+date.size());
@@ -172,7 +181,7 @@ public class logData {
 		        writer.writeNext(headStr);  //ヘッダー書き込み
 
 		        for(int i=0;i<cnt;i++) {
-		        	String[] subStr= new String[8 + 4 + parameter.ptm_arrySize*8];
+		        	String[] subStr= new String[headColummCount];
 		        	subStr[0] = String.valueOf(i);
 		        	subStr[1] = date.get(i);
 		        	subStr[2] = P2_1.get(i);
@@ -191,6 +200,9 @@ public class logData {
 		        			subStr[12+j*8+k] = tmResult.get(i*(8*parameter.ptm_arrySize)+(j*8+k));
 		        		}
 		        	}
+
+		        	subStr[headColummCount-1] = logMsg.get(i);//最終行にログメッセージを追加
+
 		        	writer.writeNext(subStr);
 		        }
 

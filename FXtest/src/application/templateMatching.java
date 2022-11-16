@@ -41,6 +41,7 @@ public class templateMatching {
 	 * @param dstMat  8UC3
 	 * @param settingFlg セッティングモード時 true
 	 * @return  0:合格又は検出無効  1:検出個数不足 2:警報閾値未満有 3:検出個数過多 4:分散警報閾値以上 5:分散閾値以上
+	 * 				result
 	 */
 	public int detectPattern(Mat areaMat, Mat dstMat,boolean settingFlg,boolean patternDispChk) {
 		int resultStatus = 0;
@@ -320,12 +321,12 @@ public class templateMatching {
 	    		    		resultStatus = 2;
 	    		    	}
 	    		    	//分散警報閾値未満判定
-	    		    	if( variance > c_tmpara.matchingDispersionThresh_K[n] && 
+	    		    	if( variance > c_tmpara.matchingDispersionThresh_K[n] &&
 	    		    				c_tmpara.matchingDispersionThresh_K[n] > 0.0) {
 	    		    		resultStatus = 4;
 	    		    	}
 	    		    	//分散閾値未満判定
-	    		    	if( variance > c_tmpara.matchingDispersionThresh[n] && 
+	    		    	if( variance > c_tmpara.matchingDispersionThresh[n] &&
 	    		    			c_tmpara.matchingDispersionThresh[n] > 0.0) {
 	    		    		resultStatus = 5;
 	    		    	}

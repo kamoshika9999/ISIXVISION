@@ -970,8 +970,8 @@ public class VisonController2{
 						if( !shutterSignal4secInterval && System.currentTimeMillis() -
 																			shutterSignalIntervalTime > 1000*4) {
 							shutterSignal4secInterval = true;
-							//Gpio.ngSignalON();//#55の制御に互換性を持たせる為無効化
-							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
+							Gpio.ngSignalON();//(#55の制御に互換性を持たせる為無効化)
+							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 							logdata.csvWrite();
 							logdata.clear();
 							//シャッタートリガ受信インジケーター色変更
@@ -1233,6 +1233,10 @@ public class VisonController2{
     	final int disableJudgeCnt = 30;//スタートから判定を無効にするショット数
     	Integer[] holeCnt_log = new Integer[4];
     	int kyouseiTeisshiNgCnt = 0;//穴検査が２領域以上NGであった場合停止させるフラグ
+    	String logMsg = "";//明示的にnull文字列を設定
+    	double[] P2_log = new double[2];
+    	double[] F_log = new double[2];
+    	double[] E_log = new double[2];
 
     	//保存画像を使う場合srcMatへクローンする
     	if( saveImgUseFlg ) {
@@ -1411,6 +1415,7 @@ public class VisonController2{
 
 	    	boolean ngFlg;
 			Scalar color;
+			//---------------穴検出開始---------------------------------------------------------------------------------
 	        for (int i=0;i<4;i++) {
 				ngFlg = false;
 	        	if( para.hole_DetectFlg[i] ) {
@@ -1454,6 +1459,8 @@ public class VisonController2{
 		    		}
 
 					//判定
+		    		//foundCircle_result_int 0:OK 1:面積 2:個数 3:面積と個数 4:未検出
+		    		String[] circleResultMsg = {"OK","検出個数NG","面積NG","面積と検出個数NG","未検出"};
 		            switch(i) {
 		            	case 0:
 		            		if( foundCircle_result_int == 0) {
@@ -1465,6 +1472,7 @@ public class VisonController2{
 		            			Platform.runLater( () ->okuri1_judg.setTextFill( Color.RED));
 		            			ngFlg = true;
 		            			kyouseiTeisshiNgCnt++;
+		            			logMsg += "穴検出エリア① " + circleResultMsg[foundCircle_result_int] + "\n";
 		            		}
 		            		break;
 		            	case 1:
@@ -1477,6 +1485,7 @@ public class VisonController2{
 		            			Platform.runLater( () ->okuri2_judg.setTextFill( Color.RED));
 		            			ngFlg = true;
 		            			kyouseiTeisshiNgCnt++;
+		            			logMsg += "穴検出エリア② " + circleResultMsg[foundCircle_result_int] + "\n";
 		            		}
 		            		break;
 		            	case 2:
@@ -1488,7 +1497,9 @@ public class VisonController2{
 		            			Platform.runLater( () ->okuri3_judg.setText("NG"));
 		            			Platform.runLater( () ->okuri3_judg.setTextFill( Color.RED));
 		            			ngFlg = true;
-		            			kyouseiTeisshiNgCnt++;}
+		            			kyouseiTeisshiNgCnt++;
+		            			logMsg += "穴検出エリア③ " + circleResultMsg[foundCircle_result_int] + "\n";
+		            		}
 		            		break;
 		            	case 3:
 		            		if( foundCircle_result_int == 0 ) {
@@ -1500,6 +1511,7 @@ public class VisonController2{
 		            			Platform.runLater( () ->okuri4_judg.setTextFill( Color.RED));
 		            			ngFlg = true;
 		            			kyouseiTeisshiNgCnt++;
+		            			logMsg += "穴検出エリア④ " + circleResultMsg[foundCircle_result_int] + "\n";
 		            		}
 		            		break;
 		            	}
@@ -1529,28 +1541,37 @@ public class VisonController2{
         	}else {
         		tmStatus = 0;
         	}
+        	if( tmStatus == 1 ) {//検出個数不足
+				Imgproc.putText(mainViewMat, "Count Error",
+						new Point(200,1080/2+40),
+						Imgproc.FONT_HERSHEY_SIMPLEX,4.0,new Scalar(0,0,255),20);
+		        logMsg += "パターンマッチングの検出個数が閾値を下回っている領域があります。製品を確認してください\n";
+        	}
         	if( tmStatus == 2 ) {//パターンマッチング　警告レベル
 				Imgproc.putText(mainViewMat, "Pattern Warning",
 						new Point(1920/2,1080/2),
 						Imgproc.FONT_HERSHEY_SIMPLEX,2.0,new Scalar(0,0,255),6);
-		        Platform.runLater( () ->info2.appendText("パターンマッチングが警告レベルを下回っている領域があります\n"));
+		        logMsg += "パターンマッチングが警告レベルを下回っている領域があります\n";
+        	}
+        	if( tmStatus == 3 ) {//検出個数過多
+				Imgproc.putText(mainViewMat, "Count Error",
+						new Point(200,1080/2+40),
+						Imgproc.FONT_HERSHEY_SIMPLEX,4.0,new Scalar(0,0,255),20);
+		        logMsg += "パターンマッチングの検出個数が閾値を上回っている領域があります。設定条件の見直しが必要です\n";
         	}
         	if( tmStatus == 4 ) {//分散警告レベル
 				Imgproc.putText(mainViewMat, "Dispersion Warning",
 						new Point(1920/2,1080/2+40),
 						Imgproc.FONT_HERSHEY_SIMPLEX,2.0,new Scalar(0,0,255),6);
-		        Platform.runLater( () ->info2.appendText("分散が警告レベルを上回っている領域があります\n"));
+		        logMsg += "分散が警告レベルを上回っている領域があります\n";
         	}
         	if( tmStatus == 5 ) {//分散 閾値レベル
 				Imgproc.putText(mainViewMat, "Dispersion Error",
 						new Point(200,1080/2+40),
 						Imgproc.FONT_HERSHEY_SIMPLEX,4.0,new Scalar(0,0,255),20);
-		        Platform.runLater( () ->info2.appendText("分散が閾値レベルを上回っている領域があります\n"));
+		        logMsg += "分散が閾値レベルを上回っている領域があります\n";
         	}
 
-        	double[] P2_log = new double[2];
-        	double[] F_log = new double[2];
-        	double[] E_log = new double[2];
 
         	//寸法測定
         	int dimStatus;
@@ -1644,12 +1665,13 @@ public class VisonController2{
 		        				Imgproc.putText(mainViewMat, "Dimension Warning",
 		        						new Point(200,1080/5),
 		        						Imgproc.FONT_HERSHEY_SIMPLEX,6.0,new Scalar(0,0,255),20);
-		        		        Platform.runLater( () ->info2.appendText("寸法警告\n"));
+		        				logMsg +="寸法警告\n";
 		        			}else {
 		        				sunpou_hantei_NG_now = false;
 		        			}
 		        			if( P2ave_tmp <1.82 || P2ave_tmp > 2.17 || Fave_tmp < 11.30 || Fave_tmp > 11.70) {
 		        				sunpou_hantei_NG_5Shot = true;
+		        				logMsg +="寸法NG : ５ショットの平均が規格から外れました\\n";
 		        			}
 
 		        			//デバッグ用
@@ -1672,23 +1694,16 @@ public class VisonController2{
 
        		}else {
        			//sunpou_hantei_NG = true;
-       			Platform.runLater( () ->this.info2.appendText("寸法測定に失敗しました\n"));
+       			logMsg += "寸法測定に失敗しました\n";
        			for(int m=0;m<2;m++) {
 	       			if( dim_templateMatchingObj.resultValue[m*2].cnt > 1 ||
 	    					dim_templateMatchingObj.resultValue[m*2+1].cnt > 1) {
-	    				Platform.runLater( () ->this.info2.appendText(
-	    						"寸法測定に失敗しました\n領域内の検出個数が1個ではありません。\n"));
+	    				logMsg += "寸法測定に失敗しました\n領域内の検出個数が1個ではありません。\n";
 	       			}
        			}
-    				//Platform.runLater( () ->this.info2.appendText("登録領域が画像端ギリギリすぎると推定します。\n"));
        		}
 
-
 	        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
-	        	if( shotCnt > disableJudgeCnt ) { //disableJudgeCntショットまではログ無し
-		       		//ログデーター処理
-		       		logdata.addData(P2_log,F_log,E_log, ptm_templateMatchingObj.resultValue,holeCnt_log);
-	        	}
 		        //最終判定
 	        	if( shotCnt < disableJudgeCnt+1 ) { //disableJudgeCnt+1ショットまでは判定無視
 		        	Platform.runLater( () ->judg.setText( String.valueOf(disableJudgeCnt-shotCnt)) );
@@ -1711,17 +1726,17 @@ public class VisonController2{
 		        		saveImgNG( saveSrcMat,fileString);
 		        		saveImgNG( mainViewMat,"_"+fileString);
 		        	}else if( fileString != ""){
-		        		Platform.runLater( () ->info2.appendText(
+		        		logMsg +=
 		        				"!shutterSignal4secInterval = "+String.valueOf(!shutterSignal4secInterval)+"\n" +
 		        				"imgSaveFlg.isSelected()=" +String.valueOf(imgSaveFlg.isSelected()) +"\n" +
 		        				"ngCnt < saveMax_ng=" + String.valueOf(ngCnt < saveMax_ng) +"\n" +
 		        				"!settingModeFlg="+String.valueOf(!settingModeFlg) +"\n"+
-		        				"NG画像保存は保存されませんでした\n"
-		        		));
+		        				"NG画像保存は保存されませんでした\n";
+
 		        		//final String infoText = fileString +"\n";
 		        		//Platform.runLater( () ->info2.appendText(infoText));
 		        	}else {
-		        		Platform.runLater( () ->info2.appendText("NG画像保存は保存されませんでした\n"));
+		        		logMsg += "NG画像保存は保存されませんでした\n";
 		        	}
 		        	if( ngCnt > 5000 || sunpou_hantei_NG_5Shot) {//2022.08.16寸法NGでも強制停止
 		        		kyouseiTeisshiNgCnt = 2;//強制停止
@@ -1747,7 +1762,6 @@ public class VisonController2{
 
 		        		//寸法判定NGメッセージ表示
 		        		if( sunpou_hantei_NG_5Shot ) {
-		        			Platform.runLater(() ->info2.appendText("寸法NG : ５ショットの平均が規格から外れました\n"));
 		        			sunpou_hantei_NG_5Shot = false;
 		        		}
 		        	}
@@ -1761,7 +1775,7 @@ public class VisonController2{
 	        //Core.flip(mainViewMat, mainViewMat, 1);
 	        updateImageView(imgORG, Utils.mat2Image(mainViewMat));
     	}catch(Exception e) {
-    		Platform.runLater(() ->info2.appendText(e+"\n:検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n"));
+    		logMsg += e+"\n:検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n";
     	}
 
     	//オートゲイン
@@ -1793,14 +1807,26 @@ public class VisonController2{
 				    		Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 	        			}
 	        		}
-	        		Platform.runLater(() ->info2.appendText("!!!照明異常停止!!!\n"));
-	        		Platform.runLater(() ->info2.appendText("オートゲインの調整範囲を超えた為、強制的に停止\n"));
-	        		Platform.runLater(() ->info2.appendText("照明キャリブレーションが必要\n"));
+	        		logMsg += "!!!照明異常停止!!!\n";
+	        		logMsg += "オートゲインの調整範囲を超えた為、強制的に停止\n";
+	        		logMsg += "照明キャリブレーションが必要\n";
 	        		setDefultGain();//ゲインをデフォルトにリセットする
 
 	        	}
 	    	}
     	}
+        if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
+        	if( shotCnt > disableJudgeCnt ) { //disableJudgeCntショットまではログ無し
+	       		//ログデーター処理
+	       		logdata.addData(P2_log,F_log,E_log, ptm_templateMatchingObj.resultValue,
+	       				holeCnt_log,
+	       				String.valueOf(shotCnt) + "::" +logMsg);
+        	}
+        }
+        if( logMsg != "" ) {
+	        final String _logMsg_ = logMsg;
+	    	Platform.runLater(() ->info2.appendText(String.valueOf(shotCnt) + "::" + _logMsg_));
+        }
     }
 
     /**
@@ -1832,7 +1858,7 @@ public class VisonController2{
         String fileName = fileString +"_" + sdf.format(timestamp) + "_" +String.valueOf(ngCnt);
         try {
         	Imgcodecs.imwrite(folder+"/" + fileName + ".png", imgMat);
-        	Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".png"+"NG画像保存"+"\n"));
+        	//Platform.runLater( () ->info2.appendText(folder+"/"+ fileName +".png"+"NG画像保存"+"\n"));
         }catch(Exception e) {
         	Platform.runLater( () ->info2.appendText("NG画像の保存に失敗"+e.toString()+"\n"));
         }
@@ -1939,7 +1965,8 @@ public class VisonController2{
      * @para infoFlg_ インフォメーションテキストに値を表示させるか？
      * @para holeCnt_log_ integer[]型で穴検出数をログへ書き込み為の参照渡しの変数
      * @para index_ hokeCnt_log_のインデックスで使用
-     * @return 判定結果 0:合格 1:面積判定NG 2:個数ＮＧ 3:(面積判定、個数ＮＧ)
+     * @return resultFlgBit 判定結果 0:合格 1:面積判定NG 2:個数ＮＧ 3:(面積判定、個数ＮＧ) 4:未検出
+	 *                 ※0b00000000:OK  0b00000001:面積判定NG 0b00000010:検出個数NG  0b00000100:未検出
      */
     private int foundCircle(Mat src_,Mat dst_,int holeLength,int max_diameter_,int min_diameter_,double circularity_
     			,int circleCountThresh,double threshholdAreaMax,double threshholdAreaMin,
@@ -1969,7 +1996,7 @@ public class VisonController2{
       	radiusMin = 9999;
       	radiusAve = 0;
       	distAve = 0;
-      	int	result = 0;
+      	int	resultFlgBit = 0;
 
         whiteAreaAverage = 0;//クラス変数
 	  	whiteAreaMax = 0;//クラス変数
@@ -1982,7 +2009,7 @@ public class VisonController2{
     		MatOfPoint contour = iterator.next();
     		double area = Imgproc.contourArea(contour);
     		double arclength = Imgproc.arcLength(new MatOfPoint2f(contour.toArray()),true);
-    		double circularity = 4 * Math.PI * area / (arclength * arclength);//円形度計算 4πS/周長^2
+    		double circularity = 4 * Math.PI * area / (arclength * arclength);//円形度計算 4*PI*S/周長^2
 
     		if( circularity >= circularity_ &&
     				arclength/(2*Math.PI) >= min_diameter_ && arclength/(2*Math.PI) <= max_diameter_) {//円形度の比較
@@ -1994,10 +2021,10 @@ public class VisonController2{
 	            //検出円の位置と直径の取得
 	            centers[cnt] = new Point();
     			Imgproc.minEnclosingCircle(contoursPoly[cnt], centers[cnt], radius[cnt]);
+    			cnt++;
     			}catch(Exception e){
     				System.out.println(e+"円検出エラー");
     			}
-    			cnt++;
     		}
         }
 
@@ -2005,7 +2032,7 @@ public class VisonController2{
 	  	holeCnt_log_[index_] = cnt;
 
 	  	if( cnt == 0 ) {
-	  		return 3;
+	  		return 0b00000100;//未検出
 	  	}
 
 		//径と距離算出 X順で並び替え
@@ -2042,7 +2069,7 @@ public class VisonController2{
 		//穴間平均距離を測定し次添え時の配列を詰める
 		for(int i=0;i<cnt-1;i++) {
 
-			if( holeLength > centers[i+1].x - centers[i].x ) {
+			if( holeLength > centers[i+1].x - centers[i].x ) {//穴間距離が閾値をした回っていいた場合[i]配列の穴を削除する
 				for(int j=i+1;j<cnt-1;j++) {
 					centers[j] = centers[j+1];
 					radius[j] = radius[j+1];
@@ -2083,7 +2110,7 @@ public class VisonController2{
 	  		whiteAreaMax = whiteAreaMax < whiteArea?whiteArea:whiteAreaMax;
 	  		whiteAreaMin = whiteAreaMin > whiteArea?whiteArea:whiteAreaMin;
 	  		if( whiteArea > threshholdAreaMax || whiteArea < threshholdAreaMin) {
-	  			result += 1;
+	  			resultFlgBit = resultFlgBit | 0b00000010;//面積判定NG
 	  		}
   		}
 		if( settingModeFlg ) {
@@ -2095,13 +2122,8 @@ public class VisonController2{
   		whiteAreaAverage /= cnt;
 
         if(holeDispChk.isSelected()) {
-        	if( result >= 4 ) {
-				Imgproc.putText(dst_,
-						"Distance NG",
-						new Point(offset_x-20,offset_y-26),
-						Imgproc.FONT_HERSHEY_SIMPLEX, 1.0,new Scalar(0,0,255),2);
-        	}
-        	if( result == 0 || result == 4 ) {
+
+        	if( resultFlgBit == 0  ) {
 				Imgproc.putText(dst_,
 						"WhiteArea OK  ave=" + String.format("%d",whiteAreaAverage) +
 								" Max=" + String.format("%d",whiteAreaMax) +
@@ -2118,9 +2140,8 @@ public class VisonController2{
         }
 
 		//個数判定
-
-		if( cnt != circleCountThresh && circleCountThresh != -1) {
-			result += 2;
+		if( cnt != circleCountThresh ) {//&& circleCountThresh != -1) {
+			resultFlgBit = resultFlgBit | 0b00000001;
 		}
         if(holeDispChk.isSelected()) {
 			Imgproc.putText(dst_, String.valueOf(cnt),
@@ -2140,12 +2161,10 @@ public class VisonController2{
 		}
 		radiusAve /= cnt;
 
-
 		if( cnt > 1 ) distAve /= cnt - 1;
 		holeDist_DimSetting = distAve;
 
 		whiteAreaAverage = whiteAreaAverage / cnt;
-
     	infoText += String.format("MAX=%.1f ,MIN=%.1f ,AVE=%.1f ,DistAve=%.1f ",
     			radiusMax,radiusMin,radiusAve,distAve);
 
@@ -2153,10 +2172,7 @@ public class VisonController2{
     		Platform.runLater(
     				() ->info1.setText(infoText));
     	 }
-
-
-	    return result;
-
+	    return resultFlgBit;
     }
 
     /**
