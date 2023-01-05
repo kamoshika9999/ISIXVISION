@@ -201,7 +201,8 @@ public class logData {
 		        		}
 		        	}
 
-		        	subStr[headColummCount-1] = logMsg.get(i);//最終行にログメッセージを追加
+		        	//2022.12.27 ログの\nをアンダーバーへ変換
+		        	subStr[headColummCount-1] = logMsg.get(i).replace("\n", "__");//最終行にログメッセージを追加
 
 		        	writer.writeNext(subStr);
 		        }

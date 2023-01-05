@@ -181,6 +181,7 @@ public class VisonController2{
 	//2022.08.16 クリア信号ノイズ入力回避用
 	boolean biginClearSignal = false;
 	long clearSignalTime = System.currentTimeMillis();
+	long exeAllClearTime = System.currentTimeMillis();//オールクリアが信号で実行された時刻を保持
 
 
 
@@ -543,6 +544,8 @@ public class VisonController2{
     private TextField cameraExpro;
     @FXML
     private TextField cameraGain;
+    @FXML
+    private ToggleButton  trgTimingCalib;
     //ショット数
     @FXML
     private Label count_label;
@@ -582,6 +585,10 @@ public class VisonController2{
     private TextField autoGainText;//オートゲインテキスト
     @FXML
     private TitledPane TiledPaneHardSET;//設定アコーディオンの初期ペイン
+
+	private boolean trgCalibFlg;//トリガタイミング自動調整中はTrue
+	private long trgCalibTime;//トリガタイミング自動調整開始時刻
+	private int trgCalibCnt;//トリガタイミング自動調整測定ショット数
 
     /**
      * 品種の選択
@@ -970,7 +977,7 @@ public class VisonController2{
 						if( !shutterSignal4secInterval && System.currentTimeMillis() -
 																			shutterSignalIntervalTime > 1000*4) {
 							shutterSignal4secInterval = true;
-							Gpio.ngSignalON();//(#55の制御に互換性を持たせる為無効化)
+							//Gpio.ngSignalON();//(#55の制御に互換性を持たせる為無効化)
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 							logdata.csvWrite();
 							logdata.clear();
@@ -990,13 +997,14 @@ public class VisonController2{
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						rt = Gpio.clearSignal();
 						//2022.08.16 クリア信号ノイズ回避
-						if( rt =="1" && !biginClearSignal ) {
+						if( rt =="1" && !biginClearSignal
+								&& System.currentTimeMillis() - exeAllClearTime > 1500) {//2022.11.23 クリア信号連続受信バグ修正
 							clearSignalTime = System.currentTimeMillis();
 							biginClearSignal = true;
 						}
 						if( rt =="0" && biginClearSignal ) biginClearSignal = false;
 						if( rt =="1" && biginClearSignal ) {
-							if( System.currentTimeMillis() - clearSignalTime < 100) {
+							if( System.currentTimeMillis() - clearSignalTime < 50) {
 								//コード内で指定されている時間クリア信号が継続しないとrtを１にしない
 								rt = "0";
 							}
@@ -1007,6 +1015,7 @@ public class VisonController2{
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
 							clealFlg = true;
 							onAllClear(null);
+							exeAllClearTime = System.currentTimeMillis();//オールクリアが実行された時刻を更新
 				    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
 						}else if( rt == "0" && clealFlg ){//2022.07.13 バグ修正
 							clealFlg = false;
@@ -1661,17 +1670,19 @@ public class VisonController2{
 		        			Fave_tmp = F_tmp/5;
 
 		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
+			        		//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
 		        				sunpou_hantei_NG_now = true;
 		        				Imgproc.putText(mainViewMat, "Dimension Warning",
 		        						new Point(200,1080/5),
-		        						Imgproc.FONT_HERSHEY_SIMPLEX,6.0,new Scalar(0,0,255),20);
+		        						Imgproc.FONT_HERSHEY_SIMPLEX,6.0,new Scalar(0,0,255),10);
 		        				logMsg +="寸法警告\n";
 		        			}else {
 		        				sunpou_hantei_NG_now = false;
 		        			}
-		        			if( P2ave_tmp <1.82 || P2ave_tmp > 2.17 || Fave_tmp < 11.30 || Fave_tmp > 11.70) {
+		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
+			        		//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
 		        				sunpou_hantei_NG_5Shot = true;
-		        				logMsg +="寸法NG : ５ショットの平均が規格から外れました\\n";
+		        				logMsg +="寸法NG : ５ショットの平均が規格から外れました\n";
 		        			}
 
 		        			//デバッグ用
@@ -3937,6 +3948,28 @@ public class VisonController2{
         e_dataset.addSeries(e_series);
 
         return e_dataset;
+    }
+
+    /**
+     * トリガタイミング自動調整 2022.12.27
+     * @param event
+     */
+    @FXML
+    void onTrgTimingCalib(ActionEvent event) {
+    	if( trgTimingCalib.isSelected() ) {
+        	Platform.runLater(() ->info2.appendText("トリガタイミング自動調整が開始されました。\n"));
+        	trgCalibCnt = 0;
+    		trgCalibFlg = true;
+    		trgCalibTime = System.currentTimeMillis();
+    		
+    	}else {
+    		trgCalibFlg = false;
+        	Platform.runLater(() ->info2.appendText("トリガタイミング自動調整が終了しました。\n"));
+        	
+        	if( trgCalibCnt == 10 ) {
+        		
+        	}
+    	}
     }
 
 }
