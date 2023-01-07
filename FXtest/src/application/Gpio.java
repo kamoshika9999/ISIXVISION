@@ -14,7 +14,7 @@ public class Gpio {
 	static boolean useFlg = false;
 	static boolean adcFlg = true;
 	static int adcThresh;
-	static final int sleepTime = 20; //バッファパージ前のスレッドスリープタイム(mSec)
+	static final int sleepTime = 30; //バッファパージ前のスレッドスリープタイム(mSec)
 	static int debugSleepTime = 50;
 
 	/**

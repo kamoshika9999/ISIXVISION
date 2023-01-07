@@ -590,6 +590,8 @@ public class VisonController2{
 	private long trgCalibTime;//トリガタイミング自動調整開始時刻
 	private int trgCalibCnt;//トリガタイミング自動調整測定ショット数
 
+	private boolean autoGainEnable;
+
     /**
      * 品種の選択
      * @param event
@@ -977,6 +979,8 @@ public class VisonController2{
 						if( !shutterSignal4secInterval && System.currentTimeMillis() -
 																			shutterSignalIntervalTime > 1000*4) {
 							shutterSignal4secInterval = true;
+							shotCnt=0;
+							autoGainEnable = false;
 							//Gpio.ngSignalON();//(#55の制御に互換性を持たせる為無効化)
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 							logdata.csvWrite();
@@ -1014,6 +1018,9 @@ public class VisonController2{
 							biginClearSignal = false;//クリア信号ノイズ回避用フラグリセット
 							Platform.runLater(() ->info2.appendText("PLCからクリア信号を受信しました"));
 							clealFlg = true;
+							autoGainEnable = true;
+							sunpou_hantei_NG_5Shot = false;
+							sunpou_hantei_NG_now = false;
 							onAllClear(null);
 							exeAllClearTime = System.currentTimeMillis();//オールクリアが実行された時刻を更新
 				    		Platform.runLater( () ->GPIO_STATUS_PIN1.setFill(Color.YELLOW));
@@ -1791,7 +1798,7 @@ public class VisonController2{
 
     	//オートゲイン
     	if( autoGainChk.isSelected() && !manualTrigger &&
-    			!saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-15) {
+    			!saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-15 && autoGainEnable ) {
 	    	Double luminanceAverage = 0.0;
 	    	parameter para = pObj.para[pObj.select];
 	    	int cnt = 0;
@@ -3961,13 +3968,13 @@ public class VisonController2{
         	trgCalibCnt = 0;
     		trgCalibFlg = true;
     		trgCalibTime = System.currentTimeMillis();
-    		
+
     	}else {
     		trgCalibFlg = false;
         	Platform.runLater(() ->info2.appendText("トリガタイミング自動調整が終了しました。\n"));
-        	
+
         	if( trgCalibCnt == 10 ) {
-        		
+
         	}
     	}
     }
