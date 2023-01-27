@@ -953,10 +953,10 @@ public class VisonController2{
 		timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
 
 		if( Gpio.openFlg ) {
-			//Gpio.ngSignalON();
-			Gpio.OkSignalON();//#55テストコード
-			//Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
-			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));//#55テストコード
+			Gpio.ngSignalON();
+			//Gpio.OkSignalON();//#55テストコード
+			Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+			//Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.BLUE));//#55テストコード
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 			//GPIOからのトリガ信号を受信するループ
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -981,13 +981,21 @@ public class VisonController2{
 							shutterSignal4secInterval = true;
 							shotCnt=0;
 							autoGainEnable = false;
-							//Gpio.ngSignalON();//(#55の制御に互換性を持たせる為無効化)
+							Gpio.ngSignalON();//(#55の制御に互換性を持たせる場合は無効化する)
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 							logdata.csvWrite();
 							logdata.clear();
 							//シャッタートリガ受信インジケーター色変更
 				    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.WHITE));
-
+				    		//メッセージを表示 2023.01.27
+				    		Platform.runLater(() ->info2.appendText("シャッター間隔が4秒以上ありました。強制的にNG信号を発信します"));
+						}
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						//シャッター間隔４秒以上発生後はＮＧ信号発信　2023.01.27
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						if( shutterSignal4secInterval ) {
+							Gpio.ngSignalON();
+							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 						}
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//照明キャリブレーション中はＮＧ信号発信
