@@ -99,6 +99,9 @@ public class VisonController2{
 	public int shotCnt = 0;
 	//シャッター間隔が4秒以上あいた時にセットされる
 	boolean shutterSignal4secInterval=false;
+	//シャッター間隔が16秒以上あいた時にセットされる
+	boolean intervalTime16secFlg;
+
 
 	//保存される画像の最大数
 	final int saveMax_all = 255;
@@ -964,7 +967,7 @@ public class VisonController2{
 				String rt = "-1";//nullを避ける為-1をいれておく
 				long debugCnt = 0;
 				private long shutterSignalIntervalTime=System.currentTimeMillis();
-				private boolean clealFlg = false;;
+				private boolean clealFlg = false;
 
 				@Override
 				public void run() {
@@ -974,10 +977,10 @@ public class VisonController2{
 							debugCnt++;
 						}
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
-						//シャッター信号の間隔が4秒以上開いた場合
+						//シャッター信号の間隔がn秒以上開いた場合
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
-						if( !shutterSignal4secInterval && System.currentTimeMillis() -
-																			shutterSignalIntervalTime > 1000*4) {
+						long intervalTime = System.currentTimeMillis() - shutterSignalIntervalTime ;//シャッター間隔計算
+						if( !shutterSignal4secInterval && 	intervalTime > 1000*4 && shotCnt>5783) {//ショットが5783を超えている場合
 							shutterSignal4secInterval = true;
 							shotCnt=0;
 							autoGainEnable = false;
@@ -989,6 +992,20 @@ public class VisonController2{
 				    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.WHITE));
 				    		//メッセージを表示 2023.01.27
 				    		Platform.runLater(() ->info2.appendText("シャッター間隔が4秒以上ありました。強制的にNG信号を発信します"));
+						}else if(  !intervalTime16secFlg && intervalTime > 1000*16 && shotCnt>100 && shotCnt<=5783 ) {//シャッター間隔が16秒/超えショットが5783以下の場合
+				    		Platform.runLater(() ->info2.appendText("シャッター間隔が16秒以上ありました。"));
+				    		intervalTime16secFlg = true;//rePain内でクリアされる
+						}else if(  !shutterSignal4secInterval && intervalTime > 1000*30) {//シャッター間隔が30秒超えている場合
+							shutterSignal4secInterval = true;
+							shotCnt=0;
+							autoGainEnable = false;
+							Gpio.ngSignalON();//(#55の制御に互換性を持たせる場合は無効化する)
+							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+							logdata.csvWrite();
+							logdata.clear();
+							//シャッタートリガ受信インジケーター色変更
+				    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.WHITE));
+				    		Platform.runLater(() ->info2.appendText("シャッター間隔が30秒以上ありました。強制的にNG信号を発信します"));
 						}
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//シャッター間隔４秒以上発生後はＮＧ信号発信　2023.01.27
@@ -1840,6 +1857,10 @@ public class VisonController2{
 
 	        	}
 	    	}
+    	}
+    	if(intervalTime16secFlg) {
+    		intervalTime16secFlg = false;
+    		logMsg += "シャッター間隔が16秒以上ありました。\n";
     	}
         if( !saveImgUseFlg && !settingModeFlg && shotCnt>0 ) {
         	if( shotCnt > disableJudgeCnt ) { //disableJudgeCntショットまではログ無し

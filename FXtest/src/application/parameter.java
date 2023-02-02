@@ -42,7 +42,7 @@ public class parameter implements Serializable {
 	public int[] hole_whiteAreaMax;
 	public int[] hole_whiteAreaMin;
 
-	static final int ptm_arrySize = 40;
+	static final int ptm_arrySize = 20;
 	String[] ptm_FileName;//パターンマッチングの登録Mat
 	Rectangle[] ptm_templatRect;//テンプレートの切り出し位置
 	Rectangle[] ptm_ptmMat_mask_rect;////x,y:テンプレートからの相対位置 width,height:矩形サイズ
