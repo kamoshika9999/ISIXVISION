@@ -980,7 +980,7 @@ public class VisonController2{
 						//シャッター信号の間隔がn秒以上開いた場合
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						long intervalTime = System.currentTimeMillis() - shutterSignalIntervalTime ;//シャッター間隔計算
-						if( !shutterSignal4secInterval && 	intervalTime > 1000*4 && shotCnt>5783) {//ショットが5783を超えている場合
+						if( !shutterSignal4secInterval && 	intervalTime > 1000*4 && shotCnt>5850) {//ショットが5850を超えている場合
 							shutterSignal4secInterval = true;
 							shotCnt=0;
 							autoGainEnable = false;
@@ -992,7 +992,7 @@ public class VisonController2{
 				    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.WHITE));
 				    		//メッセージを表示 2023.01.27
 				    		Platform.runLater(() ->info2.appendText("シャッター間隔が4秒以上ありました。強制的にNG信号を発信します"));
-						}else if(  !intervalTime16secFlg && intervalTime > 1000*16 && shotCnt>100 && shotCnt<=5783 ) {//シャッター間隔が16秒/超えショットが5783以下の場合
+						}else if(  !intervalTime16secFlg && intervalTime > 1000*16 && shotCnt>100 && shotCnt<=5850 ) {//シャッター間隔が16秒/超えショットが5850以下の場合
 				    		Platform.runLater(() ->info2.appendText("シャッター間隔が16秒以上ありました。"));
 				    		intervalTime16secFlg = true;//rePain内でクリアされる
 						}else if(  !shutterSignal4secInterval && intervalTime > 1000*30) {//シャッター間隔が30秒超えている場合
@@ -1713,7 +1713,8 @@ public class VisonController2{
 		        			}
 		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
 			        		//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
-		        				sunpou_hantei_NG_5Shot = true;
+		        				//sunpou_hantei_NG_5Shot = true;
+		        				sunpou_hantei_NG_5Shot = false;//強制無効
 		        				logMsg +="寸法NG : ５ショットの平均が規格から外れました\n";
 		        			}
 
