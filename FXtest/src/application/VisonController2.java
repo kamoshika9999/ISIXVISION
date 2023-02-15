@@ -1701,7 +1701,8 @@ public class VisonController2{
 		        			P2ave_tmp = P2_tmp/5;
 		        			Fave_tmp = F_tmp/5;
 
-		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
+		        			//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
+		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.0 || Fave_tmp > 12.0) {//致命的異常時のみ警告v3.6.2
 			        		//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
 		        				sunpou_hantei_NG_now = true;
 		        				Imgproc.putText(mainViewMat, "Dimension Warning",
@@ -1711,7 +1712,8 @@ public class VisonController2{
 		        			}else {
 		        				sunpou_hantei_NG_now = false;
 		        			}
-		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
+		        			//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
+		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.00 || Fave_tmp > 12.00) {//致命的異常時のみ警告v3.6.2
 			        		//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
 		        				//sunpou_hantei_NG_5Shot = true;
 		        				sunpou_hantei_NG_5Shot = false;//強制無効
