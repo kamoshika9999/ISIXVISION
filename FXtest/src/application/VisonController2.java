@@ -1680,8 +1680,10 @@ public class VisonController2{
 		        													setRange(shotCnt<=200?0:shotCnt-200,shotCnt));
 		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getRangeAxis()).
 								setRange(1.8,2.2));
+		        		//Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
+						//		setRange(11.3,11.7));
 		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
-								setRange(11.3,11.7));
+								setRange(7.3,7.7));//#55の設定
 
 		        		//寸法外れ判定 2022.08.16
 		        		P2_hantei[g][hantei_cnt] = P2;
@@ -1702,19 +1704,19 @@ public class VisonController2{
 		        			Fave_tmp = F_tmp/5;
 
 		        			//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
-		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.0 || Fave_tmp > 12.0) {//致命的異常時のみ警告v3.6.2
-			        		//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
+		        			//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.0 || Fave_tmp > 12.0) {//致命的異常時のみ警告v3.6.2
+			        		if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
 		        				sunpou_hantei_NG_now = true;
 		        				Imgproc.putText(mainViewMat, "Dimension Warning",
 		        						new Point(200,1080/5),
-		        						Imgproc.FONT_HERSHEY_SIMPLEX,6.0,new Scalar(0,0,255),10);
+		        						Imgproc.FONT_HERSHEY_SIMPLEX,6.0,new Scalar(0,0,255),5);
 		        				logMsg +="寸法警告\n";
 		        			}else {
 		        				sunpou_hantei_NG_now = false;
 		        			}
 		        			//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
-		        			if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.00 || Fave_tmp > 12.00) {//致命的異常時のみ警告v3.6.2
-			        		//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
+		        			//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.00 || Fave_tmp > 12.00) {//致命的異常時のみ警告v3.6.2
+			        		if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
 		        				//sunpou_hantei_NG_5Shot = true;
 		        				sunpou_hantei_NG_5Shot = false;//強制無効
 		        				logMsg +="寸法NG : ５ショットの平均が規格から外れました\n";
@@ -3875,7 +3877,8 @@ public class VisonController2{
 			chartTab_P2[i] = new Tab(String.valueOf(i+1)+"列目 P2     ",chV);
 
 			dataset_F[i] = getChartData_F();
-	        chart_F[i] = createInitChart(String.valueOf(i+1)+"列目 F","(mm)","n",dataset_F[i],11.3,11.7);
+	        ///chart_F[i] = createInitChart(String.valueOf(i+1)+"列目 F","(mm)","n",dataset_F[i],11.3,11.7);
+	        chart_F[i] = createInitChart(String.valueOf(i+1)+"列目 F","(mm)","n",dataset_F[i],7.3,7.7);//#55
 	        ChartViewer chV2 = new ChartViewer(chart_F[i]);
 	        chV2.addChartMouseListener( new ChartMouseListenerFX() {
 					@Override

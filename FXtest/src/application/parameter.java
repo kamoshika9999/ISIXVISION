@@ -118,10 +118,10 @@ public class parameter implements Serializable {
 		hole_zoom = 1.0;
 		hole_viewRect = new double[hole_arrySize];
 		hole_cntHoleTh = new int[hole_arrySize];
-		hole_cntHoleTh[0]=9;//#55=18 それ以外=9
-		hole_cntHoleTh[1]=3;//#55=6 それ以外=3
-		hole_cntHoleTh[2]=9;//#55=18 それ以外=9
-		hole_cntHoleTh[3]=3;//#55=6 それ以外=3
+		hole_cntHoleTh[0]=18;//#55=18 それ以外=9
+		hole_cntHoleTh[1]=6;//#55=6 それ以外=3
+		hole_cntHoleTh[2]=18;//#55=18 それ以外=9
+		hole_cntHoleTh[3]=6;//#55=6 それ以外=3
 
 		hole_circlePara4 = new double[hole_arrySize];
 		hole_circlePara5 = new double[hole_arrySize];
