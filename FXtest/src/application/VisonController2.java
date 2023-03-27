@@ -141,6 +141,9 @@ public class VisonController2{
 	double ngTriggerTime = 0;
 	double triggerDelly = 0;
 
+	//カメラキャプチャ異常フラグ
+	boolean cameraCaptureFlag;
+
 	// a flag to change the button behavior
 	private boolean cameraActive = false;
 	// the id of the camera to be used
@@ -868,6 +871,8 @@ public class VisonController2{
 
 		 // メインクラス
 		Runnable frameGrabber = new Runnable() {
+
+
 			@Override
 			public void run() {
 				//設定自動ロック用
@@ -940,8 +945,10 @@ public class VisonController2{
 						srcMat = grabFrame();
 				    	if( srcMat.width() > 0 ) {
 				    		rePaint();
+				    		cameraCaptureFlag = true;//成功
 				    	}else {
 				    		Platform.runLater( () ->info2.appendText(("カメラから画像の取得に失敗\n")));
+				    		cameraCaptureFlag = false;//失敗
 				    	}
 				    	shutterFlg = false;
 					}
@@ -1015,6 +1022,14 @@ public class VisonController2{
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 						}
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						//キャプチャ異常時はＮＧ信号発信　2023.03.27
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+						if( cameraCaptureFlag == false ) {
+							Gpio.ngSignalON();
+							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+						}
+
+						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//照明キャリブレーション中はＮＧ信号発信
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						if(	calibLiteFlg ) {
@@ -1079,6 +1094,7 @@ public class VisonController2{
 						//--------------------------------------------------------------------------------------------
 					}catch(NullPointerException e) {
 						System.out.println("readIO" + " / " + e.toString());
+						cameraCaptureFlag = false;
 					}
 				}
 			};
@@ -1103,10 +1119,14 @@ public class VisonController2{
 				capObj.read(frame);
 				if (frame.empty() == false) {
 					//Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2GRAY);
+				}else {
+					cameraCaptureFlag = false;
+					System.out.println("farame.empty() == true\n");
 				}
 
 			} catch(Exception e) {
 				Platform.runLater( () ->info2.appendText("Exception during the image elaboration: " + e +"\n"));
+				cameraCaptureFlag = false;
 			}
 		}
 		if(camera_revers_chk.isSelected()) {//画像上下反転
