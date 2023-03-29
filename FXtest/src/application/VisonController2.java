@@ -88,6 +88,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
+
 public class VisonController2{
 
 	//デバッグフラグ
@@ -109,6 +110,9 @@ public class VisonController2{
 	int allSaveCnt = 0;
 	//判定ＮＧとなった回数
 	int ngCnt = 0;
+	//NG信号を継続発信させるフラグ
+	boolean ngSignalKeizokuFlg = false;;
+
 
 	public static Mat srcMat = new Mat();//保存画像を使用した設定に使用する為publicにしておく
 	Mat dstframe = new Mat();//srcMatをカメラキャリブレーションデーターから変換したオブジェクトが入る
@@ -598,6 +602,7 @@ public class VisonController2{
 
 	private boolean autoGainEnable;
 
+
     /**
      * 品種の選択
      * @param event
@@ -991,7 +996,7 @@ public class VisonController2{
 							shutterSignal4secInterval = true;
 							shotCnt=0;
 							autoGainEnable = false;
-							Gpio.ngSignalON();//(#55の制御に互換性を持たせる場合は無効化する)
+							Gpio.ngSignalON();
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 							logdata.csvWrite();
 							logdata.clear();
@@ -1699,11 +1704,11 @@ public class VisonController2{
 		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getDomainAxis()).
 		        													setRange(shotCnt<=200?0:shotCnt-200,shotCnt));
 		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getRangeAxis()).
-								setRange(1.8,2.2));
-		        		//Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
-						//		setRange(11.3,11.7));
+								setRange(baseParameterValue.P2_LowerLimit_dimensionTheshold - 0.05,
+												baseParameterValue.P2_UpperLimit_dimensionTheshold + 0.05));
 		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
-								setRange(7.3,7.7));//#55の設定
+								setRange(baseParameterValue.F_LowerLimit_dimensionTheshold - 0.05,
+												baseParameterValue.F_UpperLimit_dimensionTheshold + 0.05));
 
 		        		//寸法外れ判定 2022.08.16
 		        		P2_hantei[g][hantei_cnt] = P2;
@@ -1723,9 +1728,10 @@ public class VisonController2{
 		        			P2ave_tmp = P2_tmp/5;
 		        			Fave_tmp = F_tmp/5;
 
-		        			//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
-		        			//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.0 || Fave_tmp > 12.0) {//致命的異常時のみ警告v3.6.2
-			        		if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
+			        		if( P2ave_tmp <baseParameterValue.P2_LowerLimit_dimensionTheshold ||
+			        				P2ave_tmp > baseParameterValue.P2_UpperLimit_dimensionTheshold ||
+			        				Fave_tmp < baseParameterValue.F_LowerLimit_dimensionTheshold ||
+			        				Fave_tmp > baseParameterValue.F_UpperLimit_dimensionTheshold) {
 		        				sunpou_hantei_NG_now = true;
 		        				Imgproc.putText(mainViewMat, "Dimension Warning",
 		        						new Point(200,1080/5),
@@ -1734,17 +1740,13 @@ public class VisonController2{
 		        			}else {
 		        				sunpou_hantei_NG_now = false;
 		        			}
-		        			//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.35 || Fave_tmp > 11.65) {
-		        			//if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 11.00 || Fave_tmp > 12.00) {//致命的異常時のみ警告v3.6.2
-			        		if( P2ave_tmp <1.85 || P2ave_tmp > 2.15 || Fave_tmp < 7.35 || Fave_tmp > 7.65) {//#55設定
-		        				//sunpou_hantei_NG_5Shot = true;
-		        				sunpou_hantei_NG_5Shot = false;//強制無効
+			        		if( P2ave_tmp < baseParameterValue.P2_LowerLimit_dimensionTheshold ||
+			        						P2ave_tmp > baseParameterValue.F_UpperLimit_dimensionTheshold ||
+			        						Fave_tmp < baseParameterValue.F_LowerLimit_dimensionTheshold ||
+			        						Fave_tmp > baseParameterValue.F_UpperLimit_dimensionTheshold) {
+		        				sunpou_hantei_NG_5Shot = true;
 		        				logMsg +="寸法NG : ５ショットの平均が規格から外れました\n";
 		        			}
-
-		        			//デバッグ用
-		        			//Platform.runLater(() ->info2.appendText(P2ave_tmp+ " : " +Fave_tmp+"\n"));
-		        			//Platform.runLater(() ->info2.appendText(sunpou_hantei_NG+"\n"));
 		        		}
 
 	        		}else {
@@ -1813,9 +1815,10 @@ public class VisonController2{
 		        	}
 
 		        	//出力トリガが無効で無い 又は　強制停止変数が1より大きい場合
-		        	if( !outTrigDisableChk.isSelected() || kyouseiTeisshiNgCnt>1){
+		        	//NG信号の発信が失敗した場合の措置としてngSignalKeizokuFlgがTrueの場合継続してGpio.ngSignalON()が呼ばれるように変更2023.03.29
+		        	if( !outTrigDisableChk.isSelected() || kyouseiTeisshiNgCnt>1 || ngSignalKeizokuFlg){
 	        			//Platform.runLater(() ->info2.appendText(sunpou_hantei_NG+"\n"));
-
+		        		ngSignalKeizokuFlg = true;
 		        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
 		        		if( Gpio.openFlg) {
 		        			while( Gpio.useFlg ) {
@@ -3050,6 +3053,7 @@ public class VisonController2{
 	@FXML
     void onAllClear(ActionEvent event) {
     	ngCnt = 0;
+    	ngSignalKeizokuFlg = false;
     	allSaveCnt = 0;
     	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
     	Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094;"));
@@ -3879,7 +3883,9 @@ public class VisonController2{
     private void chartFact() {
         for(int i=0;i<2;i++) {
         	dataset_P2[i] = getChartData_P2();
-	        chart_P2[i] = createInitChart(String.valueOf(i+1)+"列目 P2","(mm)","n",dataset_P2[i] ,1.8,2.2);
+	        chart_P2[i] = createInitChart(String.valueOf(i+1)+"列目 P2","(mm)","n",dataset_P2[i] ,
+	        			baseParameterValue.P2_LowerLimit_dimensionTheshold - 0.05,
+	        			baseParameterValue.P2_UpperLimit_dimensionTheshold + 0.05);
 	        ChartViewer chV = new ChartViewer(chart_P2[i]);
 	        chV.addChartMouseListener( new ChartMouseListenerFX() {
 					@Override
@@ -3897,8 +3903,9 @@ public class VisonController2{
 			chartTab_P2[i] = new Tab(String.valueOf(i+1)+"列目 P2     ",chV);
 
 			dataset_F[i] = getChartData_F();
-	        ///chart_F[i] = createInitChart(String.valueOf(i+1)+"列目 F","(mm)","n",dataset_F[i],11.3,11.7);
-	        chart_F[i] = createInitChart(String.valueOf(i+1)+"列目 F","(mm)","n",dataset_F[i],7.3,7.7);//#55
+	        chart_F[i] = createInitChart(String.valueOf(i+1)+"列目 F","(mm)","n",dataset_F[i],
+	        					baseParameterValue.F_LowerLimit_dimensionTheshold - 0.05,
+	        					baseParameterValue.F_UpperLimit_dimensionTheshold + 0.05);
 	        ChartViewer chV2 = new ChartViewer(chart_F[i]);
 	        chV2.addChartMouseListener( new ChartMouseListenerFX() {
 					@Override
