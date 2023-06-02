@@ -842,6 +842,7 @@ public class VisonController2{
 			onGetExpro(null);
 
 			//ゲインの取得
+			capObj.set(Videoio.CAP_PROP_GAIN,50);//起動時強制的にゲイン50%
 			onGetGain(null);
 
 			//キャリブレーションデーター読み込み

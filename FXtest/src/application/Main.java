@@ -20,7 +20,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		AnchorPane root;
 		try {
-			root = (AnchorPane)FXMLLoader.load(getClass().getResource("Sample5.fxml"));
+			root = (AnchorPane)FXMLLoader.load(getClass().getResource("mainFrame.fxml"));
 			Scene scene = new Scene(root,1209,709);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
