@@ -100,10 +100,10 @@
       <Slider fx:id="ptmThreshSliderN_K" blockIncrement="1.0" layoutX="687.0" layoutY="659.0" majorTickUnit="0.025" max="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="38.0" prefWidth="370.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="0.9" />
       <Label fx:id="threshLabel_K" layoutX="1068.0" layoutY="666.0" prefHeight="17.0" prefWidth="81.0" text="Label" />
       <Label layoutX="614.0" layoutY="669.0" prefHeight="17.0" prefWidth="59.0" text="警戒閾値" />
-      <Slider fx:id="ptmDispersionThreshSliderN_K" blockIncrement="1.0" layoutX="794.0" layoutY="252.0" majorTickUnit="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="38.0" prefWidth="320.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="15.0" />
+      <Slider fx:id="ptmDispersionThreshSliderN_K" blockIncrement="1.0" layoutX="794.0" layoutY="252.0" majorTickUnit="50.0" max="2000.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="38.0" prefWidth="320.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="15.0" />
       <Label layoutX="706.0" layoutY="262.0" prefHeight="17.0" prefWidth="82.0" text="分散警戒閾値" />
       <Label fx:id="dispersionThreshLabel_K" layoutX="1115.0" layoutY="254.0" prefHeight="17.0" prefWidth="81.0" text="Label" />
-      <Slider fx:id="ptmDispersionThreshSliderN" blockIncrement="1.0" layoutX="794.0" layoutY="290.0" majorTickUnit="1.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="38.0" prefWidth="320.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="15.0" />
+      <Slider fx:id="ptmDispersionThreshSliderN" blockIncrement="1.0" layoutX="794.0" layoutY="290.0" majorTickUnit="50.0" max="2000.0" minorTickCount="0" onMouseClicked="#onDragDone" onMouseDragged="#onDragDone" prefHeight="38.0" prefWidth="320.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="15.0" />
       <Label layoutX="706.0" layoutY="300.0" prefHeight="17.0" prefWidth="82.0" text="分散閾値" />
       <Label fx:id="dispersionThreshLabel" layoutX="1115.0" layoutY="292.0" prefHeight="17.0" prefWidth="81.0" text="Label" />
       <Label layoutX="536.0" layoutY="409.0" text="類似度" />

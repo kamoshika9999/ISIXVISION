@@ -40,7 +40,7 @@ public class templateMatching {
 	 * @param areaMat 8UC1
 	 * @param dstMat  8UC3
 	 * @param settingFlg セッティングモード時 true
-	 * @return  0:合格又は検出無効  1:検出個数不足 2:警報閾値未満有 3:検出個数過多 4:分散警報閾値以上 5:分散閾値以上
+	 * @return  0:合格又は検出無効  0x01:検出個数不足 0x02:警報閾値未満有 0x04:検出個数過多 0x08:分散警報閾値以上 0x10:分散閾値以上
 	 * 				result
 	 */
 	public int detectPattern(Mat areaMat, Mat dstMat,boolean settingFlg,boolean patternDispChk) {
@@ -318,17 +318,17 @@ public class templateMatching {
 
 	    		    	//警報閾値未満判定
 	    		    	if( finedPointThresh.get(i) < c_tmpara.matchingThresh_K[n] ) {
-	    		    		resultStatus = 2;
+	    		    		resultStatus = resultStatus | 0x02;
 	    		    	}
 	    		    	//分散警報閾値未満判定
 	    		    	if( variance > c_tmpara.matchingDispersionThresh_K[n] &&
 	    		    				c_tmpara.matchingDispersionThresh_K[n] > 0.0) {
-	    		    		resultStatus = 4;
+	    		    		resultStatus = resultStatus | 0x08;
 	    		    	}
 	    		    	//分散閾値未満判定
 	    		    	if( variance > c_tmpara.matchingDispersionThresh[n] &&
 	    		    			c_tmpara.matchingDispersionThresh[n] > 0.0) {
-	    		    		resultStatus = 5;
+	    		    		resultStatus = resultStatus | 0x10;
 	    		    	}
 
 	    		    	//パターン中心計算
@@ -357,17 +357,17 @@ public class templateMatching {
 	    		    	int orgX = (int)( resultValue[n].centerPositionX.get(i).doubleValue() );
 	    		    	int orgY = (int)( resultValue[n].centerPositionY.get(i).doubleValue() );
 	    		    	if(patternDispChk)Imgproc.line(dstMat,new Point(orgX-20,orgY-20),new Point(orgX+20,orgY+20),
-	    		    					new Scalar(0,200,200),3);
+	    		    					new Scalar(0,200,200),1);
 	    		    	if(patternDispChk)Imgproc.line(dstMat,new Point(orgX+20,orgY-20),new Point(orgX-20,orgY+20),
-		    							new Scalar(0,200,200),3);
+		    							new Scalar(0,200,200),1);
 			   		 }
 				}
 				resultValue[n].detectAve /= (double)searchCnt;
 				resultValue[n].dispersionAve /= (double)searchCnt;
 				if( resultValue[n].cnt < c_tmpara.matchingTreshDetectCnt[n] ) {
-					resultStatus = 1;
+					resultStatus = resultStatus | 0x01;
 				}else if( resultValue[n].cnt > c_tmpara.matchingTreshDetectCnt[n] ) {
-					resultStatus = 3;
+					resultStatus = resultStatus | 0x04;
 				}
 			}
 			resultValue[n].resultStatus = resultStatus;

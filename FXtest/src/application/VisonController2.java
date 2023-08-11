@@ -60,7 +60,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -602,6 +605,10 @@ public class VisonController2{
 
 	private boolean autoGainEnable;
 
+	private int DispersionErrorFlg = 0;//分散閾値NG連続回数
+
+	private boolean DispersionErrorNG;
+
 
     /**
      * 品種の選択
@@ -999,6 +1006,24 @@ public class VisonController2{
 							autoGainEnable = false;
 							Gpio.ngSignalON();
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
+				    		//油付着の警告
+				    		if(DispersionErrorNG) {
+				    	        // ダイアログの表示
+				    	        // Alertダイアログの利用
+				    	        Alert alert = new Alert( AlertType.NONE , "" , ButtonType.OK ,
+				    	                                                                           ButtonType.YES ,
+				    	                                                                           ButtonType.NO ,
+				    	                                                                           ButtonType.NEXT ,
+				    	                                                                           ButtonType.PREVIOUS ,
+				    	                                                                           ButtonType.FINISH ,
+				    	                                                                           ButtonType.APPLY ,
+				    	                                                                           ButtonType.CANCEL ,
+				    	                                                                           ButtonType.CLOSE );
+				    	        alert.setTitle( "油付着警告" );
+				    	        alert.getDialogPane().setHeaderText( "油付着警告" );
+				    	        alert.getDialogPane().setContentText( "油付着の可能性が高い画像が連続３回検出されました。無確認で継続生産を禁止します。！！操作は記録されます。！！" );
+				    	        alert.showAndWait();
+				    		}
 							logdata.csvWrite();
 							logdata.clear();
 							//シャッタートリガ受信インジケーター色変更
@@ -1012,13 +1037,32 @@ public class VisonController2{
 							shutterSignal4secInterval = true;
 							shotCnt=0;
 							autoGainEnable = false;
-							Gpio.ngSignalON();//(#55の制御に互換性を持たせる場合は無効化する)
+							Gpio.ngSignalON();
 							Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.RED));
 							logdata.csvWrite();
-							logdata.clear();
 							//シャッタートリガ受信インジケーター色変更
 				    		Platform.runLater( () ->GPIO_STATUS_PIN0.setFill(Color.WHITE));
 				    		Platform.runLater(() ->info2.appendText("シャッター間隔が30秒以上ありました。強制的にNG信号を発信します"));
+				    		//油付着の警告
+				    		if(DispersionErrorNG) {
+				    	        // ダイアログの表示
+				    	        // Alertダイアログの利用
+				    	        Alert alert = new Alert( AlertType.NONE , "" , ButtonType.OK ,
+				    	                                                                           ButtonType.YES ,
+				    	                                                                           ButtonType.NO ,
+				    	                                                                           ButtonType.NEXT ,
+				    	                                                                           ButtonType.PREVIOUS ,
+				    	                                                                           ButtonType.FINISH ,
+				    	                                                                           ButtonType.APPLY ,
+				    	                                                                           ButtonType.CANCEL ,
+				    	                                                                           ButtonType.CLOSE );
+				    	        alert.setTitle( "油付着警告" );
+				    	        alert.getDialogPane().setHeaderText( "油付着警告" );
+				    	        alert.getDialogPane().setContentText( "油付着の可能性が高い画像が連続３回検出されました。無確認で継続生産を禁止します。！！操作は記録されます。！！" );
+				    	        alert.showAndWait();
+				    		}
+							logdata.clear();
+
 						}
 						//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
 						//シャッター間隔４秒以上発生後はＮＧ信号発信　2023.01.27
@@ -1601,6 +1645,7 @@ public class VisonController2{
 
 
 	        //パターンマッチング
+	        //return  0:合格又は検出無効  0x01:検出個数不足 0x02:警報閾値未満有 0x04:検出個数過多 0x08:分散警報閾値以上 0x10:分散閾値以上
         	int tmStatus;
         	if( !ptm_disableChk.isSelected() ) {//パターンマッチングが強制的に無効になっているか？
         		tmStatus = ptm_templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
@@ -1608,35 +1653,43 @@ public class VisonController2{
         	}else {
         		tmStatus = 0;
         	}
-        	if( tmStatus == 1 ) {//検出個数不足
+        	if( (tmStatus & 0x01) != 0 ) {//検出個数不足
 				Imgproc.putText(mainViewMat, "Count Error",
 						new Point(200,1080/2+40),
-						Imgproc.FONT_HERSHEY_SIMPLEX,4.0,new Scalar(0,0,255),20);
+						Imgproc.FONT_HERSHEY_SIMPLEX,4.0,new Scalar(0,0,255),6);
 		        logMsg += "パターンマッチングの検出個数が閾値を下回っている領域があります。製品を確認してください\n";
         	}
-        	if( tmStatus == 2 ) {//パターンマッチング　警告レベル
+        	if( (tmStatus & 0x02) != 0 ) {//パターンマッチング　警告レベル
 				Imgproc.putText(mainViewMat, "Pattern Warning",
 						new Point(1920/2,1080/2),
 						Imgproc.FONT_HERSHEY_SIMPLEX,2.0,new Scalar(0,0,255),6);
 		        logMsg += "パターンマッチングが警告レベルを下回っている領域があります\n";
         	}
-        	if( tmStatus == 3 ) {//検出個数過多
+        	if( (tmStatus & 0x04) != 0 ) {//検出個数過多
 				Imgproc.putText(mainViewMat, "Count Error",
-						new Point(200,1080/2+40),
-						Imgproc.FONT_HERSHEY_SIMPLEX,4.0,new Scalar(0,0,255),20);
+						new Point(10,1080/2+40),
+						Imgproc.FONT_HERSHEY_SIMPLEX,4.0,new Scalar(0,0,255),6);
 		        logMsg += "パターンマッチングの検出個数が閾値を上回っている領域があります。設定条件の見直しが必要です\n";
         	}
-        	if( tmStatus == 4 ) {//分散警告レベル
+        	if( (tmStatus & 0x08) != 0 ) {//分散警告レベル
 				Imgproc.putText(mainViewMat, "Dispersion Warning",
 						new Point(1920/2,1080/2+40),
 						Imgproc.FONT_HERSHEY_SIMPLEX,2.0,new Scalar(0,0,255),6);
 		        logMsg += "分散が警告レベルを上回っている領域があります\n";
         	}
-        	if( tmStatus == 5 ) {//分散 閾値レベル
+        	if( (tmStatus & 0x10) != 0 ) {//分散 閾値レベル
 				Imgproc.putText(mainViewMat, "Dispersion Error",
-						new Point(200,1080/2+40),
-						Imgproc.FONT_HERSHEY_SIMPLEX,4.0,new Scalar(0,0,255),20);
+						new Point(200,1080/2+60),
+						Imgproc.FONT_HERSHEY_SIMPLEX,4.0,new Scalar(0,0,255),6);
 		        logMsg += "分散が閾値レベルを上回っている領域があります\n";
+		        DispersionErrorFlg++;
+		        if(DispersionErrorFlg>=3) {
+		        	DispersionErrorNG = true;
+		        }
+        	}
+        	//分散閾値がOKの場合、変数クリア
+        	if( DispersionErrorFlg > 0 && ((tmStatus & 0x10) == 0 )) {
+        		DispersionErrorFlg=0;
         	}
 
 
@@ -3056,6 +3109,8 @@ public class VisonController2{
     	ngCnt = 0;
     	ngSignalKeizokuFlg = false;
     	allSaveCnt = 0;
+    	DispersionErrorNG = false;//パターンマッチングの分散NGが連続して発生した場合に立つフラグをクリアする
+
     	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
     	Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094;"));
 
