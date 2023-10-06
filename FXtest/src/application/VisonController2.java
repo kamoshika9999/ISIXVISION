@@ -204,34 +204,30 @@ public class VisonController2{
 	//チャート
 	private Tab[] chartTab_P2;
 	private Tab[] chartTab_F;
+	private Tab[] chartTab_E;
 	private JFreeChart[] chart_P2;
 	private JFreeChart[] chart_F;
-	public Mat[][] dim_ImgMat = new Mat[4][4];//[presetNo][dim1～dim4]
-	private TMpara dim_tmpara = new TMpara(4);
+	private JFreeChart[] chart_E;
+	public Mat[][] dim_ImgMat = new Mat[4][5];//[presetNo][dim1～dim5]
+	private TMpara dim_tmpara = new TMpara(5);
 	private templateMatching dim_templateMatchingObj;
 	private double[] P2_sum = new double[2];
 	private double[] F_sum = new double[2];
 	private double[] E_sum = new double[2];
-	//寸法外れ判定用 5ショットの平均 2022.08.16追加
+	//寸法外れ判定用 5ショットの平均 2022.08.16追加 E寸は2023.10.06追加
 	private int hantei_cnt=0;
 	private double[][] P2_hantei = new double[2][5];
 	private double[][] F_hantei = new double[2][5];
+	private double[][] E_hantei = new double[2][5];
 	private boolean sunpou_hantei_NG_5Shot = false;
 	private boolean sunpou_hantei_NG_now = false;
 
-
+	//トリガディレイ
 	@FXML
     private Spinner<Integer> dellySpinner;
-  @FXML
-    private Spinner<Integer> dellySpinner2;
+
     @FXML
-    private CheckBox trigger_2nd_chk;
-    @FXML
-    private ToggleButton para_12st_shot;
-    @FXML
-    private ToggleButton para_12st_shot1;
-    @FXML
-    private ToggleButton para_12st_shot11;
+    private Label sokuteiTimeLabel;//rePaint()計測時間表示
 
     @FXML
     private CheckBox camera_revers_chk;//カメラ上下反転
@@ -493,16 +489,34 @@ public class VisonController2{
     private Button whiteAreaBtn;
 
     //寸法測定用
+    //イメージビュー
     @FXML
     private ImageView dim_okuriImg_1;
     @FXML
+    private ImageView dim_poke_1;
+    @FXML
+    private ImageView dim_okuriImg_2;
+    @FXML
+    private ImageView dim_poke_2;
+    @FXML
+    private ImageView dim_edge_1;//E寸用
+    //詳細設定ボタン
+    @FXML
     private Button dim_set_para1;
+    @FXML
+    private Button dim_set_para2;
+    @FXML
+    private Button dim_set_para3;
+    @FXML
+    private Button dim_set_para4;
+    @FXML
+    private Button dim_set_para5;//E寸用
+    //測定有効無効チェックボックス
     @FXML
     private CheckBox dim_1_enable;
     @FXML
-    private ImageView dim_poke_1;
-    @FXML
-    private Button dim_set_para2;
+    private CheckBox dim_2_enable;
+    //寸法オフセットテキストフィールド
     @FXML
     private TextField dim_offset_F_1;
     @FXML
@@ -510,29 +524,19 @@ public class VisonController2{
     @FXML
     private TextField dim_offset_E_1;
     @FXML
-    private ImageView dim_okuriImg_2;
-    @FXML
-    private Button dim_set_para3;
-    @FXML
-    private Button dim_set_para4;
-    @FXML
-    private ImageView dim_poke_2;
-    @FXML
-    private CheckBox dim_2_enable;
-    @FXML
     private TextField dim_offset_F_2;
     @FXML
     private TextField dim_offset_P2_2;
-    @FXML
-    private TextField dim_offset_E_2;
+    //穴間隔換算距離反映ボタン
     @FXML
     private Button dimSettingBtn;
+    //換算距離オフセットテキストフィールド
     @FXML
     private TextField dimSetting_offset;
+    //換算距離表示ラベル
     @FXML
     private Label dimSettingLabel;
-    @FXML
-    private Button dimensionBtn;
+
     @FXML
     private TableView<Dim_itemValue> dim_table;
     @FXML
@@ -577,6 +581,8 @@ public class VisonController2{
 
 	private XYSeriesCollection[] dataset_P2;
 	private XYSeriesCollection[] dataset_F;
+	private XYSeriesCollection[] dataset_E;
+
 	private double holeDist_DimSetting;
 
 	private int targetSetParaNO = 1;
@@ -1047,6 +1053,7 @@ public class VisonController2{
 				    		if(DispersionErrorNG) {
 				    	        // ダイアログの表示
 				    	        // Alertダイアログの利用
+				    			/*
 				    	        Alert alert = new Alert( AlertType.NONE , "" , ButtonType.OK ,
 				    	                                                                           ButtonType.YES ,
 				    	                                                                           ButtonType.NO ,
@@ -1060,6 +1067,8 @@ public class VisonController2{
 				    	        alert.getDialogPane().setHeaderText( "油付着警告" );
 				    	        alert.getDialogPane().setContentText( "油付着の可能性が高い画像が連続３回検出されました。無確認で継続生産を禁止します。！！操作は記録されます。！！" );
 				    	        alert.showAndWait();
+				    	        */
+				    			Platform.runLater(() ->info2.appendText("油付着の可能性が高い画像が連続３回検出されました。無確認で継続生産を禁止します。！！操作は記録されます。！！"));
 				    		}
 							logdata.clear();
 
@@ -1341,6 +1350,9 @@ public class VisonController2{
      * saveImgUseFlgがTrueの場合は保存画像が検査対象となる
      */
     private void rePaint() {
+
+    	long startTime = System.currentTimeMillis() ;//計測時間測定開始
+
     	final int disableJudgeCnt = 30;//スタートから判定を無効にするショット数
     	Integer[] holeCnt_log = new Integer[4];
     	int kyouseiTeisshiNgCnt = 0;//穴検査が２領域以上NGであった場合停止させるフラグ
@@ -1693,7 +1705,7 @@ public class VisonController2{
         	}
 
 
-        	//寸法測定
+        	//P2/F/E寸法測定
         	int dimStatus;
         	dimStatus = dim_templateMatchingObj.detectPattern(ptnAreaMat,mainViewMat
         											,false,dimensionDispChk.isSelected());
@@ -1702,6 +1714,7 @@ public class VisonController2{
 	        		if( ((g==0 && dim_1_enable.isSelected()) || ((g==1) && dim_2_enable.isSelected())) && shotCnt>0) {
 	        			double P2 = 0.0;
 	        			double F = 0.0;
+	        			double E = 0.0;
 	        			if( dim_templateMatchingObj.resultValue[g*2].cnt == 1 &&
 	        					dim_templateMatchingObj.resultValue[g*2+1].cnt == 1) {
 			        		double p2_x0 = dim_templateMatchingObj.resultValue[g*2].centerPositionX.get(0);
@@ -1721,36 +1734,54 @@ public class VisonController2{
 			        		if( shotCnt > disableJudgeCnt ) {
 			        			F_sum[g] += F;
 			        		}
+			        		//E寸は１列目しか測定出来ない、２列目はロジック上のダミ変数
+			        		double e_ｙ0 =  dim_templateMatchingObj.resultValue[4].centerPositionY.get(0);
+			        		E = Math.abs(f_y0 - e_ｙ0)*para.dimPixel_mm+para.dim_offset_E[0];
+			        		//disableJudgeCntショット目から加算
+			        		if( shotCnt > disableJudgeCnt ) {
+			        			E_sum[g] += E;
+			        		}
+
 	        			}else {
 	        				P2 =0.0;
 	        				F=0.0;
+	        				E=0.0;
 	        			}
 	        			final int g2 =g;
 
 	        			final double _P2 =Double.valueOf(String.format("%.3f",P2)).doubleValue();
 	        			final double _F = Double.valueOf(String.format("%.3f",F)).doubleValue();
+	        			final double _E = Double.valueOf(String.format("%.3f",E)).doubleValue();
 
 	        			final double P2_ave = P2_sum[g]/(shotCnt-disableJudgeCnt);//disableJudgeCnt+1ショット目から加算の為
 	        			final double F_ave = F_sum[g]/(shotCnt-disableJudgeCnt);//disableJudgeCnt+1ショット目から加算の為
+	        			final double E_ave = E_sum[g]/(shotCnt-disableJudgeCnt);//disableJudgeCnt+1ショット目から加算の為
 	        			final double _P2_ave = Double.valueOf(String.format("%.3f",P2_ave)).doubleValue();
 	        			final double _F_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
+	        			final double _E_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
 
 	        			final double P2_final = P2;
 	        			final double F_final = F;
+	        			final double E_final = E;
 
 	        			//ログデーター処理用
 	        			P2_log[g] = P2;
 	        			F_log[g] = F;
-	        			E_log[g] =0.0;//未実装
+	        			E_log[g] =E;
 
 	        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,P2_final));
 		        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,F_final));
+		        		if( g2 == 0) {
+		        			Platform.runLater( () ->dataset_E[g2].getSeries(0).add(shotCnt,E_final));
+		        		}
+
 		        		//寸法表示テーブルの更新
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(_P2));
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(_F));
+		        		Platform.runLater( () ->dim_table.getItems().get(0).EProperty().set(_E));
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(_P2_ave));
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).FProperty().set(_F_ave));
-
+		        		Platform.runLater( () ->dim_table.getItems().get(0+1).EProperty().set(_E_ave));
 
 		        		//軸の設定更新
 		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getDomainAxis()).
@@ -1763,6 +1794,9 @@ public class VisonController2{
 		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_F[g2].getPlot()).getRangeAxis()).
 								setRange(baseParameterValue.F_LowerLimit_dimensionTheshold - 0.05,
 												baseParameterValue.F_UpperLimit_dimensionTheshold + 0.05));
+		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_E[0].getPlot()).getRangeAxis()).
+								setRange(baseParameterValue.E_LowerLimit_dimensionTheshold - 0.05,
+												baseParameterValue.E_UpperLimit_dimensionTheshold + 0.05));
 
 		        		//寸法外れ判定 2022.08.16
 		        		P2_hantei[g][hantei_cnt] = P2;
@@ -1807,11 +1841,20 @@ public class VisonController2{
 	        			final int g2 =g;
 	        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,0.000f));
 	        			Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,0.000f));
-		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(0.000f));
+	        			if( g2 == 0) {
+	        				Platform.runLater( () ->dataset_E[g2].getSeries(0).add(shotCnt,0.000f));
+	        			}
+	        			Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(0.000f));
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).FProperty().set(0.000f));
+		        		if( g2 == 0) {
+		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).EProperty().set(0.000f));
+		        		}
 		        		//寸法表示テーブルの更新
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(0.000f));
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(0.000f));
+		        		if( g2 == 0) {
+		        			Platform.runLater( () ->dim_table.getItems().get(g2*2).EProperty().set(0.000f));
+		        		}
 
 	        		}
 	        	}
@@ -1899,9 +1942,11 @@ public class VisonController2{
 
 	        //Core.flip(mainViewMat, mainViewMat, 1);
 	        updateImageView(imgORG, Utils.mat2Image(mainViewMat));
+    	
     	}catch(Exception e) {
     		logMsg += e+"\n:検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n";
     	}
+    	
 
     	//オートゲイン
     	if( autoGainChk.isSelected() && !manualTrigger &&
@@ -1956,6 +2001,10 @@ public class VisonController2{
 	        final String _logMsg_ = logMsg;
 	    	Platform.runLater(() ->info2.appendText(String.valueOf(shotCnt) + "::" + _logMsg_));
         }
+
+        //計測時間表示
+        long elpsedTime = System.currentTimeMillis() - startTime;
+        Platform.runLater(() ->this.sokuteiTimeLabel.setText(String.format("計測時間=%d msec",elpsedTime)));
     }
 
     /**
@@ -2438,6 +2487,8 @@ public class VisonController2{
 		Platform.runLater(() ->this.dim_1_enable.setSelected(para.dim_1_enable));
 		Platform.runLater(() ->this.dim_2_enable.setSelected(para.dim_2_enable));
 
+		Platform.runLater(() ->this.autoGainChk.setSelected(para.autogain));
+
 
 		para.hole_rects[4] = (Rectangle)draggingRect.clone();
 		para.hole_viewRect[0] = imgORG.getViewport().getMinX();
@@ -2470,7 +2521,6 @@ public class VisonController2{
     	Platform.runLater( () ->dim_offset_E_1.setText(String.valueOf(para.dim_offset_E[0])));
     	Platform.runLater( () ->dim_offset_P2_2.setText(String.valueOf(para.dim_offset_P2[1])));
     	Platform.runLater( () ->dim_offset_F_2.setText(String.valueOf(para.dim_offset_F[1])));
-    	Platform.runLater( () ->dim_offset_E_2.setText(String.valueOf(para.dim_offset_E[1])));
 
 		setSlidbar();
     }
@@ -2593,8 +2643,8 @@ public class VisonController2{
 	    pObj.patternDispChk = patternDispChk.isSelected();
 		pObj.camera_revers = camera_revers_chk.isSelected();
 
-
     	parameter para = pObj.para[pObj.select];
+    	para.autogain = autoGainChk.isSelected();
 		para.hole_rects[4] =  (Rectangle)draggingRect.clone();
 		para.hole_viewRect[0] = imgORG.getViewport().getMinX();
 		para.hole_viewRect[1] = imgORG.getViewport().getMinY();
@@ -2629,7 +2679,6 @@ public class VisonController2{
 	    para.dim_offset_E[0] = Double.valueOf(dim_offset_E_1.getText());
 	    para.dim_offset_P2[1] = Double.valueOf(dim_offset_P2_2.getText());
 	    para.dim_offset_F[1] = Double.valueOf(dim_offset_F_2.getText());
-	    para.dim_offset_E[1] = Double.valueOf(dim_offset_E_2.getText());
 
 		//para.dimPixel_mm = dimSetting_offset.getText()
 
@@ -2641,8 +2690,6 @@ public class VisonController2{
 		pObj.adcFlg = adc_flg.isSelected();
 
 		para.delly = dellySpinner.getValue().intValue();
-		para.trigger_2nd_chk = this.trigger_2nd_chk.isSelected();
-		para.delly2 = dellySpinner2.getValue().intValue();
 
 		objOut.writeObject(pObj);
 		objOut.flush();
@@ -2659,7 +2706,7 @@ public class VisonController2{
 		}
 		//寸法測定用画像保存
 		for(int i=0;i<4;i++) {
-			for(int j=0;j<4;j++) {
+			for(int j=0;j<5;j++) {
 				if( dim_ImgMat[i][j] != null ) {
 					savePtmImg(dim_ImgMat[i][j],"dim"+String.format("_%d_%d", i,j));
 				}
@@ -2717,7 +2764,6 @@ public class VisonController2{
 	    para.dim_offset_E[0] = Double.valueOf(dim_offset_E_1.getText());
 	    para.dim_offset_P2[1] = Double.valueOf(dim_offset_P2_2.getText());
 	    para.dim_offset_F[1] = Double.valueOf(dim_offset_F_2.getText());
-	    para.dim_offset_E[1] = Double.valueOf(dim_offset_E_2.getText());
 
 		//para.dimPixel_mm = dimSetting_offset.getText()
 
@@ -2729,8 +2775,6 @@ public class VisonController2{
 		pObj.adcFlg = adc_flg.isSelected();
 
 		para.delly = dellySpinner.getValue().intValue();
-		para.trigger_2nd_chk = this.trigger_2nd_chk.isSelected();
-		para.delly2 = dellySpinner2.getValue().intValue();
 
 		objOut.writeObject(pObj);
 		objOut.flush();
@@ -2825,7 +2869,6 @@ public class VisonController2{
 
     	portNoSpin.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 9,pObj.portNo,1));
     	dellySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 900,para.delly,1));
-    	dellySpinner2.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 900,para.delly2,1));
 
     	camIDspinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 9,pObj.cameraID,1));
     	Platform.runLater( () ->adc_thresh_value.setText( String.valueOf(pObj.adc_thresh)));
@@ -2842,7 +2885,6 @@ public class VisonController2{
         //パターンマッチング用パラメータ設定
     	ptm_patternMatchParaSet();
 
-
     	//寸法測定部
     	Platform.runLater( () ->dimSettingLabel.setText(String.format("%.0f μm/pixel", para.dimPixel_mm*1000)));
     	Platform.runLater( () ->dim_offset_P2_1.setText(String.valueOf(para.dim_offset_P2[0])));
@@ -2850,8 +2892,6 @@ public class VisonController2{
     	Platform.runLater( () ->dim_offset_E_1.setText(String.valueOf(para.dim_offset_E[0])));
     	Platform.runLater( () ->dim_offset_P2_2.setText(String.valueOf(para.dim_offset_P2[1])));
     	Platform.runLater( () ->dim_offset_F_2.setText(String.valueOf(para.dim_offset_F[1])));
-    	Platform.runLater( () ->dim_offset_E_2.setText(String.valueOf(para.dim_offset_E[1])));
-
 
     	//品種の選択コンボボックスのデーターロード
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
@@ -2862,8 +2902,6 @@ public class VisonController2{
     @FXML
     void onCSVout(ActionEvent event) {
     	Platform.runLater( () ->this.info2.appendText("設定をCSVファイルへ書き出し（未実装)\n"));
-
-
 
     }
 
@@ -2977,7 +3015,7 @@ public class VisonController2{
 
     	//寸法測定用画像
     	for( int i=0;i<4;i++) {
-    		for( int j=0;j<4;j++) {
+    		for( int j=0;j<5;j++) {
     	    	Mat tmpMat = Imgcodecs.imread(
     	    			"./ptm_image/dim"+String.format("_%d_%d", i,j)+".png",Imgcodecs.IMREAD_UNCHANGED);
     	    	if( tmpMat.width() > 0 && pObj.para[pObj.select].dim_rectsDetection[0].width>1) {
@@ -3129,6 +3167,7 @@ public class VisonController2{
     		int _i = i;
     		Platform.runLater( () ->dataset_F[_i].getSeries(0).clear());
     		Platform.runLater( () ->dataset_P2[_i].getSeries(0).clear());
+    		Platform.runLater( () ->dataset_E[0].getSeries(0).clear());
     	}
 
 		while( Gpio.useFlg ) {
@@ -3147,10 +3186,14 @@ public class VisonController2{
 			final int g2=g;
 			Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(0.0));
 			Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(0.0));
-			Platform.runLater( () ->dim_table.getItems().get(g2*2).EProperty().set(0.0));
+			if( g2 == 0) {
+				Platform.runLater( () ->dim_table.getItems().get(g2*2).EProperty().set(0.0));
+			}
 			Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(0.0));
 			Platform.runLater( () ->dim_table.getItems().get(g2*2+1).FProperty().set(0.0));
-			Platform.runLater( () ->dim_table.getItems().get(g2*2+1).EProperty().set(0.0));
+			if( g2 == 0) {
+				Platform.runLater( () ->dim_table.getItems().get(g2*2+1).EProperty().set(0.0));
+			}
 		}
 		P2_sum[0] = 0;P2_sum[1] = 0;
 		F_sum[0] = 0;F_sum[1] = 0;
@@ -3447,6 +3490,9 @@ public class VisonController2{
     	}else if( obj == dim_set_para4 ) {
     		selectBtn = 3;
     		iv = dim_poke_2;
+    	}else if( obj == dim_set_para5 ) {
+    		selectBtn = 4;
+    		iv = dim_edge_1;
     	}else {
     		return;
     	}
@@ -3555,15 +3601,6 @@ public class VisonController2{
 
     @FXML
     /**
-     * グラフ表示
-     * @param event
-     */
-    void onDimensionBtn(ActionEvent event) {
-
-    }
-
-    @FXML
-    /**
      * カメラ露出取得
      * @param event
      */
@@ -3644,35 +3681,6 @@ public class VisonController2{
     	}catch(Exception e2) {
     		Platform.runLater( () ->this.info2.appendText("offsetは数値で入力してください\n"));
     	}
-    }
-
-
-    /**
-     * セッティングモード時　パラメータを設定するショットパラを選択する
-     * @param event
-     */
-    @FXML
-    void onPara_12st_shot_change(ActionEvent event) {
-    	if(targetSetParaNO == 1) {
-    		targetSetParaNO = 2;
-        	Platform.runLater( () ->para_12st_shot.setText("2nd."));
-        	Platform.runLater( () ->para_12st_shot1.setText("2nd."));
-        	Platform.runLater( () ->para_12st_shot11.setText("2nd."));
-        	Platform.runLater( () ->para_12st_shot.setSelected(true));
-        	Platform.runLater( () ->para_12st_shot1.setSelected(true));
-        	Platform.runLater( () ->para_12st_shot11.setSelected(true));
-
-    	}else{
-    		targetSetParaNO = 1;
-        	Platform.runLater( () ->para_12st_shot.setText("1st."));
-        	Platform.runLater( () ->para_12st_shot1.setText("1st."));
-        	Platform.runLater( () ->para_12st_shot11.setText("1st."));
-        	Platform.runLater( () ->para_12st_shot.setSelected(false));
-        	Platform.runLater( () ->para_12st_shot1.setSelected(false));
-        	Platform.runLater( () ->para_12st_shot11.setSelected(false));
-    	}
-
-
     }
 
     /**
@@ -3834,8 +3842,12 @@ public class VisonController2{
         chartTab_P2 = new Tab[2];
         chart_F = new JFreeChart[2];
         chartTab_F = new Tab[2];
+        chart_E = new JFreeChart[2];
+        chartTab_E = new Tab[2];
         dataset_P2 = new XYSeriesCollection[2];
         dataset_F = new XYSeriesCollection[2];
+        dataset_E = new XYSeriesCollection[2];
+
         chartFact();
         //寸法表示用テーブル
         dim_table_item.setCellValueFactory(new PropertyValueFactory<Dim_itemValue,String>("item"));
@@ -3937,6 +3949,27 @@ public class VisonController2{
     }
 
     private void chartFact() {
+		dataset_E[0] = getChartData_E();
+        chart_E[0] = createInitChart(String.valueOf(1)+"列目 E","(mm)","n",dataset_E[0],
+        					baseParameterValue.E_LowerLimit_dimensionTheshold - 0.05,
+        					baseParameterValue.E_UpperLimit_dimensionTheshold + 0.05);
+        ChartViewer chV3 = new ChartViewer(chart_E[0]);
+        chV3.addChartMouseListener( new ChartMouseListenerFX() {
+				@Override
+				public void chartMouseClicked(ChartMouseEventFX e) {
+					XYPlot xyplot = e.getChart().getXYPlot();
+					double value = xyplot.getRangeCrosshairValue();
+					Platform.runLater(() ->dimChartValueLable.setText( String.format("%.2f", value)));
+				}
+
+				@Override
+				public void chartMouseMoved(ChartMouseEventFX e) {
+				}
+        	}
+        );
+        chartTab_E[0] = new Tab(String.valueOf(1)+"列目 E      ",chV3);
+        dataTabpane.getTabs().add(chartTab_E[0]);
+
         for(int i=0;i<2;i++) {
         	dataset_P2[i] = getChartData_P2();
 	        chart_P2[i] = createInitChart(String.valueOf(i+1)+"列目 P2","(mm)","n",dataset_P2[i] ,
@@ -3978,9 +4011,13 @@ public class VisonController2{
 	        );
 	        chartTab_F[i] = new Tab(String.valueOf(i+1)+"列目 F      ",chV2);
 
+
 			dataTabpane.getTabs().add(chartTab_P2[i]);
 	        dataTabpane.getTabs().add(chartTab_F[i]);
         }
+
+
+
     }
     /**
      * グラフの雛形作成

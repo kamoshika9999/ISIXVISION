@@ -10,10 +10,10 @@ import java.io.Serializable;
  *
  */
 public class parameter implements Serializable {
-	//シャッタータイミング
-	public boolean trigger_2nd_chk;
+	//シャッタータイミングディレイ
 	public int delly;
-	public int delly2;
+	//オートゲイン有効無効
+	boolean autogain;
 
 	final int hole_arrySize = 5;
 	double hole_zoom;
@@ -28,7 +28,6 @@ public class parameter implements Serializable {
     boolean[] hole_fil_threshholdCheck;
     boolean[] hole_fil_threshhold_Invers;
     double[] hole_fil_threshhold;
-
 
 	//[4]はドラッグ中の枠用
 	double[]	hole_circlePara4, //投票分解能
@@ -82,7 +81,7 @@ public class parameter implements Serializable {
 	public double[] dim_offset_F = new double[2];
 	public double[] dim_offset_E = new double[2];
 
-	final int dim_arrySize = 4;
+	final int dim_arrySize = 5;
 	String[] dim_FileName;//パターンマッチングの登録Mat
 	Rectangle[] dim_templatRect;//テンプレートの切り出し位置
 	Rectangle[] dim_ptmMat_mask_rect;////x,y:テンプレートからの相対位置 width,height:矩形サイズ
@@ -113,7 +112,6 @@ public class parameter implements Serializable {
 
 	public parameter() {
 		delly = 550;
-		delly2 = 50;
 
 		hole_zoom = 1.0;
 		hole_viewRect = new double[hole_arrySize];

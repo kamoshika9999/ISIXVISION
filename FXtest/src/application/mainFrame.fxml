@@ -56,7 +56,7 @@
                            </effect>
                         </CheckBox>
                         <Spinner fx:id="dellySpinner" initialValue="50" layoutX="636.0" layoutY="25.0" prefHeight="25.0" prefWidth="69.0" />
-                        <Label layoutX="564.0" layoutY="30.0" text="1st.Delly(mSec)">
+                        <Label layoutX="540.0" layoutY="28.0" text="シャッターディレイ(mSec)">
                            <font>
                               <Font size="10.0" />
                            </font>
@@ -72,8 +72,8 @@
                               <Font size="10.0" />
                            </font>
                         </Button>
-                        <Button fx:id="saveBtn" layoutX="19.0" layoutY="203.0" mnemonicParsing="false" onAction="#saveAllPara" text="SAVE" />
-                        <Button fx:id="loadBtn" layoutX="68.0" layoutY="203.0" mnemonicParsing="false" onAction="#loadAllPara" text="LOAD" />
+                        <Button fx:id="saveBtn" layoutX="4.0" layoutY="205.0" mnemonicParsing="false" onAction="#saveAllPara" text="SAVE" />
+                        <Button fx:id="loadBtn" layoutX="53.0" layoutY="205.0" mnemonicParsing="false" onAction="#loadAllPara" text="LOAD" />
                         <Button fx:id="aTriggerBtn" layoutX="15.0" layoutY="134.0" mnemonicParsing="false" onAction="#onTrigger" text="オートトリガ">
                            <font>
                               <Font size="11.0" />
@@ -106,14 +106,7 @@
                            </effect>
                         </CheckBox>
                         <Button fx:id="paraInitBtn" layoutX="705.0" layoutY="216.0" mnemonicParsing="false" onAction="#onParaInitBtn" text="初期化" />
-                        <Spinner fx:id="dellySpinner2" disable="true" initialValue="50" layoutX="636.0" layoutY="60.0" prefHeight="25.0" prefWidth="69.0" />
-                        <Label disable="true" layoutX="560.0" layoutY="65.0" text="2nd.Delly(mSec)">
-                           <font>
-                              <Font size="10.0" />
-                           </font>
-                        </Label>
-                        <CheckBox fx:id="trigger_2nd_chk" disable="true" layoutX="713.0" layoutY="61.0" mnemonicParsing="false" text="有効" />
-                        <Button fx:id="setting_csv_out" layoutX="120.0" layoutY="203.0" mnemonicParsing="false" onAction="#onCSVout" text="CSV" />
+                        <Button fx:id="setting_csv_out" layoutX="102.0" layoutY="205.0" mnemonicParsing="false" onAction="#onCSVout" text="CSV書出" />
                         <CheckBox fx:id="imgSaveFlg" layoutX="408.0" layoutY="195.0" mnemonicParsing="false" selected="true" text="NG SAVE" />
                         <CheckBox fx:id="imgSaveFlg_all" layoutX="409.0" layoutY="216.0" mnemonicParsing="false" text="OK SAVE" />
                         <Button fx:id="OKImageBtn" layoutX="628.0" layoutY="185.0" mnemonicParsing="false" onAction="#onOKImageBtn" prefHeight="39.0" prefWidth="63.0" text="OK Image Viewer" wrapText="true">
@@ -134,7 +127,7 @@
                         </Button>
                         <CheckBox fx:id="camera_revers_chk" layoutX="587.0" layoutY="104.0" mnemonicParsing="false" selected="true" text="Camera上下反転" />
                         <Button fx:id="calib_btn" layoutX="233.0" layoutY="74.0" mnemonicParsing="false" onAction="#onCalibLite" prefHeight="25.0" prefWidth="123.0" text="照明キャリブ(測光)" />
-                        <CheckBox fx:id="autoGainChk" layoutX="177.0" layoutY="216.0" mnemonicParsing="false" prefHeight="19.0" prefWidth="174.0" selected="true" text="オートゲイン">
+                        <CheckBox fx:id="autoGainChk" layoutX="183.0" layoutY="214.0" mnemonicParsing="false" prefHeight="19.0" prefWidth="82.0" selected="true" text="オートゲイン">
                            <font>
                               <Font size="13.0" />
                            </font>
@@ -286,11 +279,6 @@
                         <Spinner fx:id="whiteRatioMinSp" layoutX="688.0" layoutY="190.0" prefHeight="25.0" prefWidth="70.0" />
                         <Label layoutX="623.0" layoutY="194.0" text="白面積下限" />
                         <Button fx:id="whiteAreaBtn" layoutX="613.0" layoutY="132.0" mnemonicParsing="false" onAction="#onWhiteAreaBtn" text="適用" />
-                        <ToggleButton fx:id="para_12st_shot" disable="true" layoutX="674.0" layoutY="2.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
-                           <font>
-                              <Font name="System Bold" size="13.0" />
-                           </font>
-                        </ToggleButton>
                         <Label layoutX="283.0" layoutY="210.0" text="品種番号" />
                      </children>
                   </AnchorPane>
@@ -304,11 +292,8 @@
                         <ImageView fx:id="ptm_img" fitHeight="198.0" fitWidth="188.0" layoutX="139.0" layoutY="22.0" pickOnBounds="true" preserveRatio="true" />
                         <Button fx:id="ptm_set_para" layoutX="2.0" layoutY="131.0" mnemonicParsing="false" onAction="#onPtmSetPara" prefHeight="25.0" prefWidth="102.0" text="詳細設定" />
                         <CheckBox fx:id="ptm_pt_enable" layoutX="14.0" layoutY="170.0" mnemonicParsing="false" onMouseClicked="#onPtmEnabeChk" text="有効化" />
-                        <ToggleButton fx:id="para_12st_shot1" disable="true" layoutX="681.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
-                           <font>
-                              <Font name="System Bold" size="13.0" />
-                           </font>
-                        </ToggleButton>
+
+
                         <Spinner fx:id="ptm_selectNo" layoutX="2.0" layoutY="32.0" prefHeight="75.0" prefWidth="102.0" />
                         <TextArea fx:id="ptm_textArea" layoutX="337.0" layoutY="14.0" prefHeight="200.0" prefWidth="330.0" />
                      </children></AnchorPane>
@@ -318,52 +303,49 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <ImageView fx:id="dim_okuriImg_1" fitHeight="90.0" fitWidth="90.0" layoutX="60.0" layoutY="31.0" pickOnBounds="true" preserveRatio="true" />
-                        <Button fx:id="dim_set_para1" layoutX="60.0" layoutY="122.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <CheckBox fx:id="dim_1_enable" layoutX="61.0" layoutY="156.0" mnemonicParsing="false" onMouseClicked="#onDimEnabeChk" text="有効化" />
-                        <ImageView fx:id="dim_poke_1" fitHeight="90.0" fitWidth="90.0" layoutX="165.0" layoutY="32.0" pickOnBounds="true" preserveRatio="true" />
-                        <Button fx:id="dim_set_para2" layoutX="165.0" layoutY="123.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <Label layoutX="72.0" layoutY="6.0" text="1列目 送り穴" />
-                        <Label layoutX="175.0" layoutY="6.0" text="1列目 ポケット" />
-                        <TextField fx:id="dim_offset_F_1" layoutX="114.0" layoutY="203.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
-                        <TextField fx:id="dim_offset_P2_1" layoutX="60.0" layoutY="203.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
-                        <Label layoutX="13.0" layoutY="207.0" text="オフセット" />
-                        <Label layoutX="70.0" layoutY="184.0" text="P2" />
-                        <Label layoutX="131.0" layoutY="184.0" text="F" />
-                        <TextField fx:id="dim_offset_E_1" layoutX="167.0" layoutY="204.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
-                        <Label layoutX="184.0" layoutY="185.0" text="E" />
-                        <Line endX="-101.0" endY="200.0" layoutX="373.0" layoutY="31.0" startX="-101.0" startY="-14.0" />
-                        <Label layoutX="292.0" layoutY="6.0" text="2列目 送り穴" />
-                        <Label layoutX="405.0" layoutY="6.0" text="2列目 ポケット" />
-                        <ImageView fx:id="dim_okuriImg_2" fitHeight="90.0" fitWidth="90.0" layoutX="292.0" layoutY="31.0" pickOnBounds="true" preserveRatio="true" />
-                        <Button fx:id="dim_set_para3" layoutX="292.0" layoutY="123.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <Button fx:id="dim_set_para4" layoutX="395.0" layoutY="122.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
-                        <ImageView fx:id="dim_poke_2" fitHeight="90.0" fitWidth="90.0" layoutX="395.0" layoutY="31.0" pickOnBounds="true" preserveRatio="true" />
-                        <CheckBox fx:id="dim_2_enable" layoutX="292.0" layoutY="157.0" mnemonicParsing="false" onMouseClicked="#onDimEnabeChk" text="有効化" />
-                        <TextField fx:id="dim_offset_F_2" layoutX="345.0" layoutY="204.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
-                        <TextField fx:id="dim_offset_P2_2" layoutX="291.0" layoutY="204.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
-                        <Label layoutX="301.0" layoutY="185.0" text="P2" />
-                        <Label layoutX="362.0" layoutY="185.0" text="F" />
-                        <TextField fx:id="dim_offset_E_2" layoutX="398.0" layoutY="205.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
-                        <Label layoutX="415.0" layoutY="186.0" text="E" />
-                        <Line endX="-101.0" endY="200.0" layoutX="597.0" layoutY="28.0" startX="-101.0" startY="-14.0" />
-                        <Button fx:id="dimSettingBtn" layoutX="511.0" layoutY="76.0" mnemonicParsing="false" onAction="#onDimSetting" prefHeight="25.0" prefWidth="206.0" text="換算距離反映 (オフセットも反映)" />
-                        <Label layoutX="506.0" layoutY="8.0" text="送り穴距離ピクセル換算" />
-                        <Label layoutX="507.0" layoutY="32.0" prefHeight="35.0" prefWidth="237.0" text="※穴検出設定にて送り穴を２個認識させ設定ボタンを押す" wrapText="true" />
-                        <TextField fx:id="dimSetting_offset" alignment="CENTER_RIGHT" layoutX="563.0" layoutY="112.0" prefHeight="25.0" prefWidth="57.0" text="0" />
-                        <Label layoutX="508.0" layoutY="116.0" prefHeight="17.0" prefWidth="48.0" text="オフセット" />
-                        <Label fx:id="dimSettingLabel" layoutX="565.0" layoutY="152.0" prefHeight="27.0" prefWidth="168.0" text="999μm">
+                        <ImageView fx:id="dim_okuriImg_1" fitHeight="90.0" fitWidth="90.0" layoutX="10.0" layoutY="32.0" pickOnBounds="true" preserveRatio="true" />
+                        <Button fx:id="dim_set_para1" layoutX="10.0" layoutY="123.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <CheckBox fx:id="dim_1_enable" layoutX="14.0" layoutY="156.0" mnemonicParsing="false" onMouseClicked="#onDimEnabeChk" text="有効化" />
+                        <ImageView fx:id="dim_poke_1" fitHeight="90.0" fitWidth="90.0" layoutX="105.0" layoutY="31.0" pickOnBounds="true" preserveRatio="true" />
+                        <Button fx:id="dim_set_para2" layoutX="105.0" layoutY="122.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <Label layoutX="22.0" layoutY="7.0" text="1列目 送り穴" />
+                        <Label layoutX="115.0" layoutY="5.0" text="1列目 ポケット" />
+                        <TextField fx:id="dim_offset_F_1" layoutX="111.0" layoutY="203.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
+                        <TextField fx:id="dim_offset_P2_1" layoutX="57.0" layoutY="203.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="10.0" layoutY="207.0" text="オフセット" />
+                        <Label layoutX="69.0" layoutY="185.0" text="P2" />
+                        <Label layoutX="130.0" layoutY="185.0" text="F" />
+                        <TextField fx:id="dim_offset_E_1" layoutX="164.0" layoutY="204.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="183.0" layoutY="186.0" text="E" />
+                        <Line endX="-101.0" endY="200.0" layoutX="393.0" layoutY="28.0" startX="-101.0" startY="-14.0" />
+                        <Label layoutX="310.0" layoutY="5.0" text="2列目 送り穴" />
+                        <Label layoutX="415.0" layoutY="5.0" text="2列目 ポケット" />
+                        <ImageView fx:id="dim_okuriImg_2" fitHeight="90.0" fitWidth="90.0" layoutX="310.0" layoutY="30.0" pickOnBounds="true" preserveRatio="true" />
+                        <Button fx:id="dim_set_para3" layoutX="310.0" layoutY="122.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <Button fx:id="dim_set_para4" layoutX="405.0" layoutY="121.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <ImageView fx:id="dim_poke_2" fitHeight="90.0" fitWidth="90.0" layoutX="405.0" layoutY="30.0" pickOnBounds="true" preserveRatio="true" />
+                        <CheckBox fx:id="dim_2_enable" layoutX="314.0" layoutY="155.0" mnemonicParsing="false" onMouseClicked="#onDimEnabeChk" text="有効化" />
+                        <TextField fx:id="dim_offset_F_2" layoutX="401.0" layoutY="203.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
+                        <TextField fx:id="dim_offset_P2_2" layoutX="347.0" layoutY="203.0" onKeyReleased="#onDimOffsetChange" prefHeight="25.0" prefWidth="48.0" />
+                        <Label layoutX="368.0" layoutY="184.0" text="P2" />
+                        <Label layoutX="416.0" layoutY="186.0" text="F" />
+                        <Line endX="-101.0" endY="200.0" layoutX="698.0" layoutY="26.0" startX="-101.0" startY="-14.0" />
+                        <Button fx:id="dimSettingBtn" layoutX="603.0" layoutY="75.0" mnemonicParsing="false" onAction="#onDimSetting" prefHeight="63.0" prefWidth="160.0" text="換算距離反映 (オフセットも反映)" wrapText="true" />
+                        <Label layoutX="598.0" layoutY="7.0" text="送り穴距離ピクセル換算" />
+                        <Label layoutX="599.0" layoutY="31.0" prefHeight="35.0" prefWidth="160.0" text="※穴検出設定にて送り穴を２個認識させ設定ボタンを押す" wrapText="true" />
+                        <TextField fx:id="dimSetting_offset" alignment="CENTER_RIGHT" layoutX="659.0" layoutY="194.0" prefHeight="25.0" prefWidth="57.0" text="0" />
+                        <Label layoutX="604.0" layoutY="198.0" prefHeight="17.0" prefWidth="48.0" text="オフセット" />
+                        <Label fx:id="dimSettingLabel" layoutX="657.0" layoutY="151.0" prefHeight="27.0" prefWidth="168.0" text="999μm">
                            <font>
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Label>
-                        <Label layoutX="623.0" layoutY="116.0" prefHeight="17.0" prefWidth="36.0" text="μm" />
-                        <ToggleButton fx:id="para_12st_shot11" disable="true" layoutX="681.0" layoutY="-1.0" mnemonicParsing="false" onAction="#onPara_12st_shot_change" prefHeight="25.0" prefWidth="85.0" text="1st.">
-                           <font>
-                              <Font name="System Bold" size="13.0" />
-                           </font>
-                        </ToggleButton>
-                        <Label layoutX="508.0" layoutY="157.0" prefHeight="17.0" prefWidth="48.0" text="換算距離" />
+                        <Label layoutX="719.0" layoutY="198.0" prefHeight="17.0" prefWidth="36.0" text="μm" />
+                        <Label layoutX="600.0" layoutY="156.0" prefHeight="17.0" prefWidth="48.0" text="換算距離" />
+                        <ImageView fx:id="dim_poke_21" fitHeight="90.0" fitWidth="90.0" layoutX="503.0" layoutY="28.0" pickOnBounds="true" preserveRatio="true" />
+                        <Label layoutX="209.0" layoutY="5.0" text="1列目 エッジ" />
+                        <Button fx:id="dim_set_para5" layoutX="199.0" layoutY="121.0" mnemonicParsing="false" onAction="#onDimSetPara" prefHeight="25.0" prefWidth="90.0" text="詳細設定" />
+                        <ImageView fx:id="dim_edge_1" fitHeight="90.0" fitWidth="90.0" layoutX="199.0" layoutY="30.0" pickOnBounds="true" preserveRatio="true" />
                      </children></AnchorPane>
               </content>
             </TitledPane>
@@ -420,7 +402,7 @@
             <Font size="36.0" />
          </font>
       </Label>
-      <Label fx:id="presetText" layoutX="2.0" layoutY="10.0" prefHeight="17.0" prefWidth="123.0" text="ISIX VISON  Ver3.6.6" textFill="#0a22d7">
+      <Label fx:id="presetText" layoutX="2.0" layoutY="10.0" prefHeight="17.0" prefWidth="123.0" text="ISIX VISON  Ver4.0.0" textFill="#0a22d7">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
@@ -473,7 +455,7 @@
       </Label>
       <Label layoutX="493.0" layoutY="63.0" text="②threshhold" textFill="#d2ee00" />
       <Label layoutX="332.0" layoutY="183.0" text="③deilate" textFill="#d7ed07" />
-      <Label fx:id="fpsLabel" layoutX="5.0" layoutY="20.0" prefHeight="17.0" prefWidth="174.0" text="FPS" />
+      <Label fx:id="fpsLabel" layoutX="8.0" layoutY="29.0" prefHeight="18.0" prefWidth="111.0" text="FPS" />
       <Circle fx:id="triggerCCircle" fill="LIME" layoutX="668.0" layoutY="23.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" />
       <Button fx:id="ngImageBtn" layoutX="738.0" layoutY="302.0" mnemonicParsing="false" onAction="#onNgImageBtn" prefHeight="39.0" prefWidth="63.0" text="Ng Image Viewer" wrapText="true">
          <effect>
@@ -496,7 +478,7 @@
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;v2.9 2020/06/02 HoleDedection Change&#10;v3.0 2020/06/06 patternMatching maxCount=20&#10;v3.1 2020/06/26 microBugFix&#10;v3.2 2020/07/05 DispersionMesureADD/Log Enable&#10;v3.3 2020/07/15 Log bugfix&#10;v3.4.1 2021/3/9 #55 designated version&#10;v3.5.0 2021/11/15 照明オートゲイン機能追加&#10;v3.5.1 2022/08/16 クリア信号ノイズ対策&#10;v3.5.2 2022/08/16 寸法判定追加&#10;v3.5.3 2022/11/03 寸法NG時画像保存 &amp; 各種BugFix&#10;v3.5.4 2022/11/08  F寸警告範囲調整/マニュアルトリガ時はゲイン調整しない様に変更&#10;v3.5.5 2022/11/16 NG内容明示&#10;v3.5.6 2022/11/23 クリア信号連続受信バグ修正&#10;v3.5.7 2023/01/06 オートゲイン無効期間修正/GPIOパージタイム20ms➡30msへ変更&#10;v3.5.8 2023/01/07 200ショット超えないと寸法警告フラグがリセットされない不具合修正&#10;v3.5.9 2023/01/27 シャッター間隔が４秒以上開いた場合NG信号継続発信&#10;v3.6.0 2023/02/03 シャッター間隔が4秒送られない場合の回避対策&#10;v3.6.1 2023/02/13 #54一次的に寸法NGで停止する機能を無効化(デリバリ対応の為)&#10;v3.6.2 2023/02/13 #54寸法警告時に画像が保存されてしまう現象を回避&#10;v3.6.3 2023/03/27 カメラキャプチャ異常時はNG信号継続発信&#10;v3.6.4 2023/03/29 NG信号の発信が失敗した場合の措置としてngSignalKeizokuFlgがTrueの場合継続してGpio.ngSignalON()が呼ばれるように変更&#10;V3.6.5 2023/06/02 起動時カメラゲインを50%に強制&#10;V3.6.6 2023/08/11 パターンマッチングの分散設定可能範囲変更&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
+      <TextArea fx:id="info2" layoutX="876.0" layoutY="11.0" prefHeight="172.0" prefWidth="320.0" text="Programing by MamoruHosokawa&#10;Follow licens:OPENCV,JAVA(Oracle) &#10;&#10;V1.0 Release 2020.01.03&#10;V1.1 BugFix&#10;SirialCommunication BugFix&#10;V2.0 Pattern Detect ADD 2020/01/31&#10;V2.1  HoleDetection WhiteRatioADD 2020/02/02&#10;V2.2 PatternMatching Bugfix&#10;v2.2  dimensionMeseruADD&#10;v2.4   dimensionDispADD&#10;v2.5 2020/3/8 MaskSettingADD&#10;v2.6 2020/3/11 IOU calcuration&#10;v2.7 2020/04/09 Jufge Skip 20Shoto&#10;V2.8 2020/0523 Camera Revers Add&#10;v2.9 2020/06/02 HoleDedection Change&#10;v3.0 2020/06/06 patternMatching maxCount=20&#10;v3.1 2020/06/26 microBugFix&#10;v3.2 2020/07/05 DispersionMesureADD/Log Enable&#10;v3.3 2020/07/15 Log bugfix&#10;v3.4.1 2021/3/9 #55 designated version&#10;v3.5.0 2021/11/15 照明オートゲイン機能追加&#10;v3.5.1 2022/08/16 クリア信号ノイズ対策&#10;v3.5.2 2022/08/16 寸法判定追加&#10;v3.5.3 2022/11/03 寸法NG時画像保存 &amp; 各種BugFix&#10;v3.5.4 2022/11/08  F寸警告範囲調整/マニュアルトリガ時はゲイン調整しない様に変更&#10;v3.5.5 2022/11/16 NG内容明示&#10;v3.5.6 2022/11/23 クリア信号連続受信バグ修正&#10;v3.5.7 2023/01/06 オートゲイン無効期間修正/GPIOパージタイム20ms➡30msへ変更&#10;v3.5.8 2023/01/07 200ショット超えないと寸法警告フラグがリセットされない不具合修正&#10;v3.5.9 2023/01/27 シャッター間隔が４秒以上開いた場合NG信号継続発信&#10;v3.6.0 2023/02/03 シャッター間隔が4秒送られない場合の回避対策&#10;v3.6.1 2023/02/13 #54一次的に寸法NGで停止する機能を無効化(デリバリ対応の為)&#10;v3.6.2 2023/02/13 #54寸法警告時に画像が保存されてしまう現象を回避&#10;v3.6.3 2023/03/27 カメラキャプチャ異常時はNG信号継続発信&#10;v3.6.4 2023/03/29 NG信号の発信が失敗した場合の措置としてngSignalKeizokuFlgがTrueの場合継続してGpio.ngSignalON()が呼ばれるように変更&#10;V3.6.5 2023/06/02 起動時カメラゲインを50%に強制&#10;V3.6.6 2023/08/11 パターンマッチングの分散設定可能範囲変更&#10;v4.0.0 2023/10/06 E寸測定機能追加&#10;----------------------------------------------------------&#10;&#10;" wrapText="true" />
       <Button fx:id="lockBtn" layoutX="2.0" layoutY="321.0" mnemonicParsing="false" onAction="#onSettingModeBtn" text="設定">
          <effect>
             <DropShadow blurType="GAUSSIAN" color="#37e108" />
@@ -507,23 +489,16 @@
       <Label layoutX="856.0" layoutY="268.0" text="①ポケ穴" />
       <Label layoutX="858.0" layoutY="291.0" text="②送り穴" />
       <Label layoutX="858.0" layoutY="315.0" text="②ポケ穴" />
-      <Label layoutX="868.0" layoutY="330.0" prefHeight="53.0" prefWidth="147.0" text="&lt;PIN0:SHUTTER&gt;                 &lt;PIN3:NG Trigger&gt;   &lt;PIN1:AllClear&gt;" wrapText="true">
+      <Label layoutX="879.0" layoutY="336.0" prefHeight="27.0" prefWidth="138.0" text="&lt;PIN0:SHUTTER&gt;  ">
          <font>
-            <Font size="9.0" />
+            <Font size="14.0" />
          </font>
       </Label>
-      <Circle fx:id="GPIO_STATUS_PIN0" fill="#c8c8c8" layoutX="860.0" layoutY="342.0" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
-      <Circle fx:id="GPIO_STATUS_PIN3" fill="#c8c8c8" layoutX="860.0" layoutY="356.0" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
-      <Circle fx:id="GPIO_STATUS_PIN1" fill="#c8c8c8" layoutX="860.0" layoutY="370.0" radius="7.0" stroke="#393636" strokeType="INSIDE" />
-      <Button fx:id="shotImgBtn" layoutX="1097.0" layoutY="344.0" mnemonicParsing="false" onAction="#onShotImg" prefHeight="25.0" prefWidth="90.0" text="ショット撮影" />
-      <Button fx:id="dimensionBtn" disable="true" layoutX="836.0" layoutY="396.0" mnemonicParsing="false" onAction="#onDimensionBtn" prefHeight="39.0" prefWidth="63.0" text="Dimension Viewer" visible="false" wrapText="true">
-         <effect>
-            <DropShadow color="#3000f0" />
-         </effect>
-         <font>
-            <Font size="10.0" />
-         </font>
-      </Button>
+      <Circle fx:id="GPIO_STATUS_PIN0" fill="#c8c8c8" layoutX="864.0" layoutY="351.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" />
+      <Circle fx:id="GPIO_STATUS_PIN3" fill="#c8c8c8" layoutX="863.0" layoutY="418.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" />
+      <Circle fx:id="GPIO_STATUS_PIN1" fill="#c8c8c8" layoutX="863.0" layoutY="384.0" radius="12.0" stroke="#393636" strokeType="INSIDE" />
+      <Button fx:id="shotImgBtn" layoutX="1097.0" layoutY="344.0" mnemonicParsing="false" onAction="#onShotImg" prefHeight="26.0" prefWidth="90.0" text="ショット撮影" />
+
       <Button fx:id="ReTestBtn" disable="true" layoutX="767.0" layoutY="396.0" mnemonicParsing="false" onAction="#onRetestBtn" prefHeight="39.0" prefWidth="63.0" text="ReTest" visible="false" wrapText="true">
          <effect>
             <DropShadow color="#84f000" />
@@ -573,7 +548,7 @@
             <Font name="System Bold" size="14.0" />
          </font>
       </Label>
-      <Button fx:id="triggerBtn" layoutX="1103.0" layoutY="394.0" mnemonicParsing="false" onAction="#onTrigger" text="マニュアルテスト">
+      <Button fx:id="triggerBtn" layoutX="1095.0" layoutY="380.0" mnemonicParsing="false" onAction="#onTrigger" prefHeight="47.0" prefWidth="90.0" text="マニュアルテスト">
          <font>
             <Font size="11.0" />
          </font>
@@ -599,5 +574,16 @@
          </font>
       </TextField>
       <Label layoutX="598.0" layoutY="324.0" prefHeight="25.0" prefWidth="61.0" text="ゲイン(%)" />
+      <Label layoutX="878.0" layoutY="402.0" prefHeight="27.0" prefWidth="138.0" text="&lt;PIN3:NG Trigger&gt;">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <Label layoutX="878.0" layoutY="370.0" prefHeight="27.0" prefWidth="138.0" text="&lt;PIN1:AllClear&gt;">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <Label fx:id="sokuteiTimeLabel" layoutX="8.0" layoutY="41.0" prefHeight="18.0" prefWidth="218.0" text="測定時間" />
    </children>
 </AnchorPane>
