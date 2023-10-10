@@ -536,6 +536,9 @@ public class VisonController2{
     //換算距離表示ラベル
     @FXML
     private Label dimSettingLabel;
+    //E寸異常警告ラベル
+    @FXML
+    private Label E_warningLabel;
 
     @FXML
     private TableView<Dim_itemValue> dim_table;
@@ -1758,7 +1761,7 @@ public class VisonController2{
 	        			final double E_ave = E_sum[g]/(shotCnt-disableJudgeCnt);//disableJudgeCnt+1ショット目から加算の為
 	        			final double _P2_ave = Double.valueOf(String.format("%.3f",P2_ave)).doubleValue();
 	        			final double _F_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
-	        			final double _E_ave = Double.valueOf(String.format("%.3f",F_ave)).doubleValue();
+	        			final double _E_ave = Double.valueOf(String.format("%.3f",E_ave)).doubleValue();
 
 	        			final double P2_final = P2;
 	        			final double F_final = F;
@@ -1778,10 +1781,10 @@ public class VisonController2{
 		        		//寸法表示テーブルの更新
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).P2Property().set(_P2));
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2).FProperty().set(_F));
-		        		Platform.runLater( () ->dim_table.getItems().get(0).EProperty().set(_E));
+		        		if( g2 == 0) {Platform.runLater( () ->dim_table.getItems().get(0).EProperty().set(_E));}
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).P2Property().set(_P2_ave));
 		        		Platform.runLater( () ->dim_table.getItems().get(g2*2+1).FProperty().set(_F_ave));
-		        		Platform.runLater( () ->dim_table.getItems().get(0+1).EProperty().set(_E_ave));
+		        		if( g2 == 0) {Platform.runLater( () ->dim_table.getItems().get(0+1).EProperty().set(_E_ave));}
 
 		        		//軸の設定更新
 		        		Platform.runLater( () ->((NumberAxis)((XYPlot)chart_P2[g2].getPlot()).getDomainAxis()).
@@ -1801,20 +1804,25 @@ public class VisonController2{
 		        		//寸法外れ判定 2022.08.16
 		        		P2_hantei[g][hantei_cnt] = P2;
 		        		F_hantei[g][hantei_cnt] = F;
+		        		E_hantei[g][hantei_cnt] = E;
+
 		        		hantei_cnt++;
 	        			if( hantei_cnt == 5 ) {
 	        				hantei_cnt = 0;
 	        			}
-		        		if(shotCnt>200 ){
+		        		if(shotCnt>50 ){
 		        			double P2_tmp=0;
 		        			double F_tmp=0;
-		        			double P2ave_tmp,Fave_tmp;
+		        			double E_tmp=0;
+		        			double P2ave_tmp,Fave_tmp,Eave_tmp;
 		        			for(int i=0;i<5;i++) {
 		        				P2_tmp += P2_hantei[g][i];
 		        				F_tmp += F_hantei[g][i];
+		        				E_tmp += E_hantei[g][i];
 		        			}
 		        			P2ave_tmp = P2_tmp/5;
 		        			Fave_tmp = F_tmp/5;
+		        			Eave_tmp = E_tmp/5;
 
 			        		if( P2ave_tmp <baseParameterValue.P2_LowerLimit_dimensionTheshold ||
 			        				P2ave_tmp > baseParameterValue.P2_UpperLimit_dimensionTheshold ||
@@ -1829,12 +1837,18 @@ public class VisonController2{
 		        				sunpou_hantei_NG_now = false;
 		        			}
 			        		if( P2ave_tmp < baseParameterValue.P2_LowerLimit_dimensionTheshold ||
-			        						P2ave_tmp > baseParameterValue.F_UpperLimit_dimensionTheshold ||
+			        						P2ave_tmp > baseParameterValue.P2_UpperLimit_dimensionTheshold ||
 			        						Fave_tmp < baseParameterValue.F_LowerLimit_dimensionTheshold ||
 			        						Fave_tmp > baseParameterValue.F_UpperLimit_dimensionTheshold) {
 		        				sunpou_hantei_NG_5Shot = true;
 		        				logMsg +="寸法NG : ５ショットの平均が規格から外れました\n";
 		        			}
+			        		if( (Eave_tmp < baseParameterValue.E_LowerLimit_dimensionTheshold ||
+	        						Eave_tmp > baseParameterValue.E_UpperLimit_dimensionTheshold) && g==0){
+				        		//E寸警告ラベル表示
+				        		Platform.runLater( () ->E_warningLabel.setVisible(true));
+				        		logMsg +="E寸異常 : ５ショットのE寸平均が規格から外れました\n";
+	        				}
 		        		}
 
 	        		}else {
@@ -1942,11 +1956,11 @@ public class VisonController2{
 
 	        //Core.flip(mainViewMat, mainViewMat, 1);
 	        updateImageView(imgORG, Utils.mat2Image(mainViewMat));
-    	
+
     	}catch(Exception e) {
     		logMsg += e+"\n:検査設定がキャプチャーされた画像からはみ出しています。\n検査設定をやり直してください\n";
     	}
-    	
+
 
     	//オートゲイン
     	if( autoGainChk.isSelected() && !manualTrigger &&
@@ -2673,6 +2687,7 @@ public class VisonController2{
 		para.dim_Enable[1] = dim_1_enable.isSelected();
 		para.dim_Enable[2] = dim_2_enable.isSelected();
 		para.dim_Enable[3] = dim_2_enable.isSelected();
+		para.dim_Enable[4] = dim_1_enable.isSelected();
 
 	    para.dim_offset_P2[0] = Double.valueOf(dim_offset_P2_1.getText());
 	    para.dim_offset_F[0] = Double.valueOf(dim_offset_F_1.getText());
@@ -2758,6 +2773,7 @@ public class VisonController2{
 		para.dim_Enable[1] = dim_1_enable.isSelected();
 		para.dim_Enable[2] = dim_2_enable.isSelected();
 		para.dim_Enable[3] = dim_2_enable.isSelected();
+		para.dim_Enable[4] = dim_1_enable.isSelected();
 
 	    para.dim_offset_P2[0] = Double.valueOf(dim_offset_P2_1.getText());
 	    para.dim_offset_F[0] = Double.valueOf(dim_offset_F_1.getText());
@@ -2791,7 +2807,7 @@ public class VisonController2{
 		}
 		//寸法測定用画像保存
 		for(int i=0;i<4;i++) {
-			for(int j=0;j<4;j++) {
+			for(int j=0;j<5;j++) {
 				if( dim_ImgMat[i][j] != null ) {
 					savePtmImg(dim_ImgMat[i][j],"dim"+String.format("_%d_%d", i,j));
 				}
@@ -3195,6 +3211,9 @@ public class VisonController2{
 				Platform.runLater( () ->dim_table.getItems().get(g2*2+1).EProperty().set(0.0));
 			}
 		}
+		//E寸警告ラベル非表示
+		Platform.runLater( () ->E_warningLabel.setVisible(false));
+
 		P2_sum[0] = 0;P2_sum[1] = 0;
 		F_sum[0] = 0;F_sum[1] = 0;
 		E_sum[0] = 0;E_sum[1] = 0;
@@ -3664,12 +3683,14 @@ public class VisonController2{
     void onDimOffsetChange(KeyEvent  e) {
     	String p2_offset_1 = dim_offset_P2_1.getText();
     	String f_offset_1 = dim_offset_F_1.getText();
+    	String e_offset_1 = dim_offset_E_1.getText();
     	String p2_offset_2 = dim_offset_P2_2.getText();
     	String f_offset_2 = dim_offset_F_2.getText();
 
     	try {
     		double d_p2_offset_1 = Double.valueOf(p2_offset_1);
     		double d_f_offset_1 = Double.valueOf(f_offset_1);
+    		double d_e_offset_1 = Double.valueOf(e_offset_1);
     		double d_p2_offset_2 = Double.valueOf(p2_offset_2);
     		double d_f_offset_2 = Double.valueOf(f_offset_2);
 
@@ -3678,6 +3699,7 @@ public class VisonController2{
     		para.dim_offset_P2[1] = d_p2_offset_2;
     		para.dim_offset_F[0] = d_f_offset_1;
     		para.dim_offset_F[1] = d_f_offset_2;
+    		para.dim_offset_E[0] = d_e_offset_1;
     	}catch(Exception e2) {
     		Platform.runLater( () ->this.info2.appendText("offsetは数値で入力してください\n"));
     	}
@@ -3859,6 +3881,8 @@ public class VisonController2{
 		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("ave.",0.0,0.0,0.0)));
 		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("②列",0.0,0.0,0.0)));
 		Platform.runLater( () ->dim_table.getItems().add(new Dim_itemValue("ave.",0.0,0.0,0.0)));
+		//E寸警告ラベル非表示
+		Platform.runLater( () ->E_warningLabel.setVisible(false));
 
 		//イニシャルinfo2の内容保存
 		initInfo2 = this.info2.getText();

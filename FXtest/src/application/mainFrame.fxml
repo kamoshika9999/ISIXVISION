@@ -585,5 +585,10 @@
          </font>
       </Label>
       <Label fx:id="sokuteiTimeLabel" layoutX="8.0" layoutY="41.0" prefHeight="18.0" prefWidth="218.0" text="測定時間" />
+      <Label fx:id="E_warningLabel" alignment="CENTER" layoutX="323.0" layoutY="41.0" prefHeight="275.0" prefWidth="343.0" text="E寸異常" textAlignment="CENTER" textFill="#e80505">
+         <font>
+            <Font name="System Bold" size="72.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>
