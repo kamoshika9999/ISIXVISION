@@ -14,6 +14,7 @@ public class parameter implements Serializable {
 	public int delly;
 	//オートゲイン有効無効
 	boolean autogain;
+	double targetGain;
 
 	final int hole_arrySize = 5;
 	double hole_zoom;
@@ -76,12 +77,13 @@ public class parameter implements Serializable {
 	//寸法測定
 	public boolean dim_1_enable = false;
 	public boolean dim_2_enable = false;
-	public Double dimPixel_mm = 0.035;//ピクセル-mm換算
+	public double dimPixel_mm;//ピクセル-mm換算
+	public double dimPixel_mm_offset;//ピクセル-mm換算のオフセット
 	public double[] dim_offset_P2 = new double[2];
 	public double[] dim_offset_F = new double[2];
 	public double[] dim_offset_E = new double[2];
 
-	final int dim_arrySize = 5;
+	final int dim_arrySize = 5;//[0]P2① [1]F①[2]P2② [3]F② [4]E①
 	String[] dim_FileName;//パターンマッチングの登録Mat
 	Rectangle[] dim_templatRect;//テンプレートの切り出し位置
 	Rectangle[] dim_ptmMat_mask_rect;////x,y:テンプレートからの相対位置 width,height:矩形サイズ
@@ -111,7 +113,7 @@ public class parameter implements Serializable {
 	public boolean[] dim_Enable;
 
 	public parameter() {
-		delly = 550;
+		delly = 200;
 
 		hole_zoom = 1.0;
 		hole_viewRect = new double[hole_arrySize];
@@ -149,7 +151,6 @@ public class parameter implements Serializable {
 
 		ptm_DetectCnt = new int[ptm_arrySize];
 		ptm_Enable = new boolean[ptm_arrySize];
-		//ptm_fil_detectionCnt = new int[ptm_arrySize];
 		ptm_detectionScale = new double[ptm_arrySize];
 
 		ptm_fil_gauusianCheck = new boolean[ptm_arrySize];
@@ -241,8 +242,8 @@ public class parameter implements Serializable {
 		}
 		for(int i=0;i<ptm_arrySize;i++) {
 			ptm_Enable[i] = false;
-			ptm_DetectCnt[i] = 4;
-			ptm_detectionScale[i] = 3;
+			ptm_DetectCnt[i] = 1;
+			ptm_detectionScale[i] = 1;
 			ptm_rectsDetection[i] = new Rectangle();
 
 			ptm_fil_threshholdCheck[i] = false;
@@ -264,7 +265,7 @@ public class parameter implements Serializable {
 			ptm_fil_cannyThresh2[i] = 0;
 
 			ptm_threshValue[i] = 0.8;
-			ptm_threshValue_K[i] = 0.9;
+			ptm_threshValue_K[i] = 0.8;
 
 			ptm_dispersionThreshValue[i] = 0.0;
 			ptm_dispersionThreshValue_K[i] =0.0;
@@ -278,7 +279,7 @@ public class parameter implements Serializable {
 			dim_ptmMat_mask_rect[i] = new Rectangle();
 
 			dim_DetectCnt[i] = 1;
-			dim_detectionScale[i] = 3;
+			dim_detectionScale[i] = 1;
 			dim_rectsDetection[i] = new Rectangle();
 
 			dim_fil_threshholdCheck[i] = false;

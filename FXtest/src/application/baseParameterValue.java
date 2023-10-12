@@ -11,4 +11,5 @@ public class baseParameterValue {
 	public static final double P2_LowerLimit_dimensionTheshold = 1.85;
 	public static final double E_UpperLimit_dimensionTheshold = 1.85;
 	public static final double E_LowerLimit_dimensionTheshold = 1.65;
+
 }

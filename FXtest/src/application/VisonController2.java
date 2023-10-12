@@ -106,6 +106,8 @@ public class VisonController2{
 	//シャッター間隔が16秒以上あいた時にセットされる
 	boolean intervalTime16secFlg;
 
+	//目標輝度設定値
+	double autoGain_target = 137;//#55 137 その他100
 
 	//保存される画像の最大数
 	final int saveMax_all = 255;
@@ -597,6 +599,8 @@ public class VisonController2{
     private Button calib_btn;//照明キャリブレーションボタン
     @FXML
     private Label calib_label;//キャリブレーション用輝度平均表示
+    @FXML
+    private TextField targetLuminance;//目標輝度設定値
 
     @FXML
     private ComboBox<String> selectPreSetCB;//品種選択用
@@ -1724,7 +1728,7 @@ public class VisonController2{
 			        		double p2_x1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionX.get(0);
 			        		//System.out.println("X0 = " + String.format("%.4f", p2_x0));
 			        		//System.out.println("X1 = " + String.format("%.4f", p2_x1));
-			        		P2 = Math.abs(p2_x0 - p2_x1)*para.dimPixel_mm+para.dim_offset_P2[g];
+			        		P2 = Math.abs(p2_x0 - p2_x1)*(para.dimPixel_mm+para.dimPixel_mm_offset)+para.dim_offset_P2[g];
 
 			        		//disableJudgeCntショット目から加算
 			        		if( shotCnt > disableJudgeCnt ) {
@@ -1732,14 +1736,14 @@ public class VisonController2{
 			        		}
 			        		double f_y0 = dim_templateMatchingObj.resultValue[g*2].centerPositionY.get(0);
 			        		double f_y1 = dim_templateMatchingObj.resultValue[g*2+1].centerPositionY.get(0);
-			        		F = Math.abs(f_y0 - f_y1)*para.dimPixel_mm+para.dim_offset_F[g];
+			        		F = Math.abs(f_y0 - f_y1)*(para.dimPixel_mm+para.dimPixel_mm_offset)+para.dim_offset_F[g];
 			        		//disableJudgeCntショット目から加算
 			        		if( shotCnt > disableJudgeCnt ) {
 			        			F_sum[g] += F;
 			        		}
 			        		//E寸は１列目しか測定出来ない、２列目はロジック上のダミ変数
 			        		double e_ｙ0 =  dim_templateMatchingObj.resultValue[4].centerPositionY.get(0);
-			        		E = Math.abs(f_y0 - e_ｙ0)*para.dimPixel_mm+para.dim_offset_E[0];
+			        		E = Math.abs(f_y0 - e_ｙ0)*(para.dimPixel_mm+para.dimPixel_mm_offset)+para.dim_offset_E[0];
 			        		//disableJudgeCntショット目から加算
 			        		if( shotCnt > disableJudgeCnt ) {
 			        			E_sum[g] += E;
@@ -1919,7 +1923,7 @@ public class VisonController2{
 		        	}else {
 		        		logMsg += "NG画像保存は保存されませんでした\n";
 		        	}
-		        	if( ngCnt > 5000 || sunpou_hantei_NG_5Shot) {//2022.08.16寸法NGでも強制停止
+		        	if( ngCnt > 500 || sunpou_hantei_NG_5Shot) {//2022.08.16寸法NGでも強制停止
 		        		kyouseiTeisshiNgCnt = 2;//強制停止
 		        	}else {
 		        		ngCnt++;
@@ -2021,6 +2025,14 @@ public class VisonController2{
         Platform.runLater(() ->this.sokuteiTimeLabel.setText(String.format("計測時間=%d msec",elpsedTime)));
     }
 
+    /**
+     * 目標輝度設定値変更
+     * @param event
+     */
+    @FXML
+    void onTargetLuminanceChange(KeyEvent event) {
+    	autoGain_target = Double.valueOf( targetLuminance.getText());
+    }
     /**
      * NG画像保存
      * @param imgMat
@@ -2530,6 +2542,7 @@ public class VisonController2{
 
     	//寸法測定部
     	Platform.runLater( () ->dimSettingLabel.setText(String.format("%.0f μm/pixel", para.dimPixel_mm*1000)));
+    	Platform.runLater( () ->dimSetting_offset.setText(String.format("%.0f μm/pixel", para.dimPixel_mm_offset*1000)));
     	Platform.runLater( () ->dim_offset_P2_1.setText(String.valueOf(para.dim_offset_P2[0])));
     	Platform.runLater( () ->dim_offset_F_1.setText(String.valueOf(para.dim_offset_F[0])));
     	Platform.runLater( () ->dim_offset_E_1.setText(String.valueOf(para.dim_offset_E[0])));
@@ -2688,6 +2701,8 @@ public class VisonController2{
 		para.dim_Enable[2] = dim_2_enable.isSelected();
 		para.dim_Enable[3] = dim_2_enable.isSelected();
 		para.dim_Enable[4] = dim_1_enable.isSelected();
+		para.dim_Enable[5] = dim_1_enable.isSelected();
+
 
 	    para.dim_offset_P2[0] = Double.valueOf(dim_offset_P2_1.getText());
 	    para.dim_offset_F[0] = Double.valueOf(dim_offset_F_1.getText());
@@ -2695,7 +2710,7 @@ public class VisonController2{
 	    para.dim_offset_P2[1] = Double.valueOf(dim_offset_P2_2.getText());
 	    para.dim_offset_F[1] = Double.valueOf(dim_offset_F_2.getText());
 
-		//para.dimPixel_mm = dimSetting_offset.getText()
+		para.dimPixel_mm_offset = Double.valueOf(dimSetting_offset.getText());
 
 		pObj.portNo = portNoSpin.getValue().intValue();
 		pObj.cameraID = camIDspinner.getValue().intValue();
@@ -2711,7 +2726,7 @@ public class VisonController2{
 		objOut.close();
 
 		//パターンマッチング画像の保存 ptmImgMat[preSetNo][ptm1～ptm4]
-    	int max_ptm_array = pObj.para[pObj.select].ptm_arrySize;
+    	int max_ptm_array = parameter.ptm_arrySize;
 		for(int i=0;i<4;i++) {
 			for(int j=0;j<max_ptm_array;j++) {
 				if( ptm_ImgMat[i][j] != null ) {
@@ -2735,7 +2750,7 @@ public class VisonController2{
      * @throws IOException
      */
     public void saveCsvAllPara() throws IOException{
-		FileOutputStream fo = new FileOutputStream("./conf16.csv");
+    	FileOutputStream fo = new FileOutputStream("./setting.csv");
 		ObjectOutputStream objOut = new ObjectOutputStream(fo);
 
 		pObj.dimensionDispChk =  dimensionDispChk.isSelected();
@@ -2743,8 +2758,7 @@ public class VisonController2{
 	    pObj.patternDispChk = patternDispChk.isSelected();
 		pObj.camera_revers = camera_revers_chk.isSelected();
 
-
-    	parameter para = pObj.para[pObj.select];
+    	parameter para = pObj.para[pObj.select];//コードを見やすくする為参照を取得
 		para.hole_rects[4] =  (Rectangle)draggingRect.clone();
 		para.hole_viewRect[0] = imgORG.getViewport().getMinX();
 		para.hole_viewRect[1] = imgORG.getViewport().getMinY();
@@ -2775,13 +2789,14 @@ public class VisonController2{
 		para.dim_Enable[3] = dim_2_enable.isSelected();
 		para.dim_Enable[4] = dim_1_enable.isSelected();
 
+
 	    para.dim_offset_P2[0] = Double.valueOf(dim_offset_P2_1.getText());
 	    para.dim_offset_F[0] = Double.valueOf(dim_offset_F_1.getText());
 	    para.dim_offset_E[0] = Double.valueOf(dim_offset_E_1.getText());
 	    para.dim_offset_P2[1] = Double.valueOf(dim_offset_P2_2.getText());
 	    para.dim_offset_F[1] = Double.valueOf(dim_offset_F_2.getText());
 
-		//para.dimPixel_mm = dimSetting_offset.getText()
+		para.dimPixel_mm_offset = Double.valueOf(dimSetting_offset.getText());
 
 		pObj.portNo = portNoSpin.getValue().intValue();
 		pObj.cameraID = camIDspinner.getValue().intValue();
@@ -2791,13 +2806,15 @@ public class VisonController2{
 		pObj.adcFlg = adc_flg.isSelected();
 
 		para.delly = dellySpinner.getValue().intValue();
+		para.autogain = autoGainChk.isSelected();
+		para.targetGain = Double.valueOf( targetLuminance.getText() );
 
 		objOut.writeObject(pObj);
 		objOut.flush();
 		objOut.close();
 
 		//パターンマッチング画像の保存 ptmImgMat[preSetNo][ptm1～ptm4]
-    	int max_ptm_array = pObj.para[pObj.select].ptm_arrySize;
+    	int max_ptm_array = parameter.ptm_arrySize;
 		for(int i=0;i<4;i++) {
 			for(int j=0;j<max_ptm_array;j++) {
 				if( ptm_ImgMat[i][j] != null ) {
@@ -3046,6 +3063,7 @@ public class VisonController2{
     	updateImageView(dim_poke_1, Utils.mat2Image(dim_ImgMat[pObj.select][1]));
     	updateImageView(dim_okuriImg_2, Utils.mat2Image(dim_ImgMat[pObj.select][2]));
     	updateImageView(dim_poke_2, Utils.mat2Image(dim_ImgMat[pObj.select][3]));
+    	updateImageView(this.dim_edge_1, Utils.mat2Image(dim_ImgMat[pObj.select][4]));//E寸用
 
     }
 
@@ -3488,6 +3506,7 @@ public class VisonController2{
     	dim_templateMatchingObj.tmpara.ptmEnable[1] = this.dim_1_enable.isSelected();
     	dim_templateMatchingObj.tmpara.ptmEnable[2] = this.dim_2_enable.isSelected();
     	dim_templateMatchingObj.tmpara.ptmEnable[3] = this.dim_2_enable.isSelected();
+    	dim_templateMatchingObj.tmpara.ptmEnable[4] = this.dim_1_enable.isSelected();
 
     }
     //寸法測定メソッド群
@@ -3608,13 +3627,14 @@ public class VisonController2{
     	if( holeDist_DimSetting > 0) {
 	    	Double pixel_mm = 0.0;
 	    	try {
-	    		pixel_mm = 4 / holeDist_DimSetting + Double.valueOf(dimSetting_offset.getText())/1000.0;
+	    		pixel_mm = 4 / holeDist_DimSetting;
 	    	}catch( java.lang.NumberFormatException e) {
 	    		pixel_mm = 0.0;
 	    	}
 	    	final Double tmp_pixel_mm = pixel_mm;
 	    	Platform.runLater( () ->this.dimSettingLabel.setText(String.format("%.3f μm/pixel", tmp_pixel_mm*1000)));
 	    	pObj.para[pObj.select].dimPixel_mm = pixel_mm;
+	    	pObj.para[pObj.select].dimPixel_mm_offset = Double.valueOf(dimSetting_offset.getText())/1000.0;//換算後のオフセットをテキストフィールドから取得
     	}
     }
 
@@ -3733,11 +3753,11 @@ public class VisonController2{
 
     /**
      * USBカメラオートゲイン
-     * @param luminanceAverage 穴認識領域の平均輝度　規格100±2
+     * @param luminanceAverage 穴認識領域の平均輝度　規格100±2 #55=137
      * @return 0:調整不要  1:調整実施 2:調整範囲オーバー
      */
     int exeAutoGain(double luminanceAverage) {
-    	if( luminanceAverage >=98 && luminanceAverage<=102) {
+    	if( luminanceAverage >=autoGain_target-2 && luminanceAverage<=autoGain_target+2) {
         	Platform.runLater( () ->calib_label.setText(String.format("平均輝度=%.1f",luminanceAverage)));
     		return 0;
     	}
@@ -3748,7 +3768,7 @@ public class VisonController2{
     		return 2;
     	}
 
-    	if( luminanceAverage < 100) {
+    	if( luminanceAverage < autoGain_target) {
     		capObj.set(Videoio.CAP_PROP_GAIN,++gain);
     		final double ga = gain;
     		Platform.runLater( () ->this.info2.appendText(	String.format("照明ゲイン補正 %.1f \n", ga)));
@@ -3827,7 +3847,7 @@ public class VisonController2{
 		        	final double d = luminanceAverage;
 		        	Platform.runLater( () ->calib_label.setText(
 		        			String.format("平均輝度=%.1f",d)));
-		        	if( d>=98 && d<=102 ) {
+		        	if( d>=autoGain_target-2 && d<=autoGain_target+2 ) {
 		        		if( !judgFlg )
 		        			Platform.runLater( () ->calib_label.setText( "照明キャリブレーション合格"));
 		        		judgFlg =true;
