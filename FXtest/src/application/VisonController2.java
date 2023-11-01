@@ -58,6 +58,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
@@ -89,6 +90,7 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 
@@ -1774,7 +1776,11 @@ public class VisonController2{
 	        			//ログデーター処理用
 	        			P2_log[g] = P2;
 	        			F_log[g] = F;
-	        			E_log[g] =E;
+	        			if( g == 0 ) {
+	        				E_log[g] =E;
+	        			}else {
+	        				E_log[g] = 0.0;//２列目は測定不能たの為0.0を入力
+	        			}
 
 	        			Platform.runLater( () ->dataset_P2[g2].getSeries(0).add(shotCnt,P2_final));
 		        		Platform.runLater( () ->dataset_F[g2].getSeries(0).add(shotCnt,F_final));
@@ -1929,9 +1935,9 @@ public class VisonController2{
 		        		ngCnt++;
 		        	}
 
-		        	//出力トリガが無効で無い 又は　強制停止変数が1より大きい場合
+		        	//出力トリガが無効で無い かつ　(強制停止変数が1より大きい場合 か NG継続フラグがTrue)
 		        	//NG信号の発信が失敗した場合の措置としてngSignalKeizokuFlgがTrueの場合継続してGpio.ngSignalON()が呼ばれるように変更2023.03.29
-		        	if( !outTrigDisableChk.isSelected() || kyouseiTeisshiNgCnt>1 || ngSignalKeizokuFlg){
+		        	if( !outTrigDisableChk.isSelected() && (kyouseiTeisshiNgCnt>1 || ngSignalKeizokuFlg)){//2023.10.17 論理式が間違っていたのを修正
 	        			//Platform.runLater(() ->info2.appendText(sunpou_hantei_NG+"\n"));
 		        		ngSignalKeizokuFlg = true;
 		        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(255,0,0,0.5);"));
@@ -1968,7 +1974,7 @@ public class VisonController2{
 
     	//オートゲイン
     	if( autoGainChk.isSelected() && !manualTrigger &&
-    			!saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-15 && autoGainEnable ) {
+    			!saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-20 && autoGainEnable ) {
 	    	Double luminanceAverage = 0.0;
 	    	parameter para = pObj.para[pObj.select];
 	    	int cnt = 0;
@@ -2542,7 +2548,7 @@ public class VisonController2{
 
     	//寸法測定部
     	Platform.runLater( () ->dimSettingLabel.setText(String.format("%.0f μm/pixel", para.dimPixel_mm*1000)));
-    	Platform.runLater( () ->dimSetting_offset.setText(String.format("%.0f μm/pixel", para.dimPixel_mm_offset*1000)));
+    	Platform.runLater( () ->dimSetting_offset.setText(String.format("%.0f", para.dimPixel_mm_offset*1000)));
     	Platform.runLater( () ->dim_offset_P2_1.setText(String.valueOf(para.dim_offset_P2[0])));
     	Platform.runLater( () ->dim_offset_F_1.setText(String.valueOf(para.dim_offset_F[0])));
     	Platform.runLater( () ->dim_offset_E_1.setText(String.valueOf(para.dim_offset_E[0])));
@@ -2662,7 +2668,7 @@ public class VisonController2{
      * @throws IOException
      */
     public void saveAllPara() throws IOException{
-		FileOutputStream fo = new FileOutputStream("./conf15.txt");
+		FileOutputStream fo = new FileOutputStream("./conf402.txt");
 		ObjectOutputStream objOut = new ObjectOutputStream(fo);
 
 		pObj.dimensionDispChk =  dimensionDispChk.isSelected();
@@ -2701,7 +2707,6 @@ public class VisonController2{
 		para.dim_Enable[2] = dim_2_enable.isSelected();
 		para.dim_Enable[3] = dim_2_enable.isSelected();
 		para.dim_Enable[4] = dim_1_enable.isSelected();
-		para.dim_Enable[5] = dim_1_enable.isSelected();
 
 
 	    para.dim_offset_P2[0] = Double.valueOf(dim_offset_P2_1.getText());
@@ -2750,7 +2755,10 @@ public class VisonController2{
      * @throws IOException
      */
     public void saveCsvAllPara() throws IOException{
-    	FileOutputStream fo = new FileOutputStream("./setting.csv");
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH' h 'mm' m 'ss' s'");
+		String fileName = "./setting"  +"_" + sdf.format(timestamp) + ".csv";
+    	FileOutputStream fo = new FileOutputStream(fileName);
 		ObjectOutputStream objOut = new ObjectOutputStream(fo);
 
 		pObj.dimensionDispChk =  dimensionDispChk.isSelected();
@@ -2831,7 +2839,7 @@ public class VisonController2{
 			}
 		}
 
-		Platform.runLater( () ->info2.appendText("設定が保存されました。\n"));
+		Platform.runLater( () ->info2.appendText("設定がCSVへエクスポートされました。\n"));
     }
     /**
      * パターンマッチング画像の保存
@@ -2864,7 +2872,7 @@ public class VisonController2{
      */
     public void loadAllPara(){
     	try {
-	    	FileInputStream fi = new FileInputStream("./conf15.txt");
+	    	FileInputStream fi = new FileInputStream("./conf402.txt");
 	    	ObjectInputStream objIn = new ObjectInputStream(fi);
 
 	    	pObj = (preSet)objIn.readObject();
@@ -2934,7 +2942,13 @@ public class VisonController2{
     //設定をCSVファイルへ書き出す
     @FXML
     void onCSVout(ActionEvent event) {
-    	Platform.runLater( () ->this.info2.appendText("設定をCSVファイルへ書き出し（未実装)\n"));
+    	try {
+			saveCsvAllPara();
+		} catch (IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+			Platform.runLater( () ->info2.appendText("CSV書き出し中に例外が発生\n"));
+		}
 
     }
 
@@ -3201,7 +3215,7 @@ public class VisonController2{
     		int _i = i;
     		Platform.runLater( () ->dataset_F[_i].getSeries(0).clear());
     		Platform.runLater( () ->dataset_P2[_i].getSeries(0).clear());
-    		Platform.runLater( () ->dataset_E[0].getSeries(0).clear());
+    		if( i == 0) {Platform.runLater( () ->dataset_E[_i].getSeries(0).clear());}
     	}
 
 		while( Gpio.useFlg ) {
@@ -3266,6 +3280,8 @@ public class VisonController2{
 			Stage stage = new Stage();
 			stage.setScene(scene);
 			stage.setResizable(false);
+			stage.initModality(Modality.WINDOW_MODAL);//モーダルダイアログにする為
+			stage.initOwner(((Node)event.getSource()).getScene().getWindow() );//モーダルダイアログにする為
 			stage.showAndWait();
 			if( PasswordDialogController.flg == false ){//パスワードが不一致の場合
 	    		Platform.runLater(() ->info2.appendText("*********************\n"));

@@ -42,6 +42,6 @@ public class PasswordDialogController {
     void initialize() {
         assert pass_text != null : "fx:id=\"pass_text\" was not injected: check your FXML file 'passwordDialog.fxml'.";
         assert OK_btn != null : "fx:id=\"OK_btn\" was not injected: check your FXML file 'passwordDialog.fxml'.";
-
+        flg = false;//表示される毎に毎回呼ばれる為、ここでフラグをリセットできる
     }
 }

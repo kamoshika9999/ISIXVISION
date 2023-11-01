@@ -126,6 +126,8 @@ public class logData {
 		P2_2.clear();
 		F_1.clear();
 		F_2.clear();
+		E_1.clear();
+		E_2.clear();
 		logMsg.clear();
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH'h 'mm'm 'ss's 'SSS'ms'");
@@ -161,14 +163,14 @@ public class logData {
 			}
 
 			for(int i=0;i<parameter.ptm_arrySize;i++) {
-				headStr[12 + i*8 + 0] = String.valueOf(i)+"_TM_cnt";
-				headStr[12 + i*8 + 1] = String.valueOf(i)+"_TM_detectMax";
-				headStr[12 + i*8 + 2] = String.valueOf(i)+"_TM_detectMin";
-				headStr[12 + i*8 + 3] = String.valueOf(i)+"_TM_detectAve";
-				headStr[12 + i*8 + 4] = String.valueOf(i)+"_TM_dispersionMax";
-				headStr[12 + i*8 + 5] = String.valueOf(i)+"_TM_dispersionMin";
-				headStr[12 + i*8 + 6] = String.valueOf(i)+"_TM_dispersionAve";
-				headStr[12 + i*8 + 7] = String.valueOf(i)+"_TM_resultStatus";
+				headStr[12 + i*8 + 0] = String.valueOf(i)+"_TM_cnt(検出個数)";
+				headStr[12 + i*8 + 1] = String.valueOf(i)+"_TM_detectMax(一致度最大)";
+				headStr[12 + i*8 + 2] = String.valueOf(i)+"_TM_detectMin(一致度最小";
+				headStr[12 + i*8 + 3] = String.valueOf(i)+"_TM_detectAve(一致度平均)";
+				headStr[12 + i*8 + 4] = String.valueOf(i)+"_TM_dispersionMax(色ムラ分散最大)";
+				headStr[12 + i*8 + 5] = String.valueOf(i)+"_TM_dispersionMin(色ムラ分散最小)";
+				headStr[12 + i*8 + 6] = String.valueOf(i)+"_TM_dispersionAve(色ムラ分散平均)";
+				headStr[12 + i*8 + 7] = String.valueOf(i)+"_TM_resultStatus(0:合格又は検出無効  1:検出個数不足 2:警報閾値未満有 3:検出個数過多  4:分散警報閾値未満 5:分散閾値未満)";
 			}
 
 			headStr[headColummCount-1] = "logMessage";
