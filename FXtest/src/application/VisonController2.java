@@ -2725,6 +2725,7 @@ public class VisonController2{
 		pObj.adcFlg = adc_flg.isSelected();
 
 		para.delly = dellySpinner.getValue().intValue();
+		para.targetGain = Double.valueOf(this.targetLuminance.getText());
 
 		objOut.writeObject(pObj);
 		objOut.flush();
@@ -2817,7 +2818,7 @@ public class VisonController2{
 		para.autogain = autoGainChk.isSelected();
 		para.targetGain = Double.valueOf( targetLuminance.getText() );
 
-		objOut.writeObject(pObj);
+		objOut.writeObject(pObj);//このメソッドを変更する必要がある
 		objOut.flush();
 		objOut.close();
 
@@ -2933,6 +2934,12 @@ public class VisonController2{
     	Platform.runLater( () ->dim_offset_E_1.setText(String.valueOf(para.dim_offset_E[0])));
     	Platform.runLater( () ->dim_offset_P2_2.setText(String.valueOf(para.dim_offset_P2[1])));
     	Platform.runLater( () ->dim_offset_F_2.setText(String.valueOf(para.dim_offset_F[1])));
+
+    	//2023.11.02追加
+    	autoGain_target = para.targetGain;
+    	Platform.runLater( () ->targetLuminance.setText(String.format("%.0f", autoGain_target)));
+    	Platform.runLater( () ->autoGainChk.setSelected( para.autogain  ));
+    	Platform.runLater( () ->dimSetting_offset.setText(String.format("%.0f", para.dimPixel_mm_offset )));
 
     	//品種の選択コンボボックスのデーターロード
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));

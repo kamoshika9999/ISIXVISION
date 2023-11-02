@@ -9,7 +9,7 @@ public class baseParameterValue {
 	public static final double F_LowerLimit_dimensionTheshold = 7.35;//#55=7.35 その他11.35
 	public static final double P2_UpperLimit_dimensionTheshold = 2.15;
 	public static final double P2_LowerLimit_dimensionTheshold = 1.85;
-	public static final double E_UpperLimit_dimensionTheshold = 1.85;
-	public static final double E_LowerLimit_dimensionTheshold = 1.65;
+	public static final double E_UpperLimit_dimensionTheshold = 1.90;
+	public static final double E_LowerLimit_dimensionTheshold = 1.60;
 
 }
