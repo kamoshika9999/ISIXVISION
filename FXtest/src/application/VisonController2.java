@@ -668,10 +668,12 @@ public class VisonController2{
 		double wset = capObj.get(Videoio.CAP_PROP_FRAME_WIDTH);
 		double hset = capObj.get(Videoio.CAP_PROP_FRAME_HEIGHT);
 		double exp = capObj.get(Videoio.CAP_PROP_EXPOSURE);
+		double exp_auto = capObj.get(Videoio.CAP_PROP_AUTO_EXPOSURE);//露出の自動調整
 		double gain = capObj.get(Videoio.CAP_PROP_GAIN);
 		Platform.runLater( () ->info2.appendText("\n"+ "カメラ解像度 WIDTH="+ wset+
 				"\n カメラ解像度 HEIGHT= " +hset + "\n"+
 				"\n 露出="+exp+"\n"+
+				"\n 自動露出設定="+exp_auto+"\n"+
 				"\n ゲイン="+gain+"\n"
 				));
     }
@@ -862,7 +864,7 @@ public class VisonController2{
 			this.cameraActive = true;
 			//露出の取得
 			onGetExpro(null);
-
+			capObj.set(Videoio.CAP_PROP_AUTO_EXPOSURE,0);//2023.11.22追加露出自動設定オフ
 			//ゲインの取得
 			capObj.set(Videoio.CAP_PROP_GAIN,50);//起動時強制的にゲイン50%
 			onGetGain(null);
@@ -1974,7 +1976,7 @@ public class VisonController2{
 
     	//オートゲイン
     	if( autoGainChk.isSelected() && !manualTrigger &&
-    			!saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-20 && autoGainEnable ) {
+    			!saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-5 && autoGainEnable ) {// disableJudgeCnt-20 から disableJudgeCnt-5へ変更2023.11.22
 	    	Double luminanceAverage = 0.0;
 	    	parameter para = pObj.para[pObj.select];
 	    	int cnt = 0;
@@ -1989,7 +1991,7 @@ public class VisonController2{
 	    		luminanceAverage = luminanceAverage / cnt;
 	        	int err = exeAutoGain(luminanceAverage);
 	        	if( err == 2) {
-	        		//照明異常矯正停止
+	        		//照明異常強制停止
 	        		Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: rgba(0,0,0,0.5);"));
 	        		if( Gpio.openFlg) {
 	        			while( Gpio.useFlg ) {
@@ -3780,7 +3782,7 @@ public class VisonController2{
      * @return 0:調整不要  1:調整実施 2:調整範囲オーバー
      */
     int exeAutoGain(double luminanceAverage) {
-    	if( luminanceAverage >=autoGain_target-2 && luminanceAverage<=autoGain_target+2) {
+    	if( luminanceAverage >=autoGain_target-1 && luminanceAverage<=autoGain_target+1) {
         	Platform.runLater( () ->calib_label.setText(String.format("平均輝度=%.1f",luminanceAverage)));
     		return 0;
     	}
@@ -3792,16 +3794,15 @@ public class VisonController2{
     	}
 
     	if( luminanceAverage < autoGain_target) {
-    		capObj.set(Videoio.CAP_PROP_GAIN,++gain);
-    		final double ga = gain;
-    		Platform.runLater( () ->this.info2.appendText(	String.format("照明ゲイン補正 %.1f \n", ga)));
-    		Platform.runLater( () ->this.autoGainText.setText(String.format("%.1f",ga)));
+    		gain = gain + 0.5;
     	}else {
-    		capObj.set(Videoio.CAP_PROP_GAIN,--gain);
-    		final double ga = gain;
-    		Platform.runLater( () ->this.info2.appendText(	String.format("照明ゲイン補正 %.1f \n", ga)));
-    		Platform.runLater( () ->this.autoGainText.setText(String.format("%.1f",ga)));
+    		gain = gain - 0.5;
     	}
+		capObj.set(Videoio.CAP_PROP_GAIN,gain);
+		final double ga = gain;
+		Platform.runLater( () ->this.info2.appendText(	String.format("照明ゲイン補正 %.1f \n", ga)));
+		Platform.runLater( () ->this.autoGainText.setText(String.format("%.1f",ga)));
+
     	final double g = gain;
     	Platform.runLater( () ->autoGainText.setText(String.format("%.1f",g)));
     	Platform.runLater( () ->calib_label.setText(String.format("平均輝度=%.1f",luminanceAverage)));
