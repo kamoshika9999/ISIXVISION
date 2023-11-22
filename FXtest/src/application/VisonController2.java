@@ -2670,7 +2670,7 @@ public class VisonController2{
      * @throws IOException
      */
     public void saveAllPara() throws IOException{
-		FileOutputStream fo = new FileOutputStream("./conf402.txt");
+		FileOutputStream fo = new FileOutputStream("./conf403.txt");
 		ObjectOutputStream objOut = new ObjectOutputStream(fo);
 
 		pObj.dimensionDispChk =  dimensionDispChk.isSelected();
@@ -2728,6 +2728,7 @@ public class VisonController2{
 
 		para.delly = dellySpinner.getValue().intValue();
 		para.targetGain = Double.valueOf(this.targetLuminance.getText());
+		para.exposur = Double.valueOf(cameraExpro.getText());//2022.11.22 露出設定の保存
 
 		objOut.writeObject(pObj);
 		objOut.flush();
@@ -2875,7 +2876,7 @@ public class VisonController2{
      */
     public void loadAllPara(){
     	try {
-	    	FileInputStream fi = new FileInputStream("./conf402.txt");
+	    	FileInputStream fi = new FileInputStream("./conf403.txt");
 	    	ObjectInputStream objIn = new ObjectInputStream(fi);
 
 	    	pObj = (preSet)objIn.readObject();
@@ -2942,6 +2943,12 @@ public class VisonController2{
     	Platform.runLater( () ->targetLuminance.setText(String.format("%.0f", autoGain_target)));
     	Platform.runLater( () ->autoGainChk.setSelected( para.autogain  ));
     	Platform.runLater( () ->dimSetting_offset.setText(String.format("%.0f", para.dimPixel_mm_offset )));
+
+    	//2023.11.22 露出の設定
+    	double exp = para.exposur;
+    	capObj.set(Videoio.CAP_PROP_EXPOSURE,exp);
+      	Platform.runLater( () ->cameraExpro.setText(String.format("%.0f", exp)));
+
 
     	//品種の選択コンボボックスのデーターロード
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
@@ -3989,6 +3996,8 @@ public class VisonController2{
 
         onAllClear(null);
         Platform.runLater( () ->GPIO_STATUS_PIN3.setFill(Color.YELLOW));
+
+        loadAllPara();
     }
 
     /**

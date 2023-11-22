@@ -16,6 +16,8 @@ public class parameter implements Serializable {
 	boolean autogain;
 	double targetGain;
 
+	double exposur=-8.0;//露出
+
 	final int hole_arrySize = 5;
 	double hole_zoom;
 	double[] hole_viewRect;
