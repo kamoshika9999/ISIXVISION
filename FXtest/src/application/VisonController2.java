@@ -61,10 +61,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -1027,6 +1024,7 @@ public class VisonController2{
 				    		if(DispersionErrorNG) {
 				    	        // ダイアログの表示
 				    	        // Alertダイアログの利用
+				    			/*
 				    	        Alert alert = new Alert( AlertType.NONE , "" , ButtonType.OK ,
 				    	                                                                           ButtonType.YES ,
 				    	                                                                           ButtonType.NO ,
@@ -1040,6 +1038,7 @@ public class VisonController2{
 				    	        alert.getDialogPane().setHeaderText( "油付着警告" );
 				    	        alert.getDialogPane().setContentText( "油付着の可能性が高い画像が連続３回検出されました。無確認で継続生産を禁止します。！！操作は記録されます。！！" );
 				    	        alert.showAndWait();
+				    	        */
 				    		}
 							logdata.csvWrite();
 							logdata.clear();
