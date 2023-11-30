@@ -1191,6 +1191,7 @@ public class VisonController2{
 				}else {
 					cameraCaptureFlag = false;
 					System.out.println("farame.empty() == true\n");
+					Platform.runLater( () ->info2.appendText("private Mat grabFrame() { → farame.empty() == true\n"));
 				}
 
 			} catch(Exception e) {
@@ -1975,7 +1976,7 @@ public class VisonController2{
 
     	//オートゲイン
     	if( autoGainChk.isSelected() && !manualTrigger &&
-    			!saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-5 && autoGainEnable ) {// disableJudgeCnt-20 から disableJudgeCnt-5へ変更2023.11.22
+    			!saveImgUseFlg &&!demoFlg && shotCnt > disableJudgeCnt-25 && autoGainEnable ) {// disableJudgeCnt-20 から disableJudgeCnt-5へ変更2023.11.22
 	    	Double luminanceAverage = 0.0;
 	    	parameter para = pObj.para[pObj.select];
 	    	int cnt = 0;
@@ -3151,7 +3152,7 @@ public class VisonController2{
 		stage.setResizable(false);
 		stage.showAndWait();
 		if( saveImgUseFlg && !this.settingModeFlg) {
-			onSettingModeBtn(null);
+			onSettingModeBtn(event);
 		}
 		eventTrigger = true;
    	}
@@ -3800,9 +3801,9 @@ public class VisonController2{
     	}
 
     	if( luminanceAverage < autoGain_target) {
-    		gain = gain + 0.5;
+    		gain = gain + 1.0;
     	}else {
-    		gain = gain - 0.5;
+    		gain = gain - 1.0;
     	}
 		capObj.set(Videoio.CAP_PROP_GAIN,gain);
 		final double ga = gain;
