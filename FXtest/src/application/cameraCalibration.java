@@ -47,7 +47,7 @@ public class cameraCalibration {
 		}
 
 		List<Mat> imagePoints = new ArrayList<>(); // 各撮影画像のコーナーの二次元座標を入れる。
-		final Size patternSize = new Size(5, 8); // 探査するコーナーの数
+		final Size patternSize = new Size(6, 6); // 行列の交点数
 
 		List<Mat> outputFindChessboardCorners = new ArrayList<>();
 		try (DirectoryStream<Path> ds = Files.newDirectoryStream(picFolderPath)) {
@@ -119,7 +119,7 @@ public class cameraCalibration {
 	}
 
 	public Point3 getPoint(int row, int col) {
-		final double REAL_HEIGHT = 4.0, REAL_WIDTH = 6.0;
+		final double REAL_HEIGHT = 6.0, REAL_WIDTH = 6.0;
 		return new Point3(col * REAL_WIDTH, row * REAL_HEIGHT, 0.0); // 多分x, y, zはこういう感じ。
 	}
 
