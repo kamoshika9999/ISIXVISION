@@ -3212,6 +3212,7 @@ public class VisonController2{
     	ngSignalKeizokuFlg = false;
     	allSaveCnt = 0;
     	DispersionErrorNG = false;//パターンマッチングの分散NGが連続して発生した場合に立つフラグをクリアする
+    	sunpou_hantei_NG_5Shot = false;
 
     	Platform.runLater(() ->ngCounterLabel.setText(String.valueOf(ngCnt)));
     	Platform.runLater(() ->aPane.setStyle("-fx-background-radius: 0;-fx-background-color: #a5abb094;"));
