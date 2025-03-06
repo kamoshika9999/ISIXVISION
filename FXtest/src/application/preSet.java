@@ -19,7 +19,7 @@ public class preSet implements Serializable{
 	boolean camera_revers;
 
 	//String[] presetNameText = {"SO6L","(DEG)","(DAG)","④SO12L"};//#55
-	String[] presetNameText = {"TO220","D2PACK","TOGL","④"};//#51 #54 #56
+	String[] presetNameText = {"①","②","③","④"};//#51 #54 #56
 
 
 	public preSet() {

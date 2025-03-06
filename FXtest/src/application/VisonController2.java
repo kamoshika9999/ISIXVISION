@@ -2949,6 +2949,11 @@ public class VisonController2{
     	capObj.set(Videoio.CAP_PROP_EXPOSURE,exp);
       	Platform.runLater( () ->cameraExpro.setText(String.format("%.0f", exp)));
 
+      	//2025.03.05　穴数の閾値baseParameterから強制追加
+      	para.hole_cntHoleTh[0]=baseParameterValue.okuriHoleCntTheshold;
+      	para.hole_cntHoleTh[1]=baseParameterValue.poketHoleCntThreshold;
+      	para.hole_cntHoleTh[2]=baseParameterValue.okuriHoleCntTheshold;
+      	para.hole_cntHoleTh[3]=baseParameterValue.poketHoleCntThreshold;
 
     	//品種の選択コンボボックスのデーターロード
 		Platform.runLater( () ->info2.appendText("設定がロードされました。\n"));
